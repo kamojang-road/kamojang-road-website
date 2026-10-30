@@ -59,13 +59,25 @@
         </form>
         <div class="auth-account panel" id="accountPanel" hidden>
           <p class="eyebrow orange">STATUS AKUN</p>
-          <h3>BERHASIL MASUK</h3>
+          <h3 id="accountHeading">BERHASIL MASUK</h3>
           <p id="accountEmail"></p>
-          <p class="muted">Autentikasi berhasil. Akses dashboard anggota akan diberikan setelah data keanggotaan diverifikasi dan dihubungkan oleh pengurus.</p>
+          <p class="muted" id="accountStatus">Memeriksa data keanggotaan...</p>
+          <div class="profile-summary" id="profileSummary" hidden>
+            <p><b>Nama:</b> <span id="profileName">-</span></p>
+            <p><b>Peran:</b> <span id="profileRole">-</span></p>
+            <p><b>ID KTA:</b> <span id="profileMembership">Belum tercatat</span></p>
+          </div>
           <button class="btn outline" id="logoutButton" type="button">KELUAR</button>
         </div>
       </div>
       <div class="notice auth-notice"><b>CATATAN</b><p>Login hanya memverifikasi akun. Website ini belum menerbitkan nomor KTA. Nomor KTA diterbitkan oleh Pengurus Pusat The Jakmania.</p></div>
+    </section>
+    <section class="section dashboard-section" id="dashboard" hidden>
+      <p class="eyebrow orange">AREA INTERNAL</p>
+      <h2 id="dashboardTitle">DASHBOARD <span>KAMOJANG ROAD.</span></h2>
+      <p class="section-copy" id="dashboardDescription">Informasi akun sesuai peran yang terdaftar.</p>
+      <div class="dashboard-grid" id="dashboardCards"></div>
+      <p class="muted dashboard-note">Bagian ini menampilkan informasi dasar akun. Pengelolaan data, persetujuan, pembayaran, dan pemesanan tiket belum diaktifkan.</p>
     </section>
     <section class="section split" id="kta">
       <div><p class="eyebrow orange">KARTU TANDA ANGGOTA</p><h2>MINAT <span>PENDAFTARAN KTA.</span></h2><p class="section-copy">Isi nama dan nomor WhatsApp yang bisa dihubungi. Pesan akan diteruskan ke pengurus untuk tindak lanjut. Penerbitan nomor KTA ditangani oleh Pengurus Pusat The Jakmania, bukan melalui website ini.</p></div>
