@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 
 <html lang="id">
@@ -14,7 +16,7 @@
 
   <meta name="description" content="Website resmi Kamojang Road Korwil Kampung Melayu.">
 
- <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=2">
 
 </head>
 
@@ -66,13 +68,19 @@
 
           <a class="btn primary" href="#login">LOGIN ANGGOTA</a>
 
-         <a class="btn outline" href="#kta">PENDAFTARAN KTA</a>
+          <a class="btn outline" href="#kta">PENDAFTARAN KTA</a>
 
         </div>
 
       </div>
 
-      <div class="hero-stamp"><span>KR</span><small>EST. KAMOJANG ROAD</small></div>
+      <div class="hero-stamp">
+
+        <span>KR</span>
+
+        <small>EST. KAMOJANG ROAD</small>
+
+      </div>
 
     </section>
 
@@ -98,9 +106,13 @@
 
     <section class="ticker">
 
-      <span>LOYALITAS</span><i>✦</i><span>SOLIDARITAS</span>
+      <span>LOYALITAS</span><i>✦</i>
 
-      <i>✦</i><span>KEBERSAMAAN</span><i>✦</i><span>KAMOJANG ROAD</span>
+      <span>SOLIDARITAS</span><i>✦</i>
+
+      <span>KEBERSAMAAN</span><i>✦</i>
+
+      <span>KAMOJANG ROAD</span>
 
     </section>
 
@@ -110,7 +122,7 @@
 
       <h2>DASHBOARD <span>ANGGOTA.</span></h2>
 
-      <p class="section-copy">Dashboard hanya dapat dilihat setelah anggota berhasil login.</p>
+      <p class="section-copy">Dashboard hanya dapat dilihat oleh anggota yang sudah memiliki ID KTA dan akun aktif.</p>
 
       <div class="dashboard" id="memberDashboard" hidden>
 
@@ -148,7 +160,7 @@
 
         <b>DASHBOARD TERKUNCI</b>
 
-        <p>Silakan login untuk melihat profil dan ID KTA anggota.</p>
+        <p>Silakan login menggunakan akun yang sudah diaktifkan Admin/Ketua dan memiliki ID KTA.</p>
 
       </div>
 
@@ -188,13 +200,65 @@
 
         <p class="eyebrow orange">KARTU TANDA ANGGOTA</p>
 
-        <h2>IDENTITAS <span>KTA.</span></h2>
+        <h2>PENDAFTARAN <span>KTA.</span></h2>
 
-        <p class="section-copy">Kartu Tanda Anggota sebagai identitas anggota Kamojang Road.</p>
+        <p class="section-copy">
+
+          Daftarkan diri untuk menjadi anggota Kamojang Road.
+
+          Setelah pengajuan diperiksa dan KTA fisik diterbitkan,
+
+          Admin/Ketua akan menyiapkan akun website.
+
+        </p>
 
       </div>
 
       <div class="panel">
+
+        <h3>FORMULIR PENDAFTARAN</h3>
+
+        <form id="ktaRegistrationForm">
+
+          <input
+
+            id="registerName"
+
+            type="text"
+
+            placeholder="Nama lengkap"
+
+            autocomplete="name"
+
+            minlength="2"
+
+            required
+
+          >
+
+          <input
+
+            id="registerEmail"
+
+            type="email"
+
+            placeholder="Alamat email aktif"
+
+            autocomplete="email"
+
+            required
+
+          >
+
+          <button class="btn primary" id="registerButton" type="submit">
+
+            KIRIM PENDAFTARAN
+
+          </button>
+
+        </form>
+
+        <p id="registerMessage" class="muted" aria-live="polite"></p>
 
         <div class="card-preview">
 
@@ -208,7 +272,7 @@
 
         </div>
 
-        <p class="muted">Contoh tampilan kartu. Belum berlaku sebagai kartu anggota resmi.</p>
+        <p class="muted">ID KTA diberikan setelah kartu fisik diterbitkan.</p>
 
       </div>
 
@@ -248,7 +312,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
- <script src="script.js?v=3"></script>
+  <script src="script.js?v=4"></script>
 
 </body>
 
