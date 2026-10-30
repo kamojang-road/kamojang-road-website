@@ -3,12 +3,18 @@ const nav = document.getElementById("nav");
 
 if (menuToggle && nav) {
   menuToggle.addEventListener("click", () => {
-    nav.classList.toggle("open");
+    const isOpen = nav.classList.toggle("open");
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
+    menuToggle.setAttribute("aria-label", isOpen ? "Tutup menu" : "Buka menu");
+    menuToggle.textContent = isOpen ? "×" : "☰";
   });
 
   nav.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", () => {
       nav.classList.remove("open");
+      menuToggle.setAttribute("aria-expanded", "false");
+      menuToggle.setAttribute("aria-label", "Buka menu");
+      menuToggle.textContent = "☰";
     });
   });
 }
@@ -17,8 +23,7 @@ const year = document.getElementById("year");
 if (year) year.textContent = new Date().getFullYear();
 
 // SUPABASE
-const SUPABASE_URL =
-  "https://nvgpprjwzwqakgjtaukn.supabase.co";
+const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
 
 const SUPABASE_KEY =
   "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
@@ -31,7 +36,7 @@ const supabaseClient = window.supabase.createClient(
 // WHATSAPP PENGURUS
 const WHATSAPP_NUMBER = "6285283234473";
 
-// ELEMEN LOGIN DAN DASHBOARD
+// ELEMEN WEBSITE
 const loginButton = document.getElementById("loginButton");
 const loginMessage = document.getElementById("loginMessage");
 const dashboard = document.getElementById("memberDashboard");
@@ -41,64 +46,7 @@ const memberName = document.getElementById("memberName");
 const memberId = document.getElementById("memberId");
 const logoutButton = document.getElementById("logoutButton");
 
-// RAPikan FORMULIR PENDAFTARAN
-const registrationStyle = document.createElement("style");
-
-registrationStyle.textContent = `
-  #ktaRegistrationForm {
-    width: 100%;
-    max-width: 520px;
-    margin: 24px auto;
-    padding: 24px;
-    box-sizing: border-box;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 14px;
-  }
-
-  #ktaRegistrationForm input {
-    display: block;
-    width: 100%;
-    min-height: 52px;
-    padding: 14px 16px;
-    margin: 10px 0 18px;
-    box-sizing: border-box;
-    font-size: 16px;
-    border-radius: 8px;
-  }
-
-  #registerButton {
-    display: block;
-    width: auto;
-    min-width: 190px;
-    max-width: 100%;
-    min-height: 46px;
-    padding: 12px 22px;
-    margin: 20px auto 0;
-    font-size: 14px;
-    font-weight: 700;
-    border-radius: 8px;
-  }
-
-  #registerMessage {
-    margin-top: 14px;
-    text-align: center;
-    overflow-wrap: anywhere;
-  }
-
-  @media (max-width: 600px) {
-    #ktaRegistrationForm {
-      padding: 18px;
-    }
-
-    #ktaRegistrationForm input {
-      min-height: 54px;
-    }
-  }
-`;
-
-document.head.appendChild(registrationStyle);
-
-// MEMUAT PROFIL ANGGOTA
+// PROFIL ANGGOTA
 async function loadMemberProfile(user) {
   dashboard.hidden = false;
   dashboardNotice.hidden = true;
@@ -116,8 +64,8 @@ async function loadMemberProfile(user) {
   if (error) {
     dashboard.hidden = true;
     dashboardNotice.hidden = false;
-    dashboardMessage.textContent =
-      "Kesalahan profil: " + error.message;
+    dashboardMessage.textContent = "Kesalahan profil: " + error.message;
+    await supabaseClient.auth.signOut();
     return false;
   }
 
@@ -128,23 +76,19 @@ async function loadMemberProfile(user) {
     await supabaseClient.auth.signOut();
 
     loginMessage.textContent =
-      "Akun belum aktif. Silakan hubungi pengurus KTA.";
+      "Akun belum aktif atau belum memiliki ID KTA. Hubungi pengurus.";
 
     return false;
   }
 
-  memberName.textContent =
-    data.full_name || "Nama belum tersedia";
-
+  memberName.textContent = data.full_name || "Nama belum tersedia";
   memberId.textContent = data.membership_id;
-
-  dashboardMessage.textContent =
-    "Profil berhasil dimuat.";
+  dashboardMessage.textContent = "Profil berhasil dimuat.";
 
   return true;
 }
 
-// TAMPILAN SAAT LOGOUT
+// TAMPILAN LOGOUT
 function showLoggedOut() {
   dashboard.hidden = true;
   dashboardNotice.hidden = false;
@@ -153,15 +97,11 @@ function showLoggedOut() {
 // LOGIN
 if (loginButton) {
   loginButton.addEventListener("click", async () => {
-    const email =
-      document.getElementById("loginEmail").value.trim();
-
-    const password =
-      document.getElementById("loginPassword").value;
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
     if (!email || !password) {
-      loginMessage.textContent =
-        "Masukkan email dan password.";
+      loginMessage.textContent = "Masukkan email dan password.";
       return;
     }
 
@@ -169,32 +109,26 @@ if (loginButton) {
     loginMessage.textContent = "Sedang masuk...";
 
     try {
-      const { data, error } =
-        await supabaseClient.auth.signInWithPassword({
-          email,
-          password
-        });
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
 
       if (error) {
-        loginMessage.textContent =
-          "Login gagal: " + error.message;
+        loginMessage.textContent = "Login gagal: " + error.message;
         return;
       }
 
-      const berhasil =
-        await loadMemberProfile(data.user);
+      const berhasil = await loadMemberProfile(data.user);
 
       if (berhasil) {
         loginMessage.textContent = "Login berhasil.";
-
-        document.getElementById("anggota")
-          .scrollIntoView({ behavior: "smooth" });
+        document.getElementById("anggota").scrollIntoView({
+          behavior: "smooth"
+        });
       }
-
     } catch (error) {
-      loginMessage.textContent =
-        "Kesalahan aplikasi: " + error.message;
-
+      loginMessage.textContent = "Kesalahan aplikasi: " + error.message;
     } finally {
       loginButton.disabled = false;
     }
@@ -207,46 +141,38 @@ if (logoutButton) {
     logoutButton.disabled = true;
 
     try {
-      const { error } =
-        await supabaseClient.auth.signOut();
+      const { error } = await supabaseClient.auth.signOut();
 
       if (error) {
-        dashboardMessage.textContent =
-          "Logout gagal: " + error.message;
+        dashboardMessage.textContent = "Logout gagal: " + error.message;
         return;
       }
 
       showLoggedOut();
       loginMessage.textContent = "Kamu sudah logout.";
 
-      document.getElementById("login")
-        .scrollIntoView({ behavior: "smooth" });
-
+      document.getElementById("login").scrollIntoView({
+        behavior: "smooth"
+      });
+    } catch (error) {
+      dashboardMessage.textContent = "Kesalahan: " + error.message;
     } finally {
       logoutButton.disabled = false;
     }
   });
 }
 
-// PENDAFTARAN KTA + WHATSAPP
-const registrationForm =
-  document.getElementById("ktaRegistrationForm");
+// PENDAFTARAN KTA DAN WHATSAPP
+const registrationForm = document.getElementById("ktaRegistrationForm");
 
 if (registrationForm) {
   registrationForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const nameInput =
-      document.getElementById("registerName");
-
-    const emailInput =
-      document.getElementById("registerEmail");
-
-    const registerButton =
-      document.getElementById("registerButton");
-
-    const registerMessage =
-      document.getElementById("registerMessage");
+    const nameInput = document.getElementById("registerName");
+    const emailInput = document.getElementById("registerEmail");
+    const registerButton = document.getElementById("registerButton");
+    const registerMessage = document.getElementById("registerMessage");
 
     const fullName = nameInput.value.trim();
     const email = emailInput.value.trim();
@@ -258,8 +184,7 @@ if (registrationForm) {
     }
 
     registerButton.disabled = true;
-    registerMessage.textContent =
-      "Menyimpan pendaftaran...";
+    registerMessage.textContent = "Menyimpan pendaftaran...";
 
     try {
       const { error } = await supabaseClient
@@ -281,7 +206,7 @@ if (registrationForm) {
         "Halo Pengurus KAMOJANG ROAD, saya ingin mendaftar KTA." +
         "\n\nNama lengkap: " + fullName +
         "\nEmail: " + email +
-        "\n\nSaya akan mengirimkan foto diri dan dokumen yang diperlukan melalui chat ini.";
+        "\n\nMohon informasi tahapan selanjutnya untuk pendaftaran KTA.";
 
       const whatsappURL =
         "https://wa.me/" + WHATSAPP_NUMBER +
@@ -295,7 +220,6 @@ if (registrationForm) {
     } catch (error) {
       registerMessage.textContent =
         "Terjadi kesalahan: " + error.message;
-
     } finally {
       registerButton.disabled = false;
     }
@@ -305,8 +229,7 @@ if (registrationForm) {
 // PERIKSA SESI LOGIN
 async function checkExistingSession() {
   try {
-    const { data, error } =
-      await supabaseClient.auth.getSession();
+    const { data, error } = await supabaseClient.auth.getSession();
 
     if (error || !data.session) {
       showLoggedOut();
@@ -314,7 +237,6 @@ async function checkExistingSession() {
     }
 
     await loadMemberProfile(data.session.user);
-
   } catch (error) {
     showLoggedOut();
   }
