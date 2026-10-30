@@ -1,395 +1,384 @@
-'use strict';
+const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
 
-/* KONFIGURASI SUPABASE */
-const SUPABASE_URL = 'https://nvgpprjwzwqakgjtaukn.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR';
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
-let supabaseClient = null;
-let currentUserId = null;
+const $ = (id) => document.getElementById(id);
 
-/* ELEMEN HALAMAN */
-const menuToggle = document.getElementById('menuToggle');
-const nav = document.getElementById('nav');
-const year = document.getElementById('year');
-
-const ktaForm = document.getElementById('ktaForm');
-const loginForm = document.getElementById('loginForm');
-const loginButton = document.getElementById('loginButton');
-const resetPasswordButton = document.getElementById('resetPasswordButton');
-const logoutButton = document.getElementById('logoutButton');
-
-const authMessage = document.getElementById('authMessage');
-const accountPanel = document.getElementById('accountPanel');
-const accountEmail = document.getElementById('accountEmail');
-const accountStatus = document.getElementById('accountStatus');
-const accountHeading = document.getElementById('accountHeading');
-
-const profileSummary = document.getElementById('profileSummary');
-const profileName = document.getElementById('profileName');
-const profileRole = document.getElementById('profileRole');
-const profileMembership = document.getElementById('profileMembership');
-
-const dashboard = document.getElementById('dashboard');
-const dashboardTitle = document.getElementById('dashboardTitle');
-const dashboardDescription = document.getElementById('dashboardDescription');
-const dashboardCards = document.getElementById('dashboardCards');
-const dashboardNote = document.getElementById('dashboardNote');
-
-/* TAHUN FOOTER */
-if (year) {
-  year.textContent = new Date().getFullYear();
+function showMessage(id, message, success = false) {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = success ? "#66d98a" : "#f47721";
 }
 
-/* MENU MOBILE */
-if (menuToggle && nav) {
-  menuToggle.addEventListener('click', () => {
-    const opened = nav.classList.toggle('open');
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
 
-    menuToggle.setAttribute('aria-expanded', String(opened));
-    menuToggle.setAttribute('aria-label', opened ? 'Tutup menu' : 'Buka menu');
-    menuToggle.textContent = opened ? '×' : '☰';
+function showPublicPage() {
+  $("memberPage").classList.add("hidden");
+  $("adminPage").classList.add("hidden");
+  document.querySelectorAll(".hero, .section").forEach((el) => {
+    el.classList.remove("hidden");
+  });
+  $("login").scrollIntoView({ behavior: "smooth" });
+}
+
+function showDashboard(role) {
+  document.querySelectorAll(".hero, .section").forEach((el) => {
+    el.classList.add("hidden");
   });
 
-  nav.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      nav.classList.remove('open');
-      menuToggle.setAttribute('aria-expanded', 'false');
-      menuToggle.setAttribute('aria-label', 'Buka menu');
-      menuToggle.textContent = '☰';
-    });
+  $("memberPage").classList.add("hidden");
+  $("adminPage").classList.add("hidden");
+
+  if (role === "admin") {
+    $("adminPage").classList.remove("hidden");
+    loadAdminDashboard();
+  } else if (role === "member") {
+    $("memberPage").classList.remove("hidden");
+    loadMemberDashboard();
+  } else {
+    alert("Jenis akun tidak dikenali. Hubungi pengurus.");
+    showPublicPage();
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function getProfile(userId) {
+  const { data, error } = await db
+    .from("member_profiles")
+    .select("id, full_name, role, membership_id")
+    .eq("id", userId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// MENU HP
+$("menuToggle").addEventListener("click", () => {
+  $("nav").classList.toggle("open");
+});
+
+document.querySelectorAll("#nav a").forEach((link) => {
+  link.addEventListener("click", () => {
+    $("nav").classList.remove("open");
   });
-}
+});
 
-/* FORMULIR MINAT KTA VIA WHATSAPP */
-if (ktaForm) {
-  ktaForm.addEventListener('submit', event => {
-    event.preventDefault();
+// PENDAFTARAN KTA
+$("ktaForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
 
-    if (!ktaForm.reportValidity()) return;
+  const name = $("ktaName").value.trim();
+  const email = $("ktaEmail").value.trim();
+  const phone = $("ktaPhone").value.trim();
 
-    const name = document.getElementById('fullName').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const extra = document.getElementById('message').value.trim();
-
-    const message = [
-      'Halo Pengurus Kamojang Road, saya berminat mendaftar KTA.',
-      `Nama: ${name}`,
-      `Nomor WhatsApp: ${phone}`,
-      extra ? `Pesan: ${extra}` : ''
-    ].filter(Boolean).join('\n');
-
-    const url = 'https://wa.me/6285283234473?text=' + encodeURIComponent(message);
-    window.open(url, '_blank', 'noopener,noreferrer');
-  });
-}
-
-/* PESAN LOGIN */
-function showAuthMessage(message, type = '') {
-  if (!authMessage) return;
-
-  authMessage.textContent = message;
-  authMessage.className = `auth-message ${type}`.trim();
-}
-
-function friendlyAuthError(error) {
-  const message = String(error?.message || '').toLowerCase();
-
-  if (message.includes('invalid login credentials')) {
-    return 'Email atau kata sandi tidak cocok.';
-  }
-
-  if (message.includes('email not confirmed')) {
-    return 'Email akun belum dikonfirmasi. Hubungi pengurus.';
-  }
-
-  if (message.includes('network')) {
-    return 'Koneksi internet bermasalah. Coba lagi.';
-  }
-
-  return 'Login belum berhasil. Periksa akun atau hubungi pengurus.';
-}
-
-/* KONFIGURASI PERAN */
-const roleConfig = {
-  member: {
-    label: 'Anggota',
-    title: 'DASHBOARD ANGGOTA.',
-    description: 'Selamat datang di area anggota Kamojang Road.',
-    cards: [
-      ['Data Anggota', 'Periksa nama dan status ID KTA pada profil akun.'],
-      ['Tiket Pertandingan', 'Informasi pemesanan tiket dapat ditanyakan kepada pengurus.'],
-      ['Riwayat & Notifikasi', 'Informasi riwayat akan tersedia setelah modul terkait diaktifkan.']
-    ]
-  },
-
-  admin: {
-    label: 'Admin',
-    title: 'DASHBOARD PENGURUS.',
-    description: 'Akun dikenali sebagai admin.',
-    cards: [
-      ['Pengajuan KTA', 'Pengelolaan pengajuan belum diaktifkan.'],
-      ['Data Anggota', 'Pengelolaan data anggota belum diaktifkan.'],
-      ['Pertandingan & Tiket', 'Pengaturan pertandingan dan pembayaran belum diaktifkan.']
-    ]
-  },
-
-  secretary: {
-    label: 'Sekretaris',
-    title: 'DASHBOARD SEKRETARIS.',
-    description: 'Akses informasi sekretaris.',
-    cards: [
-      ['Pengajuan KTA', 'Daftar pengajuan belum diaktifkan.'],
-      ['Data Anggota', 'Tampilan data anggota belum diaktifkan.'],
-      ['Data Tiket', 'Tampilan data pembeli belum diaktifkan.']
-    ]
-  }
-};
-
-/* TAMPILKAN DASHBOARD */
-function renderDashboard(profile) {
-  const config = roleConfig[profile.role];
-
-  if (!config) {
-    dashboard.hidden = true;
-    accountStatus.textContent = 'Peran akun belum dikenali. Hubungi pengurus.';
+  if (!name || !email || !phone) {
+    showMessage("ktaMessage", "Lengkapi semua data.");
     return;
   }
 
-  profileName.textContent = profile.full_name || '-';
-  profileRole.textContent = config.label;
-  profileMembership.textContent = profile.membership_id || 'Belum tercatat';
+  const button = event.submitter;
+  button.disabled = true;
+  button.textContent = "MENGIRIM...";
 
-  profileSummary.hidden = false;
-  accountHeading.textContent = 'BERHASIL MASUK';
-  accountStatus.textContent = 'Profil berhasil ditemukan.';
+  try {
+    const { error } = await db.from("kta_requests").insert({
+      full_name: name,
+      email: email,
+      status: "pending"
+    });
 
-  dashboardTitle.innerHTML = config.title.replace(/\.$/, ' <span>KR.</span>');
-  dashboardDescription.textContent = config.description;
+    if (error) throw error;
 
-  dashboardCards.replaceChildren();
+    showMessage(
+      "ktaMessage",
+      "Pendaftaran tersimpan. Silakan lanjut menghubungi pengurus melalui WhatsApp.",
+      true
+    );
 
-  config.cards.forEach(([title, description]) => {
-    const article = document.createElement('article');
-    article.className = 'dashboard-card';
+    const text = [
+      "PENDAFTARAN KTA KAMOJANG ROAD",
+      "Nama: " + name,
+      "Email: " + email,
+      "WhatsApp: " + phone
+    ].join("\n");
 
-    const heading = document.createElement('h3');
-    heading.textContent = title;
+    window.open(
+      "https://wa.me/6285283234473?text=" + encodeURIComponent(text),
+      "_blank"
+    );
 
-    const paragraph = document.createElement('p');
-    paragraph.textContent = description;
+    $("ktaForm").reset();
+  } catch (error) {
+    showMessage("ktaMessage", "Pendaftaran gagal: " + error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = "KIRIM PENDAFTARAN";
+  }
+});
 
-    article.append(heading, paragraph);
-    dashboardCards.append(article);
+// LOGIN ADMIN DAN ANGGOTA
+$("loginForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+  const button = event.submitter;
+
+  button.disabled = true;
+  button.textContent = "MEMERIKSA...";
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) throw error;
+
+    const profile = await getProfile(data.user.id);
+
+    if (!["admin", "member"].includes(profile.role)) {
+      throw new Error("Role akun tidak memiliki akses.");
+    }
+
+    $("loginForm").reset();
+    showDashboard(profile.role);
+  } catch (error) {
+    await db.auth.signOut();
+    showMessage("loginMessage", "Login gagal: " + error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = "MASUK";
+  }
+});
+
+// LUPA KATA SANDI
+$("resetPasswordButton").addEventListener("click", async () => {
+  const email = $("loginEmail").value.trim();
+
+  if (!email) {
+    showMessage("loginMessage", "Masukkan email terlebih dahulu.");
+    return;
+  }
+
+  const { error } = await db.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin
   });
-
-  dashboardNote.textContent =
-    'Catatan: fitur pengelolaan data dan tiket belum diaktifkan pada versi ini.';
-
-  dashboard.hidden = false;
-}
-
-/* MEMBACA PROFIL */
-async function loadProfileAndDashboard(user) {
-  if (!user || !supabaseClient) return;
-
-  currentUserId = user.id;
-
-  accountPanel.hidden = false;
-  loginForm.hidden = true;
-
-  accountEmail.textContent = user.email || 'Akun anggota';
-  accountStatus.textContent = 'Memeriksa profil akun...';
-
-  profileSummary.hidden = true;
-  dashboard.hidden = true;
-
-  const { data, error } = await supabaseClient
-    .from('member_profiles')
-    .select('id, full_name, role, membership_id')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (currentUserId !== user.id) return;
 
   if (error) {
-    accountStatus.textContent =
-      'Profil tidak dapat dibaca. Periksa aturan akses database.';
+    showMessage("loginMessage", error.message);
+  } else {
+    showMessage("loginMessage", "Permintaan reset dikirim. Periksa email.", true);
+  }
+});
+
+// DASHBOARD ANGGOTA
+async function loadMemberDashboard() {
+  const { data: sessionData } = await db.auth.getSession();
+  const user = sessionData.session?.user;
+  if (!user) return;
+
+  try {
+    const profile = await getProfile(user.id);
+
+    $("memberName").textContent = profile.full_name || "-";
+    $("memberId").textContent = profile.membership_id || "Belum tersedia";
+
+    const { data, error } = await db
+      .from("ticket_requests")
+      .select("id, match_name, quantity, status, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    $("memberOrders").innerHTML = data.length
+      ? data.map((order) => `
+          <div class="data-item">
+            <strong>${escapeHTML(order.match_name)}</strong>
+            <p>Jumlah: ${escapeHTML(order.quantity)} tiket</p>
+            <p>Status: ${escapeHTML(order.status)}</p>
+          </div>
+        `).join("")
+      : "Belum ada pesanan.";
+  } catch (error) {
+    $("memberOrders").textContent = "Gagal memuat data: " + error.message;
+  }
+}
+
+// PEMESANAN TIKET ANGGOTA
+$("ticketForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const matchName = $("matchName").value.trim();
+  const quantity = Number($("ticketQuantity").value);
+
+  if (!matchName || !Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
+    showMessage("ticketMessage", "Isi pertandingan dan jumlah 1–10 tiket.");
     return;
   }
 
-  if (!data) {
-    accountStatus.textContent =
-      'Profil belum dibuat oleh pengurus. Hubungi pengurus untuk aktivasi.';
-    return;
-  }
+  try {
+    const { data: sessionData } = await db.auth.getSession();
+    const user = sessionData.session?.user;
+    if (!user) throw new Error("Silakan login kembali.");
 
-  renderDashboard(data);
-
-  if (!dashboard.hidden) {
-    dashboard.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  }
-}
-
-/* KONDISI KELUAR */
-function showSignedOut() {
-  currentUserId = null;
-
-  if (accountPanel) accountPanel.hidden = true;
-  if (loginForm) loginForm.hidden = false;
-  if (dashboard) dashboard.hidden = true;
-  if (profileSummary) profileSummary.hidden = true;
-}
-
-/* INISIALISASI SUPABASE */
-if (window.supabase && window.supabase.createClient) {
-  supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
-
-  supabaseClient.auth.getSession()
-    .then(({ data, error }) => {
-      if (error) {
-        showAuthMessage('Sesi akun tidak dapat diperiksa.', 'error');
-        return;
-      }
-
-      if (data.session?.user) {
-        loadProfileAndDashboard(data.session.user);
-      } else {
-        showSignedOut();
-      }
-    })
-    .catch(() => {
-      showAuthMessage('Koneksi ke layanan akun gagal.', 'error');
+    const { error } = await db.from("ticket_requests").insert({
+      user_id: user.id,
+      match_name: matchName,
+      quantity,
+      status: "pending"
     });
 
-  supabaseClient.auth.onAuthStateChange((_event, session) => {
-    if (session?.user) {
-      setTimeout(() => {
-        loadProfileAndDashboard(session.user);
-      }, 0);
-    } else {
-      showSignedOut();
-    }
-  });
+    if (error) throw error;
 
-} else {
-  showAuthMessage(
-    'Layanan login tidak dapat dimuat. Periksa koneksi internet.',
-    'error'
-  );
-}
+    showMessage("ticketMessage", "Permintaan tiket berhasil dikirim.", true);
+    $("ticketForm").reset();
+    $("ticketQuantity").value = 1;
+    loadMemberDashboard();
+  } catch (error) {
+    showMessage("ticketMessage", "Pemesanan gagal: " + error.message);
+  }
+});
 
-/* LOGIN */
-if (loginForm) {
-  loginForm.addEventListener('submit', async event => {
-    event.preventDefault();
+// DASHBOARD ADMIN
+async function loadAdminDashboard() {
+  try {
+    const [ktaResult, memberResult, ticketResult] = await Promise.all([
+      db.from("kta_requests")
+        .select("id, full_name, email, status, created_at")
+        .order("created_at", { ascending: false }),
 
-    if (!supabaseClient) {
-      showAuthMessage('Layanan login belum tersedia.', 'error');
-      return;
-    }
+      db.from("member_profiles")
+        .select("id, full_name, role, membership_id")
+        .eq("role", "member"),
 
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
+      db.from("ticket_requests")
+        .select("id, user_id, match_name, quantity, status, created_at")
+        .order("created_at", { ascending: false })
+    ]);
 
-    loginButton.disabled = true;
-    loginButton.textContent = 'MEMERIKSA AKUN...';
+    if (ktaResult.error) throw ktaResult.error;
+    if (memberResult.error) throw memberResult.error;
+    if (ticketResult.error) throw ticketResult.error;
 
-    showAuthMessage('Sedang memeriksa akun...');
+    const kta = ktaResult.data || [];
+    const members = memberResult.data || [];
+    const tickets = ticketResult.data || [];
 
-    try {
-      const { data, error } =
-        await supabaseClient.auth.signInWithPassword({
-          email,
-          password
-        });
+    $("ktaCount").textContent = kta.length;
+    $("memberCount").textContent = members.length;
+    $("orderCount").textContent = tickets.length;
 
-      if (error) throw error;
+    $("adminKtaList").innerHTML = kta.length
+      ? kta.map((item) => `
+          <div class="data-item">
+            <strong>${escapeHTML(item.full_name)}</strong>
+            <p>${escapeHTML(item.email)}</p>
+            <p>Status: ${escapeHTML(item.status)}</p>
+            <select data-kta-id="${escapeHTML(item.id)}" class="kta-status">
+              <option value="pending" ${item.status === "pending" ? "selected" : ""}>Menunggu</option>
+              <option value="processing" ${item.status === "processing" ? "selected" : ""}>Diproses</option>
+              <option value="completed" ${item.status === "completed" ? "selected" : ""}>Selesai</option>
+            </select>
+          </div>
+        `).join("")
+      : "Belum ada pengajuan KTA.";
 
-      await loadProfileAndDashboard(data.user);
-      showAuthMessage('Autentikasi berhasil.', 'success');
+    $("adminMemberList").innerHTML = members.length
+      ? members.map((member) => `
+          <div class="data-item">
+            <strong>${escapeHTML(member.full_name)}</strong>
+            <p>ID KTA: ${escapeHTML(member.membership_id || "Belum tersedia")}</p>
+            <p>ID akun: ${escapeHTML(member.id)}</p>
+          </div>
+        `).join("")
+      : "Belum ada data anggota.";
 
-    } catch (error) {
-      showAuthMessage(friendlyAuthError(error), 'error');
+    $("adminTicketList").innerHTML = tickets.length
+      ? tickets.map((ticket) => `
+          <div class="data-item">
+            <strong>${escapeHTML(ticket.match_name)}</strong>
+            <p>ID akun: ${escapeHTML(ticket.user_id)}</p>
+            <p>Jumlah: ${escapeHTML(ticket.quantity)} tiket</p>
+            <p>Status: ${escapeHTML(ticket.status)}</p>
+          </div>
+        `).join("")
+      : "Belum ada permintaan tiket.";
 
-    } finally {
-      loginButton.disabled = false;
-      loginButton.textContent = 'MASUK';
-    }
-  });
-}
+    document.querySelectorAll(".kta-status").forEach((select) => {
+      select.addEventListener("change", async () => {
+        const id = select.dataset.ktaId;
 
-/* LUPA KATA SANDI */
-if (resetPasswordButton) {
-  resetPasswordButton.addEventListener('click', async () => {
-    if (!supabaseClient) {
-      showAuthMessage('Layanan login belum tersedia.', 'error');
-      return;
-    }
+        const { error } = await db
+          .from("kta_requests")
+          .update({ status: select.value })
+          .eq("id", id);
 
-    const email = document.getElementById('loginEmail').value.trim();
-
-    if (!email) {
-      showAuthMessage('Isi email akun terlebih dahulu.', 'error');
-      return;
-    }
-
-    resetPasswordButton.disabled = true;
-
-    try {
-      const { error } =
-        await supabaseClient.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin + window.location.pathname + '#login'
-        });
-
-      if (error) throw error;
-
-      showAuthMessage(
-        'Jika email terdaftar, instruksi pemulihan akan dikirim.',
-        'success'
-      );
-
-    } catch (error) {
-      showAuthMessage(
-        'Permintaan pemulihan belum berhasil. Coba lagi.',
-        'error'
-      );
-
-    } finally {
-      resetPasswordButton.disabled = false;
-    }
-  });
-}
-
-/* LOGOUT */
-if (logoutButton) {
-  logoutButton.addEventListener('click', async () => {
-    if (!supabaseClient) return;
-
-    logoutButton.disabled = true;
-
-    try {
-      const { error } = await supabaseClient.auth.signOut();
-
-      if (error) throw error;
-
-      showSignedOut();
-      showAuthMessage('Kamu sudah keluar dari akun.', 'success');
-
-      document.getElementById('login').scrollIntoView({
-        behavior: 'smooth'
+        if (error) {
+          alert("Gagal mengubah status: " + error.message);
+          loadAdminDashboard();
+        }
       });
+    });
 
-    } catch (error) {
-      showAuthMessage('Belum berhasil keluar. Coba lagi.', 'error');
-
-    } finally {
-      logoutButton.disabled = false;
-    }
-  });
+  } catch (error) {
+    $("adminKtaList").textContent =
+      "Gagal memuat data. Periksa izin database: " + error.message;
+  }
 }
+
+// LOGOUT
+document.querySelectorAll(".logoutButton").forEach((button) => {
+  button.addEventListener("click", async () => {
+    await db.auth.signOut();
+    $("memberPage").classList.add("hidden");
+    $("adminPage").classList.add("hidden");
+    document.querySelectorAll(".hero, .section").forEach((el) => {
+      el.classList.remove("hidden");
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+});
+
+// CEK SESI SAAT HALAMAN DIBUKA
+async function restoreSession() {
+  const { data } = await db.auth.getSession();
+  if (!data.session) return;
+
+  try {
+    const profile = await getProfile(data.session.user.id);
+    showDashboard(profile.role);
+  } catch (error) {
+    await db.auth.signOut();
+    console.error("Profil akun tidak ditemukan:", error.message);
+  }
+}
+
+restoreSession();
+
+db.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT") {
+    $("memberPage").classList.add("hidden");
+    $("adminPage").classList.add("hidden");
+    document.querySelectorAll(".hero, .section").forEach((el) => {
+      el.classList.remove("hidden");
+    });
+  }
+});
