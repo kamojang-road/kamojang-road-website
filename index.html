@@ -12,7 +12,7 @@
 
   <title>KAMOJANG ROAD | Korwil Kampung Melayu</title>
 
-  <meta name="description" content="Website resmi informasi Kamojang Road - Korwil Kampung Melayu.">
+  <meta name="description" content="Website resmi Kamojang Road Korwil Kampung Melayu.">
 
   <link rel="stylesheet" href="style.css">
 
@@ -20,31 +20,17 @@
 
 <body>
 
-  <!-- HEADER -->
-
   <header class="topbar">
 
     <a class="brand" href="#beranda">
 
       <span class="brand-mark">KR</span>
 
-      <span>
-
-        KAMOJANG <b>ROAD</b>
-
-        <small>KORWIL KAMPUNG MELAYU</small>
-
-      </span>
+      <span>KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span>
 
     </a>
 
-    <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">
-
-      ☰
-
-    </button>
-
-    <!-- MENU NAVIGASI -->
+    <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">☰</button>
 
     <nav id="nav">
 
@@ -66,27 +52,15 @@
 
   <main>
 
-    <!-- BERANDA -->
-
     <section class="hero" id="beranda">
 
       <div class="hero-content">
 
         <p class="eyebrow">KORWIL KAMPUNG MELAYU</p>
 
-        <h1>
+        <h1>SATU IDENTITAS,<br><span>SATU SOLIDARITAS.</span></h1>
 
-          SATU IDENTITAS,<br>
-
-          <span>SATU SOLIDARITAS.</span>
-
-        </h1>
-
-        <p class="lead">
-
-          Wadah informasi, kebersamaan, dan kegiatan keluarga besar Kamojang Road.
-
-        </p>
+        <p class="lead">Wadah informasi, kebersamaan, dan kegiatan keluarga besar Kamojang Road.</p>
 
         <div class="actions">
 
@@ -98,17 +72,9 @@
 
       </div>
 
-      <div class="hero-stamp">
-
-        <span>KR</span>
-
-        <small>EST. KAMOJANG ROAD</small>
-
-      </div>
+      <div class="hero-stamp"><span>KR</span><small>EST. KAMOJANG ROAD</small></div>
 
     </section>
-
-    <!-- LOGIN ANGGOTA -->
 
     <section class="section" id="login">
 
@@ -116,37 +82,13 @@
 
       <h2>LOGIN <span>ANGGOTA.</span></h2>
 
-      <div class="panel">
+      <div class="panel login-panel" id="loginPanel">
 
-        <input
+        <input id="loginEmail" type="email" placeholder="Alamat email" autocomplete="email">
 
-          id="loginEmail"
+        <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password">
 
-          type="email"
-
-          placeholder="Alamat email"
-
-          autocomplete="email"
-
-        >
-
-        <input
-
-          id="loginPassword"
-
-          type="password"
-
-          placeholder="Password"
-
-          autocomplete="current-password"
-
-        >
-
-        <button class="btn primary" id="loginButton" type="button">
-
-          MASUK
-
-        </button>
+        <button class="btn primary" id="loginButton" type="button">MASUK</button>
 
         <p id="loginMessage" class="muted" aria-live="polite"></p>
 
@@ -154,27 +96,63 @@
 
     </section>
 
-    <!-- TICKER -->
-
     <section class="ticker">
 
-      <span>LOYALITAS</span>
+      <span>LOYALITAS</span><i>✦</i><span>SOLIDARITAS</span>
 
-      <i>✦</i>
-
-      <span>SOLIDARITAS</span>
-
-      <i>✦</i>
-
-      <span>KEBERSAMAAN</span>
-
-      <i>✦</i>
-
-      <span>KAMOJANG ROAD</span>
+      <i>✦</i><span>KEBERSAMAAN</span><i>✦</i><span>KAMOJANG ROAD</span>
 
     </section>
 
-    <!-- INFORMASI TIKET -->
+    <section class="dark-section section" id="anggota">
+
+      <p class="eyebrow orange">AREA ANGGOTA</p>
+
+      <h2>DASHBOARD <span>ANGGOTA.</span></h2>
+
+      <p class="section-copy">Dashboard hanya dapat dilihat setelah anggota berhasil login.</p>
+
+      <div class="dashboard" id="memberDashboard" hidden>
+
+        <div class="dashboard-profile">
+
+          <p class="eyebrow orange">PROFIL ANGGOTA</p>
+
+          <h3 id="memberName">Memuat nama...</h3>
+
+          <p class="muted">ID KTA</p>
+
+          <strong class="member-id" id="memberId">Memuat ID...</strong>
+
+        </div>
+
+        <div class="dashboard-ticket">
+
+          <p class="eyebrow orange">TIKET PERTANDINGAN</p>
+
+          <h3>PESAN TIKET</h3>
+
+          <p class="section-copy">Fitur pemesanan tiket akan tersedia setelah pengaturan pertandingan dan keamanan sistem selesai.</p>
+
+          <button class="btn primary" type="button" disabled>SEGERA HADIR</button>
+
+        </div>
+
+        <button class="btn logout-button" id="logoutButton" type="button">LOGOUT</button>
+
+        <p id="dashboardMessage" class="muted" aria-live="polite"></p>
+
+      </div>
+
+      <div class="notice" id="dashboardNotice">
+
+        <b>DASHBOARD TERKUNCI</b>
+
+        <p>Silakan login untuk melihat profil dan ID KTA anggota.</p>
+
+      </div>
+
+    </section>
 
     <section class="dark-section section split" id="tiket">
 
@@ -184,25 +162,13 @@
 
         <h2>INFORMASI <span>TIKET.</span></h2>
 
-        <p class="section-copy">
-
-          Informasi pemesanan tiket pertandingan Persija Jakarta
-
-          dan jadwal kegiatan komunitas akan diumumkan melalui
-
-          kanal resmi Kamojang Road.
-
-        </p>
+        <p class="section-copy">Informasi tiket pertandingan Persija Jakarta akan diumumkan melalui kanal resmi Kamojang Road.</p>
 
       </div>
 
       <div class="ticket-box">
 
-        <div class="ticket-top">
-
-          KAMOJANG ROAD <span>KR</span>
-
-        </div>
+        <div class="ticket-top">KAMOJANG ROAD <span>KR</span></div>
 
         <h3>TIKET PERTANDINGAN</h3>
 
@@ -216,53 +182,15 @@
 
     </section>
 
-    <!-- INFORMASI ANGGOTA -->
-
-    <section class="dark-section section" id="anggota">
-
-      <p class="eyebrow orange">AREA ANGGOTA</p>
-
-      <h2>INFORMASI <span>ANGGOTA.</span></h2>
-
-      <p class="section-copy">
-
-        Pusat informasi keanggotaan Kamojang Road Korwil Kampung Melayu.
-
-      </p>
-
-      <div class="notice">
-
-        <b>INFORMASI</b>
-
-        <p>
-
-          Informasi anggota dan pengumuman komunitas akan
-
-          ditampilkan setelah sistem keanggotaan selesai disiapkan.
-
-        </p>
-
-      </div>
-
-    </section>
-
-    <!-- KARTU TANDA ANGGOTA -->
-
     <section class="section split" id="kta">
 
       <div>
 
         <p class="eyebrow orange">KARTU TANDA ANGGOTA</p>
 
-        <h2>REGISTRASI <span>KTA.</span></h2>
+        <h2>IDENTITAS <span>KTA.</span></h2>
 
-        <p class="section-copy">
-
-          Kartu Tanda Anggota sebagai identitas resmi
-
-          anggota Kamojang Road.
-
-        </p>
+        <p class="section-copy">Kartu Tanda Anggota sebagai identitas anggota Kamojang Road.</p>
 
       </div>
 
@@ -272,13 +200,7 @@
 
           <small>KAMOJANG ROAD</small>
 
-          <strong>
-
-            KARTU TANDA<br>
-
-            ANGGOTA
-
-          </strong>
+          <strong>KARTU TANDA<br>ANGGOTA</strong>
 
           <span>KORWIL KAMPUNG MELAYU</span>
 
@@ -286,57 +208,27 @@
 
         </div>
 
-        <p class="muted">
-
-          Contoh tampilan kartu. Belum berlaku sebagai kartu anggota resmi.
-
-        </p>
+        <p class="muted">Contoh tampilan kartu. Belum berlaku sebagai kartu anggota resmi.</p>
 
       </div>
 
     </section>
 
-    <!-- KONTAK -->
-
     <section class="section contact" id="kontak">
 
       <p class="eyebrow orange">TERHUBUNG</p>
 
-      <h2>
+      <h2>ADA PERTANYAAN?<br><span>HUBUNGI KAMI.</span></h2>
 
-        ADA PERTANYAAN?<br>
+      <p class="section-copy">Hubungi pengurus Kamojang Road Korwil Kampung Melayu melalui kontak resmi komunitas.</p>
 
-        <span>HUBUNGI KAMI.</span>
+      <a class="btn primary" href="mailto:kamojangroad@example.com">EMAIL KOMUNITAS</a>
 
-      </h2>
-
-      <p class="section-copy">
-
-        Hubungi pengurus Kamojang Road Korwil Kampung Melayu
-
-        melalui kontak resmi komunitas.
-
-      </p>
-
-      <a class="btn primary" href="mailto:kamojangroad@example.com">
-
-        EMAIL KOMUNITAS
-
-      </a>
-
-      <p class="muted">
-
-        Alamat email contoh. Ganti dengan alamat resmi komunitas
-
-        sebelum digunakan.
-
-      </p>
+      <p class="muted">Alamat email contoh. Ganti dengan alamat resmi komunitas sebelum digunakan.</p>
 
     </section>
 
   </main>
-
-  <!-- FOOTER -->
 
   <footer>
 
@@ -344,127 +236,17 @@
 
       <span class="brand-mark">KR</span>
 
-      <span>
-
-        KAMOJANG <b>ROAD</b>
-
-        <small>KORWIL KAMPUNG MELAYU</small>
-
-      </span>
+      <span>KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span>
 
     </a>
 
     <p>SATU IDENTITAS, SATU SOLIDARITAS.</p>
 
-    <small>
-
-      © <span id="year"></span> KAMOJANG ROAD. Informasi komunitas.
-
-    </small>
+    <small>© <span id="year"></span> KAMOJANG ROAD. Informasi komunitas.</small>
 
   </footer>
 
-  <!-- SUPABASE LIBRARY -->
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- LOGIN SUPABASE -->
-
-  <script>
-
-    const SUPABASE_URL =
-
-      "https://nvgpprjwzwqakgjtaukn.supabase.co";
-
-    // GANTI DENGAN PUBLISHABLE KEY MILIKMU
-
-    const SUPABASE_KEY =
-
-      "TEMPEL_PUBLISHABLE_KEY_MILIKMU";
-
-    const supabaseClient = window.supabase.createClient(
-
-      SUPABASE_URL,
-
-      SUPABASE_KEY
-
-    );
-
-    const loginButton =
-
-      document.getElementById("loginButton");
-
-    loginButton.addEventListener("click", async () => {
-
-      const email =
-
-        document.getElementById("loginEmail").value.trim();
-
-      const password =
-
-        document.getElementById("loginPassword").value;
-
-      const message =
-
-        document.getElementById("loginMessage");
-
-      if (!email || !password) {
-
-        message.textContent =
-
-          "Masukkan email dan password terlebih dahulu.";
-
-        return;
-
-      }
-
-      loginButton.disabled = true;
-
-      message.textContent = "Sedang masuk...";
-
-      try {
-
-        const { error } =
-
-          await supabaseClient.auth.signInWithPassword({
-
-            email: email,
-
-            password: password
-
-          });
-
-        if (error) {
-
-          message.textContent =
-
-            "Login gagal. Periksa email dan password.";
-
-          return;
-
-        }
-
-        message.textContent =
-
-          "Login berhasil. Selamat datang!";
-
-      } catch (error) {
-
-        message.textContent =
-
-          "Terjadi kesalahan koneksi. Coba lagi.";
-
-      } finally {
-
-        loginButton.disabled = false;
-
-      }
-
-    });
-
-  </script>
-
-  <!-- SCRIPT WEBSITE -->
 
   <script src="script.js"></script>
 
