@@ -60,5 +60,76 @@
   </main>
   <footer><a class="brand" href="#beranda"><span class="brand-mark">KR</span><span>KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span></a><p>SATU IDENTITAS, SATU SOLIDARITAS.</p><small>© <span id="year"></span> KAMOJANG ROAD. Informasi komunitas.</small></footer>
   <script src="script.js"></script>
+  <section class="section" id="login">
+
+  <p class="eyebrow orange">AREA ANGGOTA</p>
+
+  <h2>LOGIN <span>ANGGOTA.</span></h2>
+
+  <div class="panel">
+
+    <input id="loginEmail" type="email"
+
+      placeholder="Alamat email" autocomplete="email">
+
+    <input id="loginPassword" type="password"
+
+      placeholder="Password" autocomplete="current-password">
+
+    <button class="btn primary" id="loginButton">
+
+      MASUK
+
+    </button>
+
+    <p id="loginMessage" class="muted"></p>
+
+  </div>
+
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
+
+const supabaseClient = window.supabase.createClient(
+
+  SUPABASE_URL,
+
+  SUPABASE_KEY
+
+);
+
+document.getElementById("loginButton").onclick = async () => {
+
+  const email = document.getElementById("loginEmail").value.trim();
+
+  const password = document.getElementById("loginPassword").value;
+
+  const message = document.getElementById("loginMessage");
+
+  message.textContent = "Sedang masuk...";
+
+  const { data, error } = await supabaseClient.auth
+
+    .signInWithPassword({ email, password });
+
+  if (error) {
+
+    message.textContent = "Login gagal. Periksa email dan password.";
+
+    return;
+
+  }
+
+  message.textContent = "Login berhasil. Selamat datang!";
+
+};
+
+</script>
 </body>
 </html>
