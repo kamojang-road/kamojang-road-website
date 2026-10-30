@@ -16,3 +16,17 @@
 .form-panel .muted{margin:14px 0 0}
 .btn{cursor:pointer}
 @media(max-width:700px){.form-panel{max-width:none;padding:22px}.submit-btn{line-height:1.6}.hero-content{max-width:100%}}
+
+
+/* Login anggota - Supabase Auth */
+.nav-login{padding:10px 13px;border:1px solid var(--orange);color:var(--orange)}
+.auth-wrap{display:grid;grid-template-columns:minmax(0,480px) minmax(0,1fr);gap:22px;align-items:start;margin-top:30px}
+.auth-panel{margin:0}
+.auth-panel label:not(:first-child){margin-top:18px}
+.auth-link{display:block;margin:16px auto 0;padding:6px;border:0;background:transparent;color:#aeb3b6;text-decoration:underline;font:600 11px Montserrat,Arial,sans-serif;cursor:pointer}
+.auth-message{min-height:35px;margin:14px 0 0;color:#62696d;font-size:11px;line-height:1.6}
+.auth-message.error{color:#b42318}.auth-message.success{color:#18794e}
+.auth-account{padding:28px;background:#1b1f22;border:1px solid #454b4e;color:white}
+.auth-account h3{font-size:36px;color:var(--orange)}.auth-account p{font-size:12px;line-height:1.7;color:#c3c8ca;overflow-wrap:anywhere}
+.auth-notice{max-width:760px}
+@media(max-width:700px){.auth-wrap{grid-template-columns:1fr}.nav-login{border:0;padding:0}}

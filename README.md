@@ -1,24 +1,24 @@
-# KAMOJANG ROAD — Korwil Kampung Melayu
+# KAMOJANG ROAD — Website publik + login anggota (v2)
 
-Website publik statis untuk GitHub Pages. File yang digunakan:
-- `index.html` — konten website.
-- `style.css` — tampilan responsif.
-- `script.js` — menu mobile, tahun otomatis, dan formulir minat KTA via WhatsApp.
+File: `index.html`, `style.css`, `script.js`, `README.md`.
 
-## Cara memasang ke GitHub Pages
-1. Buka repository `kamojang-road/kamojang-road-website`.
-2. Pilih branch `main` dan pastikan sumber GitHub Pages adalah folder root (`/`).
-3. Unggah/ganti tiga file di atas pada folder utama repository: `index.html`, `style.css`, `script.js`.
-4. Klik **Commit changes**.
-5. Buka **Settings → Pages** dan pastikan **Deploy from a branch**, branch `main`, folder `/ (root)`.
-6. Tunggu proses deployment selesai di tab **Actions**. Setelah itu buka `https://kamojang-road.github.io/kamojang-road-website/` dan muat ulang.
+## Yang tersedia
+- Website publik responsif dan kontak WhatsApp.
+- Formulir minat KTA via WhatsApp.
+- Login email/kata sandi melalui Supabase Auth.
+- Pemulihan kata sandi melalui email (mengikuti konfigurasi Supabase).
+- Keluar akun.
 
-## Fitur yang aktif pada versi ini
-- Halaman publik dan navigasi responsif.
-- Tombol kontak WhatsApp pengurus.
-- Formulir minat pendaftaran KTA yang menyiapkan pesan WhatsApp untuk diperiksa dan dikirim pengguna.
+## Penting sebelum login dipakai
+Login terhubung ke proyek Supabase yang telah dikonfigurasi di `script.js`. Login hanya dapat digunakan oleh akun yang sudah dibuat/diaktifkan pengurus di Supabase Authentication. Pendaftaran akun publik sengaja tidak dibuka. Jangan masukkan service-role key ke file website.
 
-## Belum tersedia
-Login, akun anggota, dashboard admin/sekretaris, database, verifikasi pembayaran, inventaris gelang, dan pemesanan tiket online belum aktif. Fitur tersebut memerlukan backend/database dan aturan akses. Nomor KTA diterbitkan oleh Pengurus Pusat The Jakmania, bukan website ini.
+Jika proyek Supabase berbeda, ganti `SUPABASE_URL` dan `SUPABASE_PUBLISHABLE_KEY` dengan URL dan publishable/anon key milik proyek yang benar. Publishable key boleh digunakan di browser; service-role key tidak boleh.
 
-Formulir tidak menyimpan data ke server. Pengguna perlu menekan tombol kirim di WhatsApp setelah pesan terbuka. Jangan mengirim foto KTP atau kata sandi melalui formulir publik.
+## Pasang ke GitHub Pages
+1. Ekstrak ZIP.
+2. Unggah dan timpa `index.html`, `style.css`, `script.js`, `README.md` di root repository `kamojang-road/kamojang-road-website`, branch `main`.
+3. Commit langsung ke `main`.
+4. Tunggu GitHub Pages selesai deploy, lalu muat ulang website.
+
+## Batasan versi ini
+Login memverifikasi identitas akun Supabase. Dashboard anggota/admin/sekretaris, data profil dan tiket online belum dibuat. Keberhasilan login tidak otomatis berarti akun memiliki status anggota atau hak admin. Hak akses harus ditetapkan dan dilindungi melalui database/RLS sebelum dashboard diaktifkan. Nomor KTA tetap diterbitkan Pengurus Pusat The Jakmania.

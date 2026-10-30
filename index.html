@@ -16,7 +16,7 @@
     <a class="brand" href="#beranda" aria-label="Kamojang Road beranda"><span class="brand-mark">KR</span><span>KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span></a>
     <button class="menu-toggle" id="menuToggle" aria-label="Buka menu" aria-expanded="false">☰</button>
     <nav id="nav" aria-label="Navigasi utama">
-      <a href="#beranda">Beranda</a><a href="#tentang">Tentang</a><a href="#anggota">Anggota</a><a href="#kta">KTA</a><a href="#tiket">Tiket</a><a href="#kontak">Kontak</a>
+      <a href="#beranda">Beranda</a><a href="#tentang">Tentang</a><a href="#anggota">Anggota</a><a href="#kta">KTA</a><a href="#tiket">Tiket</a><a href="#kontak">Kontak</a><a class="nav-login" href="#login">LOGIN ANGGOTA</a>
     </nav>
   </header>
   <main>
@@ -44,6 +44,29 @@
       <p class="section-copy">Informasi keanggotaan dikelola oleh pengurus. Untuk sementara, konfirmasi data anggota dilakukan langsung melalui WhatsApp pengurus.</p>
       <div class="notice"><b>PERHATIAN</b><p>Jangan mengirimkan foto KTP, kata sandi, atau informasi rahasia melalui formulir publik. Pengurus akan mengarahkan proses verifikasi secara langsung.</p></div>
     </section>
+    <section class="dark-section section" id="login">
+      <p class="eyebrow orange">AREA ANGGOTA</p><h2>LOGIN <span>ANGGOTA.</span></h2>
+      <p class="section-copy">Masuk menggunakan akun yang sudah diaktifkan oleh pengurus. Pendaftaran akun mandiri belum dibuka. Jika belum memiliki akun, hubungi pengurus melalui WhatsApp.</p>
+      <div class="auth-wrap">
+        <form class="panel form-panel auth-panel" id="loginForm">
+          <label for="loginEmail">Email akun</label>
+          <input id="loginEmail" name="email" type="email" autocomplete="username" maxlength="254" required placeholder="nama@email.com">
+          <label for="loginPassword">Kata sandi</label>
+          <input id="loginPassword" name="password" type="password" autocomplete="current-password" required minlength="6" placeholder="Masukkan kata sandi">
+          <button class="btn primary submit-btn" id="loginButton" type="submit">MASUK</button>
+          <button class="auth-link" id="resetPasswordButton" type="button">Lupa kata sandi?</button>
+          <p class="auth-message" id="authMessage" role="status" aria-live="polite">Gunakan akun yang telah dibuat/diaktifkan pengurus.</p>
+        </form>
+        <div class="auth-account panel" id="accountPanel" hidden>
+          <p class="eyebrow orange">STATUS AKUN</p>
+          <h3>BERHASIL MASUK</h3>
+          <p id="accountEmail"></p>
+          <p class="muted">Autentikasi berhasil. Akses dashboard anggota akan diberikan setelah data keanggotaan diverifikasi dan dihubungkan oleh pengurus.</p>
+          <button class="btn outline" id="logoutButton" type="button">KELUAR</button>
+        </div>
+      </div>
+      <div class="notice auth-notice"><b>CATATAN</b><p>Login hanya memverifikasi akun. Website ini belum menerbitkan nomor KTA. Nomor KTA diterbitkan oleh Pengurus Pusat The Jakmania.</p></div>
+    </section>
     <section class="section split" id="kta">
       <div><p class="eyebrow orange">KARTU TANDA ANGGOTA</p><h2>MINAT <span>PENDAFTARAN KTA.</span></h2><p class="section-copy">Isi nama dan nomor WhatsApp yang bisa dihubungi. Pesan akan diteruskan ke pengurus untuk tindak lanjut. Penerbitan nomor KTA ditangani oleh Pengurus Pusat The Jakmania, bukan melalui website ini.</p></div>
       <form class="panel form-panel" id="ktaForm">
@@ -61,6 +84,7 @@
     <section class="section contact" id="kontak"><p class="eyebrow orange">TERHUBUNG</p><h2>ADA PERTANYAAN?<br><span>HUBUNGI KAMI.</span></h2><p class="section-copy">Hubungi pengurus Kamojang Road – Korwil Kampung Melayu melalui WhatsApp.</p><a class="btn primary" href="https://wa.me/6285283234473?text=Halo%20Pengurus%20Kamojang%20Road." target="_blank" rel="noopener">CHAT WHATSAPP PENGURUS</a></section>
   </main>
   <footer><a class="brand" href="#beranda"><span class="brand-mark">KR</span><span>KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span></a><p>SATU IDENTITAS, SATU SOLIDARITAS.</p><small>© <span id="year"></span> KAMOJANG ROAD. Informasi komunitas.</small></footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
 </html>
