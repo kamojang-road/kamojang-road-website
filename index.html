@@ -1,149 +1,475 @@
 <!doctype html>
+
 <html lang="id">
+
 <head>
+
   <meta charset="utf-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <meta name="theme-color" content="#111315">
+
   <title>KAMOJANG ROAD | Korwil Kampung Melayu</title>
+
   <meta name="description" content="Website informasi resmi Kamojang Road - Korwil Kampung Melayu.">
+
   <link rel="stylesheet" href="style.css">
+
 </head>
+
 <body>
+
+  <!-- HEADER DAN MENU -->
+
   <header class="topbar">
-    <a class="brand" href="#beranda"><span class="brand-mark">KR</span><span>KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span></a>
+
+    <a class="brand" href="#beranda">
+
+      <span class="brand-mark">KR</span>
+
+      <span>KAMOJANG <b>ROAD</b>
+
+        <small>KORWIL KAMPUNG MELAYU</small>
+
+      </span>
+
+    </a>
+
     <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">☰</button>
-  <nav id="nav">
 
-  <a href="#beranda">Beranda</a>
+    <nav id="nav">
 
-  <a href="#login">Login</a>
+      <a href="#beranda">Beranda</a>
 
-  <a href="#tentang">Tentang</a>
+      <a href="#login">Login</a>
 
-  <a href="#anggota">Anggota</a>
+      <a href="#tiket">Tiket</a>
 
-  <a href="#kta">KTA</a>
+      <a href="#anggota">Anggota</a>
 
-  <a href="#tiket">Tiket</a>
+      <a href="#kta">KTA</a>
 
-  <a href="#kontak">Kontak</a>
+      <a href="#kontak">Kontak</a>
 
-</nav>
+    </nav>
+
   </header>
 
   <main>
+
+    <!-- BERANDA -->
+
     <section class="hero" id="beranda">
+
       <div class="hero-content">
+
         <p class="eyebrow">KORWIL KAMPUNG MELAYU</p>
+
         <h1>SATU IDENTITAS,<br><span>SATU SOLIDARITAS.</span></h1>
-        <p class="lead">Wadah informasi, kebersamaan, dan kegiatan keluarga besar Kamojang Road.</p>
-        <div class="actions"><a class="btn primary" href="#tentang">JELAJAHI WEBSITE</a><a class="btn outline" href="#kontak">HUBUNGI KAMI</a></div>
+
+        <p class="lead">
+
+          Wadah informasi, kebersamaan, dan kegiatan keluarga besar Kamojang Road.
+
+        </p>
+
+        <div class="actions">
+
+          <a class="btn primary" href="#tentang">JELAJAHI WEBSITE</a>
+
+          <a class="btn outline" href="#kontak">HUBUNGI KAMI</a>
+
+        </div>
+
       </div>
-      <div class="hero-stamp"><span>KR</span><small>EST. KAMOJANG ROAD</small></div>
+
+      <div class="hero-stamp">
+
+        <span>KR</span>
+
+        <small>EST. KAMOJANG ROAD</small>
+
+      </div>
+
     </section>
 
-    <section class="ticker"><span>LOYALITAS</span><i>✦</i><span>SOLIDARITAS</span><i>✦</i><span>KEBERSAMAAN</span><i>✦</i><span>KAMOJANG ROAD</span></section>
+    <!-- LOGIN ANGGOTA -->
+
+    <section class="section" id="login">
+
+      <p class="eyebrow orange">AREA ANGGOTA</p>
+
+      <h2>LOGIN <span>ANGGOTA.</span></h2>
+
+      <div class="panel">
+
+        <input
+
+          id="loginEmail"
+
+          type="email"
+
+          placeholder="Alamat email"
+
+          autocomplete="email"
+
+        >
+
+        <input
+
+          id="loginPassword"
+
+          type="password"
+
+          placeholder="Password"
+
+          autocomplete="current-password"
+
+        >
+
+        <button class="btn primary" id="loginButton" type="button">
+
+          MASUK
+
+        </button>
+
+        <p id="loginMessage" class="muted" aria-live="polite"></p>
+
+      </div>
+
+    </section>
+
+    <!-- TICKER -->
+
+    <section class="ticker">
+
+      <span>LOYALITAS</span>
+
+      <i>✦</i>
+
+      <span>SOLIDARITAS</span>
+
+      <i>✦</i>
+
+      <span>KEBERSAMAAN</span>
+
+      <i>✦</i>
+
+      <span>KAMOJANG ROAD</span>
+
+    </section>
+
+    <!-- TENTANG KAMI -->
 
     <section class="section" id="tentang">
-      <p class="eyebrow orange">TENTANG KAMI</p><h2>LEBIH DARI SEKADAR<br><span>KEBERSAMAAN.</span></h2>
-      <p class="section-copy">Kamojang Road – Korwil Kampung Melayu adalah wadah untuk mempererat persaudaraan, menyampaikan informasi kegiatan, dan membangun solidaritas antaranggota.</p>
+
+      <p class="eyebrow orange">TENTANG KAMI</p>
+
+      <h2>LEBIH DARI SEKADAR<br><span>KEBERSAMAAN.</span></h2>
+
+      <p class="section-copy">
+
+        Kamojang Road – Korwil Kampung Melayu adalah wadah untuk mempererat
+
+        persaudaraan, menyampaikan informasi kegiatan, dan membangun
+
+        solidaritas antaranggota.
+
+      </p>
+
       <div class="feature-grid">
-        <article class="feature"><b>01</b><h3>IDENTITAS</h3><p>Membangun rasa memiliki dan kebanggaan terhadap komunitas.</p></article>
-        <article class="feature"><b>02</b><h3>SOLIDARITAS</h3><p>Menjaga kekompakan, saling menghargai, dan saling mendukung.</p></article>
-        <article class="feature"><b>03</b><h3>INFORMASI</h3><p>Satu tempat untuk mengetahui kabar dan agenda komunitas.</p></article>
+
+        <article class="feature">
+
+          <b>01</b>
+
+          <h3>IDENTITAS</h3>
+
+          <p>Membangun rasa memiliki dan kebanggaan terhadap komunitas.</p>
+
+        </article>
+
+        <article class="feature">
+
+          <b>02</b>
+
+          <h3>SOLIDARITAS</h3>
+
+          <p>Menjaga kekompakan, saling menghargai, dan saling mendukung.</p>
+
+        </article>
+
+        <article class="feature">
+
+          <b>03</b>
+
+          <h3>INFORMASI</h3>
+
+          <p>Satu tempat untuk mengetahui kabar dan agenda komunitas.</p>
+
+        </article>
+
       </div>
+
     </section>
+
+    <!-- INFORMASI ANGGOTA -->
 
     <section class="dark-section section" id="anggota">
-      <p class="eyebrow orange">AREA ANGGOTA</p><h2>INFORMASI <span>ANGGOTA.</span></h2>
-      <p class="section-copy">Informasi keanggotaan dan pengumuman komunitas akan ditampilkan di bagian ini.</p>
-      <div class="notice"><b>INFORMASI</b><p>Fitur akun anggota dan data keanggotaan sedang disiapkan. Untuk menjaga privasi, jangan mengirimkan data identitas pribadi melalui halaman publik ini.</p></div>
+
+      <p class="eyebrow orange">AREA ANGGOTA</p>
+
+      <h2>INFORMASI <span>ANGGOTA.</span></h2>
+
+      <p class="section-copy">
+
+        Informasi keanggotaan dan pengumuman komunitas akan ditampilkan
+
+        di bagian ini.
+
+      </p>
+
+      <div class="notice">
+
+        <b>INFORMASI</b>
+
+        <p>
+
+          Fitur akun anggota dan data keanggotaan sedang disiapkan.
+
+          Untuk menjaga privasi, jangan mengirimkan data identitas pribadi
+
+          melalui halaman publik ini.
+
+        </p>
+
+      </div>
+
     </section>
+
+    <!-- KARTU TANDA ANGGOTA -->
 
     <section class="section split" id="kta">
-      <div><p class="eyebrow orange">KARTU TANDA ANGGOTA</p><h2>REGISTRASI <span>KTA.</span></h2><p class="section-copy">Pendaftaran KTA akan dibuka setelah sistem verifikasi anggota tersedia.</p></div>
-      <div class="panel"><div class="card-preview"><small>KAMOJANG ROAD</small><strong>KARTU TANDA<br>ANGGOTA</strong><span>KORWIL KAMPUNG MELAYU</span><b>KR</b></div><p class="muted">Contoh tampilan kartu. Belum berlaku sebagai kartu anggota resmi.</p></div>
+
+      <div>
+
+        <p class="eyebrow orange">KARTU TANDA ANGGOTA</p>
+
+        <h2>REGISTRASI <span>KTA.</span></h2>
+
+        <p class="section-copy">
+
+          Pendaftaran KTA akan dibuka setelah sistem verifikasi anggota tersedia.
+
+        </p>
+
+      </div>
+
+      <div class="panel">
+
+        <div class="card-preview">
+
+          <small>KAMOJANG ROAD</small>
+
+          <strong>KARTU TANDA<br>ANGGOTA</strong>
+
+          <span>KORWIL KAMPUNG MELAYU</span>
+
+          <b>KR</b>
+
+        </div>
+
+        <p class="muted">
+
+          Contoh tampilan kartu. Belum berlaku sebagai kartu anggota resmi.
+
+        </p>
+
+      </div>
+
     </section>
+
+    <!-- INFORMASI TIKET -->
 
     <section class="dark-section section split" id="tiket">
-      <div><p class="eyebrow orange">PERTANDINGAN</p><h2>INFORMASI <span>TIKET.</span></h2><p class="section-copy">Informasi pemesanan tiket pertandingan dan jadwal kegiatan akan diumumkan melalui kanal resmi komunitas.</p></div>
-      <div class="ticket-box"><div class="ticket-top">KAMOJANG ROAD <span>KR</span></div><h3>TIKET PERTANDINGAN</h3><p>DETAIL PEMESANAN SEGERA HADIR</p><span class="ticket-line"></span><small>JAGA KEBERSAMAAN • JAGA SPORTIVITAS</small></div>
+
+      <div>
+
+        <p class="eyebrow orange">PERTANDINGAN</p>
+
+        <h2>INFORMASI <span>TIKET.</span></h2>
+
+        <p class="section-copy">
+
+          Informasi pemesanan tiket pertandingan dan jadwal kegiatan
+
+          akan diumumkan melalui kanal resmi komunitas.
+
+        </p>
+
+      </div>
+
+      <div class="ticket-box">
+
+        <div class="ticket-top">
+
+          KAMOJANG ROAD <span>KR</span>
+
+        </div>
+
+        <h3>TIKET PERTANDINGAN</h3>
+
+        <p>DETAIL PEMESANAN SEGERA HADIR</p>
+
+        <span class="ticket-line"></span>
+
+        <small>JAGA KEBERSAMAAN • JAGA SPORTIVITAS</small>
+
+      </div>
+
     </section>
 
-    <section class="section contact" id="kontak"><p class="eyebrow orange">TERHUBUNG</p><h2>ADA PERTANYAAN?<br><span>HUBUNGI KAMI.</span></h2><p class="section-copy">Tambahkan tautan WhatsApp atau media sosial resmi komunitas pada bagian ini.</p><a class="btn primary" href="mailto:kamojangroad@example.com">EMAIL KOMUNITAS</a><p class="muted">Ganti alamat email contoh ini dengan alamat resmi sebelum website dipublikasikan.</p></section>
+    <!-- KONTAK -->
+
+    <section class="section contact" id="kontak">
+
+      <p class="eyebrow orange">TERHUBUNG</p>
+
+      <h2>ADA PERTANYAAN?<br><span>HUBUNGI KAMI.</span></h2>
+
+      <p class="section-copy">
+
+        Tambahkan tautan WhatsApp atau media sosial resmi komunitas
+
+        pada bagian ini.
+
+      </p>
+
+      <a class="btn primary" href="mailto:kamojangroad@example.com">
+
+        EMAIL KOMUNITAS
+
+      </a>
+
+      <p class="muted">
+
+        Ganti alamat email contoh ini dengan alamat resmi sebelum website dipublikasikan.
+
+      </p>
+
+    </section>
+
   </main>
-  <footer><a class="brand" href="#beranda"><span class="brand-mark">KR</span><span>KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span></a><p>SATU IDENTITAS, SATU SOLIDARITAS.</p><small>© <span id="year"></span> KAMOJANG ROAD. Informasi komunitas.</small></footer>
+
+  <!-- FOOTER -->
+
+  <footer>
+
+    <a class="brand" href="#beranda">
+
+      <span class="brand-mark">KR</span>
+
+      <span>KAMOJANG <b>ROAD</b>
+
+        <small>KORWIL KAMPUNG MELAYU</small>
+
+      </span>
+
+    </a>
+
+    <p>SATU IDENTITAS, SATU SOLIDARITAS.</p>
+
+    <small>
+
+      © <span id="year"></span> KAMOJANG ROAD. Informasi komunitas.
+
+    </small>
+
+  </footer>
+
+  <!-- LIBRARY SUPABASE -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- PENGATURAN LOGIN SUPABASE -->
+
+  <script>
+
+    const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
+
+    // GANTI DENGAN PUBLISHABLE KEY MILIKMU
+
+    const SUPABASE_KEY = "TEMPEL_PUBLISHABLE_KEY_MILIKMU";
+
+    const supabaseClient = window.supabase.createClient(
+
+      SUPABASE_URL,
+
+      SUPABASE_KEY
+
+    );
+
+    const loginButton = document.getElementById("loginButton");
+
+    loginButton.addEventListener("click", async () => {
+
+      const email = document.getElementById("loginEmail").value.trim();
+
+      const password = document.getElementById("loginPassword").value;
+
+      const message = document.getElementById("loginMessage");
+
+      if (!email || !password) {
+
+        message.textContent = "Masukkan email dan password terlebih dahulu.";
+
+        return;
+
+      }
+
+      loginButton.disabled = true;
+
+      message.textContent = "Sedang masuk...";
+
+      try {
+
+        const { error } = await supabaseClient.auth.signInWithPassword({
+
+          email: email,
+
+          password: password
+
+        });
+
+        if (error) {
+
+          message.textContent = "Login gagal. Periksa email dan password.";
+
+          return;
+
+        }
+
+        message.textContent = "Login berhasil. Selamat datang!";
+
+      } catch (error) {
+
+        message.textContent = "Terjadi kesalahan koneksi. Coba lagi.";
+
+      } finally {
+
+        loginButton.disabled = false;
+
+      }
+
+    });
+
+  </script>
+
+  <!-- SCRIPT MENU DAN TAHUN WEBSITE -->
+
   <script src="script.js"></script>
-  <section class="section" id="login">
 
-  <p class="eyebrow orange">AREA ANGGOTA</p>
-
-  <h2>LOGIN <span>ANGGOTA.</span></h2>
-
-  <div class="panel">
-
-    <input id="loginEmail" type="email"
-
-      placeholder="Alamat email" autocomplete="email">
-
-    <input id="loginPassword" type="password"
-
-      placeholder="Password" autocomplete="current-password">
-
-    <button class="btn primary" id="loginButton">
-
-      MASUK
-
-    </button>
-
-    <p id="loginMessage" class="muted"></p>
-
-  </div>
-
-</section>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-
-const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
-
-const SUPABASE_KEY = "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
-
-const supabaseClient = window.supabase.createClient(
-
-  SUPABASE_URL,
-
-  SUPABASE_KEY
-
-);
-
-document.getElementById("loginButton").onclick = async () => {
-
-  const email = document.getElementById("loginEmail").value.trim();
-
-  const password = document.getElementById("loginPassword").value;
-
-  const message = document.getElementById("loginMessage");
-
-  message.textContent = "Sedang masuk...";
-
-  const { data, error } = await supabaseClient.auth
-
-    .signInWithPassword({ email, password });
-
-  if (error) {
-
-    message.textContent = "Login gagal. Periksa email dan password.";
-
-    return;
-
-  }
-
-  message.textContent = "Login berhasil. Selamat datang!";
-
-};
-
-</script>
 </body>
+
 </html>
