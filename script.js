@@ -13,7 +13,7 @@ document.getElementById("year").textContent = new Date().getFullYear();
 
 // KONFIGURASI SUPABASE
 const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
-const SUPABASE_KEY = "KEY_DISENSOR";
+const SUPABASE_KEY = "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
