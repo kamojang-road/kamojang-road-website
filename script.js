@@ -18,7 +18,7 @@ const SUPABASE_URL =
   "https://nvgpprjwzwqakgjtaukn.supabase.co";
 
 // PERTAHANKAN PUBLISHABLE KEY MILIKMU DI BARIS INI
-const SUPABASE_KEY = "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmRR";
+const SUPABASE_KEY = "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
