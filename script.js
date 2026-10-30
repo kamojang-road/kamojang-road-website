@@ -1,9 +1,4 @@
 
-// ==========================================
-// KAMOJANG ROAD - WEBSITE SCRIPT
-// ==========================================
-
-// MENU MOBILE
 const menuToggle = document.getElementById("menuToggle");
 const nav = document.getElementById("nav");
 
@@ -12,36 +7,25 @@ menuToggle.addEventListener("click", () => {
 });
 
 nav.querySelectorAll("a").forEach(link => {
-  link.addEventListener("click", () => {
-    nav.classList.remove("open");
-  });
+  link.addEventListener("click", () => nav.classList.remove("open"));
 });
 
-// TAHUN FOOTER
 document.getElementById("year").textContent =
   new Date().getFullYear();
 
-
-// ==========================================
-// KONFIGURASI SUPABASE
-// ==========================================
-
+// SUPABASE
 const SUPABASE_URL =
   "https://nvgpprjwzwqakgjtaukn.supabase.co";
 
-// GANTI KEY_SENSOR DENGAN PUBLISHABLE KEY MILIKMU
-const SUPABASE_KEY = "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
+// PERTAHANKAN PUBLISHABLE KEY MILIKMU DI BARIS INI
+const SUPABASE_KEY = "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmRR";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
 
-
-// ==========================================
 // ELEMEN WEBSITE
-// ==========================================
-
 const loginButton = document.getElementById("loginButton");
 const loginMessage = document.getElementById("loginMessage");
 const dashboard = document.getElementById("memberDashboard");
@@ -51,86 +35,59 @@ const memberName = document.getElementById("memberName");
 const memberId = document.getElementById("memberId");
 const logoutButton = document.getElementById("logoutButton");
 
-
-// ==========================================
-// TAMPILKAN PROFIL ANGGOTA
-// ==========================================
-
+// MEMUAT PROFIL
 async function loadMemberProfile(user) {
   dashboard.hidden = false;
   dashboardNotice.hidden = true;
 
   memberName.textContent = "Memuat nama...";
   memberId.textContent = "Memuat ID...";
-  dashboardMessage.textContent = "Sedang mengambil data profil...";
+  dashboardMessage.textContent = "Mengambil data profil...";
 
-  try {
-    const { data, error } = await supabaseClient
-      .from("member_profiles")
-      .select("full_name, membership_id")
-      .eq("id", user.id)
-      .maybeSingle();
+  const { data, error } = await supabaseClient
+    .from("member_profiles")
+    .select("full_name, membership_id")
+    .eq("id", user.id)
+    .maybeSingle();
 
-    if (error) {
-      dashboardMessage.textContent =
-        "Gagal mengambil profil: " + error.message;
-      return;
-    }
-
-    if (!data) {
-      memberName.textContent = "Profil belum tersedia";
-      memberId.textContent = "Belum memiliki ID KTA";
-      dashboardMessage.textContent =
-        "Data profil akun ini belum ditemukan di database.";
-      return;
-    }
-
-    memberName.textContent =
-      data.full_name || "Nama belum tersedia";
-
-    memberId.textContent =
-      data.membership_id || "ID KTA belum diterbitkan";
-
+  if (error) {
     dashboardMessage.textContent =
-      "Profil anggota berhasil dimuat.";
-
-  } catch (error) {
-    dashboardMessage.textContent =
-      "Terjadi kesalahan saat mengambil profil.";
+      "Kesalahan profil: " + error.message;
+    return;
   }
+
+  if (!data) {
+    memberName.textContent = "Profil belum ditemukan";
+    memberId.textContent = "ID KTA belum tersedia";
+    dashboardMessage.textContent =
+      "Data profil akun ini tidak ditemukan.";
+    return;
+  }
+
+  memberName.textContent =
+    data.full_name || "Nama belum tersedia";
+
+  memberId.textContent =
+    data.membership_id || "ID KTA belum diterbitkan";
+
+  dashboardMessage.textContent =
+    "Profil berhasil dimuat.";
 }
 
-
-// ==========================================
-// KONDISI SAAT BELUM LOGIN
-// ==========================================
-
+// SAAT LOGOUT
 function showLoggedOut() {
   dashboard.hidden = true;
   dashboardNotice.hidden = false;
-
-  memberName.textContent = "Memuat nama...";
-  memberId.textContent = "Memuat ID...";
-  dashboardMessage.textContent = "";
 }
 
-
-// ==========================================
-// LOGIN ANGGOTA
-// ==========================================
-
+// LOGIN
 loginButton.addEventListener("click", async () => {
-  const email = document
-    .getElementById("loginEmail")
-    .value.trim();
-
-  const password = document
-    .getElementById("loginPassword")
-    .value;
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
 
   if (!email || !password) {
     loginMessage.textContent =
-      "Masukkan email dan password terlebih dahulu.";
+      "Masukkan email dan password.";
     return;
   }
 
@@ -146,7 +103,8 @@ loginButton.addEventListener("click", async () => {
 
     if (error) {
       loginMessage.textContent =
-        "Login gagal. Periksa email dan password.";
+        "Supabase: " + error.message +
+        (error.code ? " (Kode: " + error.code + ")" : "");
       return;
     }
 
@@ -160,18 +118,14 @@ loginButton.addEventListener("click", async () => {
 
   } catch (error) {
     loginMessage.textContent =
-      "Terjadi kesalahan koneksi. Silakan coba lagi.";
+      "Kesalahan aplikasi: " + error.message;
 
   } finally {
     loginButton.disabled = false;
   }
 });
 
-
-// ==========================================
-// LOGOUT ANGGOTA
-// ==========================================
-
+// LOGOUT
 logoutButton.addEventListener("click", async () => {
   logoutButton.disabled = true;
 
@@ -180,32 +134,23 @@ logoutButton.addEventListener("click", async () => {
 
     if (error) {
       dashboardMessage.textContent =
-        "Logout gagal. Silakan coba lagi.";
+        "Logout gagal: " + error.message;
       return;
     }
 
     showLoggedOut();
-
     loginMessage.textContent = "Kamu sudah logout.";
 
     document.getElementById("login").scrollIntoView({
       behavior: "smooth"
     });
 
-  } catch (error) {
-    dashboardMessage.textContent =
-      "Terjadi kesalahan saat logout.";
-
   } finally {
     logoutButton.disabled = false;
   }
 });
 
-
-// ==========================================
-// PERIKSA SESI LOGIN SAAT HALAMAN DIBUKA
-// ==========================================
-
+// PERIKSA SESI
 async function checkExistingSession() {
   try {
     const { data, error } =
