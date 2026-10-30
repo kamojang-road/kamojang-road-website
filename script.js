@@ -17,15 +17,16 @@ document.getElementById("year").textContent =
 const SUPABASE_URL =
   "https://nvgpprjwzwqakgjtaukn.supabase.co";
 
-// PERTAHANKAN PUBLISHABLE KEY MILIKMU DI BARIS INI
-const SUPABASE_KEY = "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
+// Publishable Key milik proyek
+const SUPABASE_KEY =
+  "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
 
-// ELEMEN WEBSITE
+// ELEMEN LOGIN DAN DASHBOARD
 const loginButton = document.getElementById("loginButton");
 const loginMessage = document.getElementById("loginMessage");
 const dashboard = document.getElementById("memberDashboard");
@@ -35,14 +36,77 @@ const memberName = document.getElementById("memberName");
 const memberId = document.getElementById("memberId");
 const logoutButton = document.getElementById("logoutButton");
 
-// MEMUAT PROFIL
-async function loadMemberProfile(user) {
-  dashboard.hidden = false;
-  dashboardNotice.hidden = true;
+// ELEMEN PENDAFTARAN KTA
+const registrationForm =
+  document.getElementById("ktaRegistrationForm");
 
-  memberName.textContent = "Memuat nama...";
-  memberId.textContent = "Memuat ID...";
-  dashboardMessage.textContent = "Mengambil data profil...";
+const registerButton =
+  document.getElementById("registerButton");
+
+const registerMessage =
+  document.getElementById("registerMessage");
+
+// PENDAFTARAN KTA
+registrationForm.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const fullName =
+    document.getElementById("registerName").value.trim();
+
+  const email =
+    document.getElementById("registerEmail").value.trim().toLowerCase();
+
+  if (fullName.length < 2 || !email) {
+    registerMessage.textContent =
+      "Periksa kembali nama dan email.";
+    return;
+  }
+
+  registerButton.disabled = true;
+  registerMessage.textContent = "Mengirim pendaftaran...";
+
+  try {
+    const { error } = await supabaseClient
+      .from("kta_requests")
+      .insert({
+        user_id: null,
+        full_name: fullName,
+        email: email,
+        status: "pending"
+      });
+
+    if (error) {
+      registerMessage.textContent =
+        "Pendaftaran gagal: " + error.message;
+      return;
+    }
+
+    registrationForm.reset();
+
+    registerMessage.textContent =
+      "Pendaftaran berhasil dikirim. Silakan menunggu pemeriksaan Admin/Ketua.";
+
+  } catch (error) {
+    registerMessage.textContent =
+      "Terjadi kesalahan: " + error.message;
+
+  } finally {
+    registerButton.disabled = false;
+  }
+});
+
+// TAMPILAN SAAT BELUM LOGIN
+function showLoggedOut() {
+  dashboard.hidden = true;
+  dashboardNotice.hidden = false;
+}
+
+// MEMUAT PROFIL DAN MEMERIKSA ID KTA
+async function loadMemberProfile(user) {
+  dashboard.hidden = true;
+  dashboardNotice.hidden = false;
+
+  dashboardMessage.textContent = "Memeriksa data anggota...";
 
   const { data, error } = await supabaseClient
     .from("member_profiles")
@@ -53,37 +117,42 @@ async function loadMemberProfile(user) {
   if (error) {
     dashboardMessage.textContent =
       "Kesalahan profil: " + error.message;
-    return;
+    return false;
   }
 
-  if (!data) {
-    memberName.textContent = "Profil belum ditemukan";
-    memberId.textContent = "ID KTA belum tersedia";
+  if (!data || !data.membership_id) {
     dashboardMessage.textContent =
-      "Data profil akun ini tidak ditemukan.";
-    return;
+      "Akun belum memiliki ID KTA. Hubungi Admin/Ketua.";
+
+    await supabaseClient.auth.signOut();
+
+    loginMessage.textContent =
+      "Akses belum aktif. ID KTA harus diterbitkan terlebih dahulu.";
+
+    return false;
   }
 
   memberName.textContent =
     data.full_name || "Nama belum tersedia";
 
-  memberId.textContent =
-    data.membership_id || "ID KTA belum diterbitkan";
+  memberId.textContent = data.membership_id;
 
   dashboardMessage.textContent =
-    "Profil berhasil dimuat.";
-}
+    "Profil anggota berhasil dimuat.";
 
-// SAAT LOGOUT
-function showLoggedOut() {
-  dashboard.hidden = true;
-  dashboardNotice.hidden = false;
+  dashboard.hidden = false;
+  dashboardNotice.hidden = true;
+
+  return true;
 }
 
 // LOGIN
 loginButton.addEventListener("click", async () => {
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
+  const email =
+    document.getElementById("loginEmail").value.trim();
+
+  const password =
+    document.getElementById("loginPassword").value;
 
   if (!email || !password) {
     loginMessage.textContent =
@@ -103,18 +172,19 @@ loginButton.addEventListener("click", async () => {
 
     if (error) {
       loginMessage.textContent =
-        "Supabase: " + error.message +
-        (error.code ? " (Kode: " + error.code + ")" : "");
+        "Login gagal: " + error.message;
       return;
     }
 
-    loginMessage.textContent = "Login berhasil.";
+    const allowed = await loadMemberProfile(data.user);
 
-    await loadMemberProfile(data.user);
+    if (allowed) {
+      loginMessage.textContent = "Login berhasil.";
 
-    document.getElementById("anggota").scrollIntoView({
-      behavior: "smooth"
-    });
+      document.getElementById("anggota").scrollIntoView({
+        behavior: "smooth"
+      });
+    }
 
   } catch (error) {
     loginMessage.textContent =
@@ -150,22 +220,18 @@ logoutButton.addEventListener("click", async () => {
   }
 });
 
-// PERIKSA SESI
+// PERIKSA SESI SAAT WEBSITE DIBUKA
 async function checkExistingSession() {
   try {
     const { data, error } =
       await supabaseClient.auth.getSession();
 
-    if (error) {
+    if (error || !data.session) {
       showLoggedOut();
       return;
     }
 
-    if (data.session) {
-      await loadMemberProfile(data.session.user);
-    } else {
-      showLoggedOut();
-    }
+    await loadMemberProfile(data.session.user);
 
   } catch (error) {
     showLoggedOut();
