@@ -1,317 +1,213 @@
 <!doctype html>
-
 <html lang="id">
-
 <head>
-
   <meta charset="utf-8">
-
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <meta name="theme-color" content="#111315">
-
+  <meta name="theme-color" content="#101214">
   <title>KAMOJANG ROAD | Korwil Kampung Melayu</title>
-
   <meta name="description" content="Website resmi Kamojang Road Korwil Kampung Melayu.">
-
-  <link rel="stylesheet" href="style.css?v=2">
-
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
-
 <body>
 
   <header class="topbar">
-
     <a class="brand" href="#beranda">
-
       <span class="brand-mark">KR</span>
-
-      <span>KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span>
-
+      <span class="brand-name">
+        KAMOJANG <b>ROAD</b>
+        <small>KORWIL KAMPUNG MELAYU</small>
+      </span>
     </a>
 
     <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">☰</button>
 
     <nav id="nav">
-
       <a href="#beranda">Beranda</a>
-
       <a href="#login">Login</a>
-
       <a href="#tiket">Tiket</a>
-
       <a href="#anggota">Anggota</a>
-
       <a href="#kta">KTA</a>
-
       <a href="#kontak">Kontak</a>
-
     </nav>
-
   </header>
 
   <main>
-
     <section class="hero" id="beranda">
-
       <div class="hero-content">
-
-        <p class="eyebrow">KORWIL KAMPUNG MELAYU</p>
-
+        <div class="hero-label"><span></span> KORWIL KAMPUNG MELAYU</div>
         <h1>SATU IDENTITAS,<br><span>SATU SOLIDARITAS.</span></h1>
-
-        <p class="lead">Wadah informasi, kebersamaan, dan kegiatan keluarga besar Kamojang Road.</p>
-
+        <p class="lead">
+          Wadah informasi, kebersamaan, dan kegiatan keluarga besar Kamojang Road.
+        </p>
         <div class="actions">
-
-          <a class="btn primary" href="#login">LOGIN ANGGOTA</a>
-
-          <a class="btn outline" href="#kta">PENDAFTARAN KTA</a>
-
+          <a class="btn primary" href="#login">LOGIN ANGGOTA <span>↗</span></a>
+          <a class="btn outline" href="#kta">DAFTAR KTA</a>
         </div>
-
       </div>
 
+      <div class="hero-watermark">KR</div>
       <div class="hero-stamp">
-
-        <span>KR</span>
-
+        <strong>KR</strong>
         <small>EST. KAMOJANG ROAD</small>
-
       </div>
-
-    </section>
-
-    <section class="section" id="login">
-
-      <p class="eyebrow orange">AREA ANGGOTA</p>
-
-      <h2>LOGIN <span>ANGGOTA.</span></h2>
-
-      <div class="panel login-panel" id="loginPanel">
-
-        <input id="loginEmail" type="email" placeholder="Alamat email" autocomplete="email">
-
-        <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password">
-
-        <button class="btn primary" id="loginButton" type="button">MASUK</button>
-
-        <p id="loginMessage" class="muted" aria-live="polite"></p>
-
-      </div>
-
+      <div class="hero-bottom">LOYALITAS • SOLIDARITAS • KEBERSAMAAN</div>
     </section>
 
     <section class="ticker">
-
       <span>LOYALITAS</span><i>✦</i>
-
       <span>SOLIDARITAS</span><i>✦</i>
-
       <span>KEBERSAMAAN</span><i>✦</i>
-
       <span>KAMOJANG ROAD</span>
+    </section>
 
+    <section class="section" id="login">
+      <div class="section-heading">
+        <p class="eyebrow orange">01 / AREA ANGGOTA</p>
+        <h2>LOGIN <span>ANGGOTA.</span></h2>
+        <p class="section-copy">Masuk menggunakan akun website yang telah diaktifkan oleh pengurus.</p>
+      </div>
+
+      <div class="login-card" id="loginPanel">
+        <div class="card-heading">
+          <span class="card-icon">KR</span>
+          <div>
+            <h3>MEMBER ACCESS</h3>
+            <p>AREA KHUSUS ANGGOTA</p>
+          </div>
+        </div>
+
+        <label for="loginEmail">ALAMAT EMAIL</label>
+        <input id="loginEmail" type="email" placeholder="Masukkan email" autocomplete="email">
+
+        <label for="loginPassword">PASSWORD</label>
+        <input id="loginPassword" type="password" placeholder="Masukkan password" autocomplete="current-password">
+
+        <button class="btn primary full-btn" id="loginButton" type="button">MASUK KE AKUN <span>→</span></button>
+        <p id="loginMessage" class="message" aria-live="polite"></p>
+        <p class="login-note">Belum memiliki akun? Selesaikan pendaftaran KTA terlebih dahulu.</p>
+      </div>
     </section>
 
     <section class="dark-section section" id="anggota">
-
-      <p class="eyebrow orange">AREA ANGGOTA</p>
-
-      <h2>DASHBOARD <span>ANGGOTA.</span></h2>
-
-      <p class="section-copy">Dashboard hanya dapat dilihat oleh anggota yang sudah memiliki ID KTA dan akun aktif.</p>
+      <div class="section-heading">
+        <p class="eyebrow orange">02 / MEMBER AREA</p>
+        <h2>DASHBOARD <span>ANGGOTA.</span></h2>
+        <p class="section-copy">Dashboard hanya dapat diakses anggota yang sudah memiliki ID KTA dan akun aktif.</p>
+      </div>
 
       <div class="dashboard" id="memberDashboard" hidden>
-
         <div class="dashboard-profile">
-
           <p class="eyebrow orange">PROFIL ANGGOTA</p>
-
           <h3 id="memberName">Memuat nama...</h3>
-
           <p class="muted">ID KTA</p>
-
           <strong class="member-id" id="memberId">Memuat ID...</strong>
-
         </div>
 
         <div class="dashboard-ticket">
-
           <p class="eyebrow orange">TIKET PERTANDINGAN</p>
-
           <h3>PESAN TIKET</h3>
-
-          <p class="section-copy">Fitur pemesanan tiket akan tersedia setelah pengaturan pertandingan dan keamanan sistem selesai.</p>
-
+          <p>Fitur pemesanan tiket akan tersedia setelah pengaturan pertandingan dan keamanan sistem selesai.</p>
           <button class="btn primary" type="button" disabled>SEGERA HADIR</button>
-
         </div>
 
-        <button class="btn logout-button" id="logoutButton" type="button">LOGOUT</button>
-
-        <p id="dashboardMessage" class="muted" aria-live="polite"></p>
-
+        <button class="btn logout-button" id="logoutButton" type="button">KELUAR DARI AKUN</button>
+        <p id="dashboardMessage" class="message" aria-live="polite"></p>
       </div>
 
       <div class="notice" id="dashboardNotice">
-
-        <b>DASHBOARD TERKUNCI</b>
-
+        <b>🔒 DASHBOARD TERKUNCI</b>
         <p>Silakan login menggunakan akun yang sudah diaktifkan Admin/Ketua dan memiliki ID KTA.</p>
-
       </div>
-
     </section>
 
     <section class="dark-section section split" id="tiket">
-
       <div>
-
-        <p class="eyebrow orange">PERTANDINGAN</p>
-
+        <p class="eyebrow orange">03 / PERTANDINGAN</p>
         <h2>INFORMASI <span>TIKET.</span></h2>
-
-        <p class="section-copy">Informasi tiket pertandingan Persija Jakarta akan diumumkan melalui kanal resmi Kamojang Road.</p>
-
+        <p class="section-copy">
+          Informasi tiket pertandingan Persija Jakarta akan diumumkan melalui kanal resmi Kamojang Road.
+        </p>
       </div>
 
       <div class="ticket-box">
-
         <div class="ticket-top">KAMOJANG ROAD <span>KR</span></div>
-
-        <h3>TIKET PERTANDINGAN</h3>
-
+        <h3>TIKET<br>PERTANDINGAN.</h3>
         <p>DETAIL PEMESANAN SEGERA HADIR</p>
-
         <span class="ticket-line"></span>
-
         <small>JAGA KEBERSAMAAN • JAGA SPORTIVITAS</small>
-
       </div>
-
     </section>
 
-    <section class="section split" id="kta">
-
+    <section class="section split kta-section" id="kta">
       <div>
-
-        <p class="eyebrow orange">KARTU TANDA ANGGOTA</p>
-
-        <h2>PENDAFTARAN <span>KTA.</span></h2>
-
+        <p class="eyebrow orange">04 / KARTU TANDA ANGGOTA</p>
+        <h2>GABUNG <span>BERSAMA.</span></h2>
         <p class="section-copy">
-
           Daftarkan diri untuk menjadi anggota Kamojang Road.
-
           Setelah pengajuan diperiksa dan KTA fisik diterbitkan,
-
           Admin/Ketua akan menyiapkan akun website.
-
         </p>
 
+        <div class="kta-points">
+          <div><span>01</span> Isi formulir pendaftaran</div>
+          <div><span>02</span> Hubungi pengurus melalui WhatsApp</div>
+          <div><span>03</span> Tunggu pemeriksaan dan penerbitan KTA</div>
+          <div><span>04</span> Akun website diaktifkan pengurus</div>
+        </div>
       </div>
 
-      <div class="panel">
-
-        <h3>FORMULIR PENDAFTARAN</h3>
-
-        <form id="ktaRegistrationForm">
-
-          <input
-
-            id="registerName"
-
-            type="text"
-
-            placeholder="Nama lengkap"
-
-            autocomplete="name"
-
-            minlength="2"
-
-            required
-
-          >
-
-          <input
-
-            id="registerEmail"
-
-            type="email"
-
-            placeholder="Alamat email aktif"
-
-            autocomplete="email"
-
-            required
-
-          >
-
-          <button class="btn primary" id="registerButton" type="submit">
-
-            KIRIM PENDAFTARAN
-
-          </button>
-
-        </form>
-
-        <p id="registerMessage" class="muted" aria-live="polite"></p>
-
-        <div class="card-preview">
-
-          <small>KAMOJANG ROAD</small>
-
-          <strong>KARTU TANDA<br>ANGGOTA</strong>
-
-          <span>KORWIL KAMPUNG MELAYU</span>
-
-          <b>KR</b>
-
+      <div class="registration-card">
+        <div class="registration-heading">
+          <p class="eyebrow orange">REGISTRASI ANGGOTA</p>
+          <h3>FORMULIR <span>KTA.</span></h3>
+          <p>Lengkapi data awal berikut.</p>
         </div>
 
+        <form id="ktaRegistrationForm">
+          <label for="registerName">NAMA LENGKAP</label>
+          <input id="registerName" type="text" placeholder="Masukkan nama lengkap" autocomplete="name" minlength="2" required>
+
+          <label for="registerEmail">ALAMAT EMAIL AKTIF</label>
+          <input id="registerEmail" type="email" placeholder="nama@email.com" autocomplete="email" required>
+
+          <button class="btn primary full-btn" id="registerButton" type="submit">
+            LANJUTKAN VIA WHATSAPP <span>↗</span>
+          </button>
+        </form>
+
+        <p id="registerMessage" class="message" aria-live="polite"></p>
+        <p class="form-note">Data awal akan disimpan untuk pengajuan. Dokumen tambahan dibicarakan langsung dengan pengurus melalui WhatsApp.</p>
+
+        <div class="card-preview">
+          <div class="preview-top"><span>KAMOJANG ROAD</span><b>KR</b></div>
+          <div>
+            <small>MEMBERSHIP CARD</small>
+            <strong>KARTU TANDA<br>ANGGOTA</strong>
+          </div>
+          <span class="preview-bottom">KORWIL KAMPUNG MELAYU</span>
+        </div>
         <p class="muted">ID KTA diberikan setelah kartu fisik diterbitkan.</p>
-
       </div>
-
     </section>
 
     <section class="section contact" id="kontak">
-
-      <p class="eyebrow orange">TERHUBUNG</p>
-
+      <p class="eyebrow orange">05 / TERHUBUNG</p>
       <h2>ADA PERTANYAAN?<br><span>HUBUNGI KAMI.</span></h2>
-
-      <p class="section-copy">Hubungi pengurus Kamojang Road Korwil Kampung Melayu melalui kontak resmi komunitas.</p>
-
-      <a class="btn primary" href="mailto:kamojangroad@example.com">EMAIL KOMUNITAS</a>
-
-      <p class="muted">Alamat email contoh. Ganti dengan alamat resmi komunitas sebelum digunakan.</p>
-
+      <p class="section-copy">Hubungi pengurus Kamojang Road Korwil Kampung Melayu melalui kontak komunitas.</p>
+      <a class="btn primary" href="https://wa.me/6285283234473" target="_blank" rel="noopener">WHATSAPP PENGURUS ↗</a>
     </section>
-
   </main>
 
   <footer>
-
     <a class="brand" href="#beranda">
-
       <span class="brand-mark">KR</span>
-
-      <span>KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span>
-
+      <span class="brand-name">KAMOJANG <b>ROAD</b><small>KORWIL KAMPUNG MELAYU</small></span>
     </a>
-
     <p>SATU IDENTITAS, SATU SOLIDARITAS.</p>
-
     <small>© <span id="year"></span> KAMOJANG ROAD. Informasi komunitas.</small>
-
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <script src="script.js?v=4"></script>
-
+  <script src="script.js?v=5"></script>
 </body>
-
 </html>
