@@ -1,829 +1,182 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --black: #101214;
-  --black-2: #171a1d;
-  --panel: #1d2226;
-  --orange: #f47721;
-  --white: #f5f5f2;
-  --muted: #a6adb1;
-  --line: rgba(255,255,255,.12);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 90px;
-}
-
-body {
-  margin: 0;
-  background: var(--white);
-  color: var(--black);
-  font-family: Montserrat, Arial, sans-serif;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button,
-input {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-.topbar {
-  min-height: 78px;
-  padding: 12px 7%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 25px;
-  background: rgba(16,18,20,.97);
-  color: white;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(12px);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: 1px;
-}
-
-.brand-mark {
-  width: 43px;
-  height: 43px;
-  display: grid;
-  place-items: center;
-  background: var(--orange);
-  color: #111;
-  font: 900 25px 'Barlow Condensed', sans-serif;
-  transform: skew(-7deg);
-}
-
-.brand-name small {
-  display: block;
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 8px;
-  letter-spacing: 2px;
-}
-
-nav {
-  display: flex;
-  align-items: center;
-  gap: 26px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-}
-
-nav a {
-  transition: color .2s ease;
-}
-
-nav a:hover {
-  color: var(--orange);
-}
-
-.menu-toggle {
-  display: none;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  color: white;
-  padding: 7px 12px;
-  font-size: 23px;
-}
-
-.hero {
-  min-height: 650px;
-  padding: 110px 9% 90px;
-  background:
-    radial-gradient(ellipse at 80% 45%, rgba(244,119,33,.13), transparent 38%),
-    linear-gradient(110deg, #0d0f10, #171b1e 65%, #101214);
-  color: white;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-}
-
-.hero-content {
-  max-width: 790px;
-  position: relative;
-  z-index: 2;
-}
-
-.hero-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #c1c5c7;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 3px;
-}
-
-.hero-label span {
-  width: 27px;
-  height: 3px;
-  background: var(--orange);
-}
-
-h1,
-h2,
-h3 {
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  line-height: .95;
-  font-weight: 900;
-}
-
-h1 {
-  margin: 25px 0;
-  font-size: clamp(58px, 9vw, 112px);
-  letter-spacing: -1px;
-}
-
-h1 span,
-h2 span,
-.registration-heading h3 span {
-  color: var(--orange);
-}
-
-.lead {
-  max-width: 520px;
-  color: #c1c6c8;
-  font-size: 14px;
-  line-height: 1.9;
-}
-
-.actions {
-  display: flex;
-  gap: 13px;
-  flex-wrap: wrap;
-  margin-top: 35px;
-}
-
-.btn {
-  min-height: 47px;
-  padding: 14px 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  border: 1px solid transparent;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 1.1px;
-  transition: .25s ease;
-}
-
-.btn span {
-  font-size: 16px;
-}
-
-.primary {
-  background: var(--orange);
-  color: #111;
-}
-
-.primary:hover {
-  background: #ff9147;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(244,119,33,.2);
-}
-
-.outline {
-  color: white;
-  border-color: rgba(255,255,255,.35);
-}
-
-.outline:hover {
-  border-color: var(--orange);
-  color: var(--orange);
-}
-
-.hero-watermark {
-  position: absolute;
-  right: 7%;
-  top: 5%;
-  color: rgba(255,255,255,.035);
-  font: 900 clamp(240px, 36vw, 470px) 'Barlow Condensed';
-  transform: skew(-10deg);
-  pointer-events: none;
-}
-
-.hero-stamp {
-  position: absolute;
-  right: 13%;
-  bottom: 18%;
-  width: 142px;
-  height: 142px;
-  border: 2px solid rgba(244,119,33,.65);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--orange);
-  transform: rotate(-12deg);
-  z-index: 2;
-}
-
-.hero-stamp strong {
-  font: 900 65px 'Barlow Condensed';
-}
-
-.hero-stamp small {
-  position: absolute;
-  bottom: 23px;
-  font-size: 7px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
-.hero-bottom {
-  position: absolute;
-  bottom: 25px;
-  left: 9%;
-  color: #777f83;
-  font-size: 9px;
-  letter-spacing: 2px;
-  font-weight: 800;
-}
-
-.ticker {
-  min-height: 57px;
-  padding: 17px 6%;
-  background: var(--orange);
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 15px;
-  flex-wrap: wrap;
-  color: #111;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 2px;
-}
-
-.ticker i {
-  font-style: normal;
-  font-size: 15px;
-}
-
-.section {
-  padding: 100px 9%;
-}
-
-.section-heading {
-  max-width: 700px;
-  margin-bottom: 35px;
-}
-
-.eyebrow {
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 2.5px;
-}
-
-.orange {
-  color: var(--orange);
-}
-
-.section h2,
-.contact h2 {
-  margin: 15px 0;
-  font-size: clamp(48px, 7vw, 78px);
-}
-
-.section-copy {
-  max-width: 630px;
-  color: #687075;
-  font-size: 13px;
-  line-height: 1.9;
-}
-
-.login-card,
-.registration-card {
-  width: 100%;
-  max-width: 590px;
-  padding: 34px;
-  background: white;
-  border: 1px solid #e5e6e2;
-  box-shadow: 0 15px 45px rgba(15,20,22,.07);
-}
-
-.card-heading {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.card-icon {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  background: var(--black);
-  color: var(--orange);
-  font: 900 26px 'Barlow Condensed';
-}
-
-.card-heading h3,
-.registration-heading h3 {
-  margin: 0;
-  font: 900 30px 'Barlow Condensed';
-}
-
-.card-heading p,
-.registration-heading p {
-  margin: 5px 0 0;
-  color: #81898d;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-}
-
-.login-card label,
-.registration-card label {
-  display: block;
-  margin: 18px 0 9px;
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 1.5px;
-}
-
-.login-card input,
-.registration-card input {
-  width: 100%;
-  min-height: 52px;
-  padding: 14px 16px;
-  border: 1px solid #dfe2df;
-  border-radius: 5px;
-  background: #fafaf8;
-  color: #171a1d;
-  outline: none;
-  font-size: 13px;
-  transition: border .2s ease, box-shadow .2s ease;
-}
-
-.login-card input:focus,
-.registration-card input:focus {
-  border-color: var(--orange);
-  box-shadow: 0 0 0 3px rgba(244,119,33,.12);
-}
-
-.full-btn {
-  width: 100%;
-  margin-top: 23px;
-  min-height: 51px;
-}
-
-.message {
-  min-height: 18px;
-  margin: 12px 0 0;
-  color: #62696d;
-  font-size: 11px;
-  line-height: 1.7;
-  overflow-wrap: anywhere;
-}
-
-.login-note,
-.form-note {
-  margin-top: 20px;
-  color: #81898d;
-  font-size: 10px;
-  line-height: 1.8;
-}
-
-.dark-section {
-  background: var(--black);
-  color: white;
-}
-
-.dark-section .section-copy {
-  color: #aab1b5;
-}
-
-.dashboard {
-  max-width: 900px;
-  margin-top: 35px;
-  padding: 24px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  display: grid;
-  gap: 20px;
-}
-
-.dashboard-profile,
-.dashboard-ticket {
-  padding: 28px;
-  background: #111416;
-  border: 1px solid #30373b;
-}
-
-.dashboard-profile h3,
-.dashboard-ticket h3 {
-  margin: 16px 0;
-  color: white;
-  font: 800 34px 'Barlow Condensed';
-}
-
-.dashboard-ticket p:not(.eyebrow) {
-  color: #aab1b5;
-  font-size: 12px;
-  line-height: 1.8;
-}
-
-.member-id {
-  display: inline-block;
-  color: var(--orange);
-  font: 800 34px 'Barlow Condensed';
-  letter-spacing: 2px;
-}
-
-.muted {
-  color: #92999c;
-  font-size: 10px;
-  line-height: 1.8;
-}
-
-.logout-button {
-  justify-self: start;
-  background: transparent;
-  color: white;
-  border-color: var(--orange);
-}
-
-.logout-button:hover {
-  background: var(--orange);
-  color: #111;
-}
-
-.notice {
-  max-width: 750px;
-  margin-top: 28px;
-  padding: 24px;
-  background: #1c2225;
-  border-left: 4px solid var(--orange);
-}
-
-.notice b {
-  color: var(--orange);
-  font-size: 10px;
-  letter-spacing: 1.5px;
-}
-
-.notice p {
-  margin-bottom: 0;
-  color: #c1c6c8;
-  font-size: 11px;
-  line-height: 1.8;
-}
-
-.split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  gap: 55px;
-}
-
-.ticket-box {
-  min-height: 300px;
-  padding: 30px;
-  background:
-    radial-gradient(circle at 90% 90%, rgba(244,119,33,.17), transparent 40%),
-    #1c2023;
-  border: 1px solid rgba(244,119,33,.5);
-  color: white;
-}
-
-.ticket-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--orange);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 2px;
-}
-
-.ticket-top span {
-  font: 900 30px 'Barlow Condensed';
-}
-
-.ticket-box h3 {
-  margin: 50px 0 20px;
-  font-size: 49px;
-}
-
-.ticket-box p,
-.ticket-box small {
-  color: #b8bec1;
-  font-size: 9px;
-  letter-spacing: 1.4px;
-}
-
-.ticket-line {
-  display: block;
-  margin: 30px 0 18px;
-  border-top: 1px dashed #72797d;
-}
-
-.kta-section {
-  background: #f0f0ec;
-}
-
-.kta-points {
-  display: grid;
-  gap: 16px;
-  margin-top: 30px;
-}
-
-.kta-points div {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.kta-points span {
-  color: var(--orange);
-  font: 900 24px 'Barlow Condensed';
-}
-
-.registration-card {
-  max-width: 570px;
-  padding: 32px;
-}
-
-.registration-heading {
-  margin-bottom: 24px;
-}
-
-.registration-heading h3 {
-  margin-top: 10px;
-  font-size: 42px;
-}
-
-.card-preview {
-  min-height: 210px;
-  margin-top: 30px;
-  padding: 23px;
-  background:
-    radial-gradient(circle at 90% 90%, rgba(244,119,33,.2), transparent 40%),
-    linear-gradient(125deg, #252b2e, #0b0d0e);
-  border: 1px solid #555c60;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-}
-
-.card-preview:after {
-  content: "KR";
-  position: absolute;
-  right: 10px;
-  bottom: -50px;
-  color: rgba(244,119,33,.12);
-  font: 900 180px 'Barlow Condensed';
-}
-
-.preview-top {
-  display: flex;
-  justify-content: space-between;
-  color: var(--orange);
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 2px;
-}
-
-.preview-top b {
-  font: 900 30px 'Barlow Condensed';
-}
-
-.card-preview small {
-  color: #9fa6a9;
-  font-size: 8px;
-  letter-spacing: 2px;
-}
-
-.card-preview strong {
-  display: block;
-  margin-top: 10px;
-  font: 900 35px 'Barlow Condensed';
-  line-height: .9;
-}
-
-.preview-bottom {
-  color: #c1c6c8;
-  font-size: 8px;
-  letter-spacing: 2px;
-}
-
-.contact {
-  background: #e8e9e5;
-}
-
-.contact .btn {
-  margin-top: 18px;
-}
-
-footer {
-  padding: 35px 9%;
-  background: #101214;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-footer p {
-  color: var(--orange);
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 2px;
-}
-
-footer > small {
-  width: 100%;
-  color: #737b7f;
-  font-size: 9px;
-}
-
-button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-@media (max-width: 900px) {
-  .topbar {
-    padding-left: 5%;
-    padding-right: 5%;
-  }
-
-  nav {
-    gap: 15px;
-  }
-
-  .section {
-    padding: 80px 7%;
-  }
-
-  .hero-stamp {
-    right: 7%;
-  }
-
-  .split {
-    gap: 30px;
-  }
-}
-
-@media (max-width: 700px) {
-  .topbar {
-    min-height: 68px;
-    padding: 10px 5%;
-  }
-
-  .menu-toggle {
-    display: block;
-  }
-
-  nav {
-    display: none;
-    position: absolute;
-    top: 68px;
-    left: 0;
-    right: 0;
-    padding: 22px 7%;
-    background: #101214;
-    border-top: 1px solid #303437;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 22px;
-  }
-
-  nav.open {
-    display: flex;
-  }
-
-  .hero {
-    min-height: 600px;
-    padding: 85px 7% 110px;
-  }
-
-  h1 {
-    font-size: clamp(53px, 12vw, 76px);
-  }
-
-  .hero-stamp {
-    right: -30px;
-    bottom: 8%;
-    width: 110px;
-    height: 110px;
-    opacity: .45;
-  }
-
-  .hero-stamp strong {
-    font-size: 48px;
-  }
-
-  .hero-watermark {
-    right: -15%;
-    top: 15%;
-  }
-
-  .hero-bottom {
-    left: 7%;
-    font-size: 7px;
-    letter-spacing: 1px;
-  }
-
-  .ticker {
-    gap: 10px;
-    font-size: 8px;
-    letter-spacing: 1px;
-  }
-
-  .ticker i {
-    font-size: 11px;
-  }
-
-  .section {
-    padding: 70px 7%;
-  }
-
-  .section h2,
-  .contact h2 {
-    font-size: clamp(45px, 11vw, 65px);
-  }
-
-  .split {
-    grid-template-columns: 1fr;
-  }
-
-  .login-card,
-  .registration-card {
-    padding: 23px;
-  }
-
-  .dashboard {
-    padding: 13px;
-  }
-
-  .dashboard-profile,
-  .dashboard-ticket {
-    padding: 20px;
-  }
-
-  .ticket-box {
-    min-height: 270px;
-  }
-
-  footer {
-    padding: 30px 7%;
-  }
-
-  footer p {
-    line-height: 1.8;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    transition-duration: .01ms !important;
-  }
+  --black:#101214;
+  --black-2:#171a1d;
+  --panel:#1d2226;
+  --orange:#f47721;
+  --white:#f5f5f2;
+  --muted:#a6adb1;
+  --line:rgba(255,255,255,.12);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;background:var(--white);color:var(--black);font-family:Montserrat,Arial,sans-serif}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+
+.topbar{
+  min-height:78px;padding:12px 7%;display:flex;align-items:center;
+  justify-content:space-between;gap:25px;background:rgba(16,18,20,.97);
+  color:white;position:sticky;top:0;z-index:100;
+  border-bottom:1px solid var(--line);backdrop-filter:blur(12px)
+}
+
+.brand{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:900;letter-spacing:1px}
+.brand-mark{width:43px;height:43px;display:grid;place-items:center;background:var(--orange);color:#111;font:900 25px 'Barlow Condensed';transform:skew(-7deg)}
+.brand-name small{display:block;margin-top:4px;color:var(--muted);font-size:8px;letter-spacing:2px}
+nav{display:flex;align-items:center;gap:26px;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
+nav a:hover{color:var(--orange)}
+.menu-toggle{display:none;background:transparent;border:1px solid var(--line);border-radius:7px;color:white;padding:7px 12px;font-size:23px}
+
+.hero{
+  min-height:650px;padding:110px 9% 90px;
+  background:radial-gradient(ellipse at 80% 45%,rgba(244,119,33,.13),transparent 38%),linear-gradient(110deg,#0d0f10,#171b1e 65%,#101214);
+  color:white;position:relative;overflow:hidden;display:flex;align-items:center
+}
+.hero-content{max-width:790px;position:relative;z-index:2}
+.hero-label{display:flex;align-items:center;gap:10px;color:#c1c5c7;font-size:10px;font-weight:800;letter-spacing:3px}
+.hero-label span{width:27px;height:3px;background:var(--orange)}
+h1,h2,h3{font-family:'Barlow Condensed',Impact,sans-serif;line-height:.95;font-weight:900}
+h1{margin:25px 0;font-size:clamp(58px,9vw,112px);letter-spacing:-1px}
+h1 span,h2 span,.registration-heading h3 span{color:var(--orange)}
+.lead{max-width:520px;color:#c1c6c8;font-size:14px;line-height:1.9}
+.actions{display:flex;gap:13px;flex-wrap:wrap;margin-top:35px}
+.btn{min-height:47px;padding:14px 22px;display:inline-flex;align-items:center;justify-content:center;gap:15px;border:1px solid transparent;font-size:10px;font-weight:900;letter-spacing:1.1px;transition:.25s ease}
+.primary{background:var(--orange);color:#111}
+.primary:hover{background:#ff9147;transform:translateY(-2px);box-shadow:0 8px 24px rgba(244,119,33,.2)}
+.outline{color:white;border-color:rgba(255,255,255,.35)}
+.outline:hover{border-color:var(--orange);color:var(--orange)}
+.hero-watermark{position:absolute;right:7%;top:5%;color:rgba(255,255,255,.035);font:900 clamp(240px,36vw,470px) 'Barlow Condensed';transform:skew(-10deg);pointer-events:none}
+.hero-stamp{position:absolute;right:13%;bottom:18%;width:142px;height:142px;border:2px solid rgba(244,119,33,.65);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--orange);transform:rotate(-12deg);z-index:2}
+.hero-stamp strong{font:900 65px 'Barlow Condensed'}
+.hero-stamp small{position:absolute;bottom:23px;font-size:7px;font-weight:800;letter-spacing:1px}
+.hero-bottom{position:absolute;bottom:25px;left:9%;color:#777f83;font-size:9px;letter-spacing:2px;font-weight:800}
+
+.ticker{min-height:57px;padding:17px 6%;background:var(--orange);display:flex;align-items:center;justify-content:space-around;gap:15px;flex-wrap:wrap;color:#111;font-size:10px;font-weight:900;letter-spacing:2px}
+.ticker i{font-style:normal;font-size:15px}
+.section{padding:100px 9%}
+.section-heading{max-width:700px;margin-bottom:35px}
+.eyebrow{font-size:10px;font-weight:900;letter-spacing:2.5px}
+.orange{color:var(--orange)}
+.section h2,.contact h2{margin:15px 0;font-size:clamp(48px,7vw,78px)}
+.section-copy{max-width:630px;color:#687075;font-size:13px;line-height:1.9}
+
+.login-card,.registration-card{width:100%;max-width:590px;padding:34px;background:white;border:1px solid #e5e6e2;box-shadow:0 15px 45px rgba(15,20,22,.07)}
+.card-heading{display:flex;align-items:center;gap:15px;margin-bottom:30px}
+.card-icon{width:48px;height:48px;display:grid;place-items:center;background:var(--black);color:var(--orange);font:900 26px 'Barlow Condensed'}
+.card-heading h3,.registration-heading h3{margin:0;font:900 30px 'Barlow Condensed'}
+.card-heading p,.registration-heading p{margin:5px 0 0;color:#81898d;font-size:9px;font-weight:700;letter-spacing:1.5px}
+.login-card label,.registration-card label{display:block;margin:18px 0 9px;font-size:9px;font-weight:900;letter-spacing:1.5px}
+.login-card input,.registration-card input{width:100%;min-height:52px;padding:14px 16px;border:1px solid #dfe2df;border-radius:5px;background:#fafaf8;color:#171a1d;outline:none;font-size:13px}
+.login-card input:focus,.registration-card input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(244,119,33,.12)}
+.full-btn{width:100%;margin-top:23px;min-height:51px}
+.message{min-height:18px;margin:12px 0 0;color:#92999c;font-size:11px;line-height:1.7;overflow-wrap:anywhere}
+.login-note,.form-note{margin-top:20px;color:#81898d;font-size:10px;line-height:1.8}
+
+.dark-section{background:var(--black);color:white}
+.dark-section .section-copy{color:#aab1b5}
+.dashboard{max-width:1100px;margin-top:35px;padding:24px;background:var(--panel);border:1px solid var(--line);display:grid;gap:20px}
+.dashboard-profile,.dashboard-ticket{padding:28px;background:#111416;border:1px solid #30373b}
+.dashboard-profile h3,.dashboard-ticket h3{margin:16px 0;color:white;font:800 34px 'Barlow Condensed'}
+.dashboard-ticket p:not(.eyebrow){color:#aab1b5;font-size:12px;line-height:1.8}
+.member-id{display:inline-block;color:var(--orange);font:800 34px 'Barlow Condensed';letter-spacing:2px}
+.muted{color:#92999c;font-size:10px;line-height:1.8}
+.logout-button{justify-self:start;background:transparent;color:white;border-color:var(--orange)}
+.logout-button:hover{background:var(--orange);color:#111}
+.notice{max-width:750px;margin-top:28px;padding:24px;background:#1c2225;border-left:4px solid var(--orange)}
+.notice b{color:var(--orange);font-size:10px;letter-spacing:1.5px}
+.notice p{margin-bottom:0;color:#c1c6c8;font-size:11px;line-height:1.8}
+
+.split{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:55px}
+.ticket-box{min-height:300px;padding:30px;background:radial-gradient(circle at 90% 90%,rgba(244,119,33,.17),transparent 40%),#1c2023;border:1px solid rgba(244,119,33,.5);color:white}
+.ticket-top{display:flex;justify-content:space-between;align-items:center;color:var(--orange);font-size:10px;font-weight:900;letter-spacing:2px}
+.ticket-top span{font:900 30px 'Barlow Condensed'}
+.ticket-box h3{margin:50px 0 20px;font-size:49px}
+.ticket-box p,.ticket-box small{color:#b8bec1;font-size:9px;letter-spacing:1.4px}
+.ticket-line{display:block;margin:30px 0 18px;border-top:1px dashed #72797d}
+
+.kta-section{background:#f0f0ec}
+.kta-points{display:grid;gap:16px;margin-top:30px}
+.kta-points div{display:flex;align-items:center;gap:15px;font-size:11px;font-weight:700}
+.kta-points span{color:var(--orange);font:900 24px 'Barlow Condensed'}
+.registration-card{max-width:570px;padding:32px}
+.registration-heading{margin-bottom:24px}
+.registration-heading h3{margin-top:10px;font-size:42px}
+.card-preview{min-height:210px;margin-top:30px;padding:23px;background:radial-gradient(circle at 90% 90%,rgba(244,119,33,.2),transparent 40%),linear-gradient(125deg,#252b2e,#0b0d0e);border:1px solid #555c60;color:white;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.card-preview:after{content:"KR";position:absolute;right:10px;bottom:-50px;color:rgba(244,119,33,.12);font:900 180px 'Barlow Condensed'}
+.preview-top{display:flex;justify-content:space-between;color:var(--orange);font-size:9px;font-weight:900;letter-spacing:2px}
+.preview-top b{font:900 30px 'Barlow Condensed'}
+.card-preview small{color:#9fa6a9;font-size:8px;letter-spacing:2px}
+.card-preview strong{display:block;margin-top:10px;font:900 35px 'Barlow Condensed';line-height:.9}
+.preview-bottom{color:#c1c6c8;font-size:8px;letter-spacing:2px}
+.contact{background:#e8e9e5}
+.contact .btn{margin-top:18px}
+
+footer{padding:35px 9%;background:#101214;color:white;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+footer p{color:var(--orange);font-size:9px;font-weight:900;letter-spacing:2px}
+footer>small{width:100%;color:#737b7f;font-size:9px}
+button:disabled{opacity:.5;cursor:not-allowed}
+
+/* PANEL PENGURUS */
+.management-heading{padding:25px;background:#111416;border:1px solid rgba(244,119,33,.4)}
+.management-heading h3{color:white;font-size:38px;margin:12px 0}
+.management-heading h3 span{color:var(--orange)}
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 35px}
+.stat-card{padding:20px;background:#111416;border:1px solid #343a3e}
+.stat-card small{display:block;color:#a6adb1;font-size:9px;font-weight:800;letter-spacing:1px}
+.stat-card strong{display:block;margin-top:12px;color:var(--orange);font:900 38px 'Barlow Condensed'}
+.management-title{margin:35px 0 15px;color:white;font:900 30px 'Barlow Condensed'}
+.table-wrap{width:100%;overflow-x:auto;border:1px solid #343a3e}
+.management-table{width:100%;min-width:620px;border-collapse:collapse;background:#15191c;color:white;font-size:11px}
+.management-table th{padding:15px;background:#252b2f;color:var(--orange);text-align:left;font-size:9px;letter-spacing:1px}
+.management-table td{padding:14px 15px;border-top:1px solid #343a3e}
+.small-action{padding:8px 10px;margin:2px;border:0;border-radius:3px;font-size:9px;font-weight:800}
+.small-action.approve{background:#2e8655;color:white}
+.small-action.reject{background:#a83d3d;color:white}
+.small-action:disabled{opacity:.5}
+
+@media(max-width:900px){
+  .topbar{padding-left:5%;padding-right:5%}
+  nav{gap:15px}
+  .section{padding:80px 7%}
+  .hero-stamp{right:7%}
+  .split{gap:30px}
+}
+
+@media(max-width:700px){
+  .topbar{min-height:68px;padding:10px 5%}
+  .menu-toggle{display:block}
+  nav{display:none;position:absolute;top:68px;left:0;right:0;padding:22px 7%;background:#101214;border-top:1px solid #303437;flex-direction:column;align-items:flex-start;gap:22px}
+  nav.open{display:flex}
+  .hero{min-height:600px;padding:85px 7% 110px}
+  h1{font-size:clamp(53px,12vw,76px)}
+  .hero-stamp{right:-30px;bottom:8%;width:110px;height:110px;opacity:.45}
+  .hero-stamp strong{font-size:48px}
+  .hero-watermark{right:-15%;top:15%}
+  .hero-bottom{left:7%;font-size:7px;letter-spacing:1px}
+  .ticker{gap:10px;font-size:8px;letter-spacing:1px}
+  .ticker i{font-size:11px}
+  .section{padding:70px 7%}
+  .section h2,.contact h2{font-size:clamp(45px,11vw,65px)}
+  .split{grid-template-columns:1fr}
+  .login-card,.registration-card{padding:23px}
+  .dashboard{padding:13px}
+  .dashboard-profile,.dashboard-ticket{padding:20px}
+  .ticket-box{min-height:270px}
+  footer{padding:30px 7%}
+  footer p{line-height:1.8}
+  .admin-stats{grid-template-columns:repeat(2,1fr)}
+  .management-heading{padding:18px}
+  .management-heading h3{font-size:32px}
+  .stat-card{padding:14px}
+  .management-title{font-size:26px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition-duration:.01ms!important}
 }
