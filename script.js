@@ -1163,8 +1163,15 @@ function renderAdminTicket(ticket, profile, showAction) {
 }
 
 // PERMINTAAN TIKET ADMIN
-// TAMPILAN PANEL INI TIDAK DIUBAH
+// Tampilan dan struktur panel tetap dipertahankan
 async function loadAdminTickets() {
+  const container = $("adminTicketList");
+
+  if (!container) {
+    console.error("Elemen adminTicketList tidak ditemukan.");
+    return;
+  }
+
   const { data, error } = await db
     .from("ticket_requests")
     .select("id, user_id, event_id, match_name, quantity, status, created_at")
@@ -1172,8 +1179,9 @@ async function loadAdminTickets() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    $("adminTicketList").textContent =
+    container.textContent =
       "Gagal memuat tiket: " + error.message;
+    console.error("Gagal memuat tiket:", error);
     return;
   }
 
@@ -1183,41 +1191,70 @@ async function loadAdminTickets() {
   $("orderCount").textContent = tickets.length;
   $("orderMenuCount").textContent = tickets.length;
 
-  $("adminTicketList").innerHTML = tickets.length
+  container.innerHTML = tickets.length
     ? tickets.map((ticket) => {
         const profile = profiles.get(ticket.user_id);
         return renderAdminTicket(ticket, profile, true);
       }).join("")
     : "Tidak ada permintaan tiket yang perlu diproses.";
 
-  document.querySelectorAll(".approve-ticket").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const confirmed = confirm(
-        "Pastikan pembayaran anggota sudah diterima. Setujui tiket ini?"
-      );
+  // PENANGANAN KLIK TOMBOL SETUJUI TIKET
+  container.onclick = async function (event) {
+    const button = event.target.closest(".approve-ticket");
 
-      if (!confirmed) return;
+    if (!button || !container.contains(button)) return;
+    if (button.disabled) return;
 
-      button.disabled = true;
-      button.textContent = "MEMPROSES...";
+    const ticketId = button.dataset.ticketId;
 
+    if (!ticketId) {
+      alert("ID tiket tidak ditemukan.");
+      return;
+    }
+
+    const confirmed = confirm(
+      "Pastikan pembayaran anggota sudah diterima. Setujui tiket ini?"
+    );
+
+    if (!confirmed) return;
+
+    button.disabled = true;
+    button.textContent = "MEMPROSES...";
+
+    try {
       const { error: updateError } = await db
         .from("ticket_requests")
         .update({ status: "approved" })
-        .eq("id", button.dataset.ticketId);
+        .eq("id", ticketId);
 
       if (updateError) {
-        alert("Gagal menyetujui tiket: " + updateError.message);
+        console.error("Gagal menyetujui tiket:", updateError);
+
+        alert(
+          "Gagal menyetujui tiket: " + updateError.message
+        );
+
         button.disabled = false;
         button.textContent = "SETUJUI TIKET";
-      } else {
-        await Promise.all([
-          loadAdminTickets(),
-          loadAdminTicketHistory()
-        ]);
+        return;
       }
-    });
-  });
+
+      alert("Tiket berhasil disetujui.");
+
+      await Promise.all([
+        loadAdminTickets(),
+        loadAdminTicketHistory()
+      ]);
+
+    } catch (error) {
+      console.error("Terjadi kesalahan:", error);
+
+      alert("Terjadi kesalahan: " + error.message);
+
+      button.disabled = false;
+      button.textContent = "SETUJUI TIKET";
+    }
+  };
 }
 
 // RIWAYAT PEMBELI TIKET ADMIN
