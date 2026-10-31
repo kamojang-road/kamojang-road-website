@@ -148,43 +148,100 @@ document.querySelectorAll(".admin-menu-button").forEach((button) => {
   });
 });
 
-// PENDAFTARAN KTA
+// PENDAFTARAN KTA SEKALIGUS PEMBUATAN AKUN
 $("ktaForm").addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const name = $("ktaName").value.trim();
   const email = $("ktaEmail").value.trim();
   const phone = $("ktaPhone").value.trim();
-  const button = event.submitter;
 
-  if (!name || !email || !phone) {
-    showMessage("ktaMessage", "Lengkapi semua data.");
+  // Mengambil kolom password dari ID ktaPassword
+  // atau input password yang berada di dalam formulir.
+  const passwordInput =
+    $("ktaPassword") ||
+    $("ktaForm").querySelector('input[type="password"]');
+
+  const password = passwordInput?.value || "";
+  const button = event.submitter || $("ktaForm").querySelector(
+    'button[type="submit"], input[type="submit"]'
+  );
+
+  if (!name || !email || !phone || !password) {
+    showMessage(
+      "ktaMessage",
+      "Nama, email, WhatsApp, dan password wajib diisi."
+    );
+    return;
+  }
+
+  if (password.length < 6) {
+    showMessage(
+      "ktaMessage",
+      "Password minimal 6 karakter."
+    );
+    return;
+  }
+
+  if (!button) {
+    showMessage("ktaMessage", "Tombol pendaftaran tidak ditemukan.");
     return;
   }
 
   button.disabled = true;
-  button.textContent = "MENGIRIM...";
+  button.textContent = "MEMBUAT AKUN...";
 
   try {
-    const { error } = await db.from("kta_requests").insert({
-      full_name: name,
-      email,
-      status: "pending"
-    });
+    // Pendaftaran publik tidak memakai token login Admin.
+    // Edge Function manage-kta-v2 menangani pembuatan akun
+    // dan penyimpanan pengajuan KTA.
+    const { data, error } = await db.functions.invoke(
+      "manage-kta-v2",
+      {
+        body: {
+          action: "register",
+          fullName: name,
+          email,
+          phone,
+          password
+        }
+      }
+    );
 
-    if (error) throw error;
+    if (error) {
+      let message = error.message || "Pendaftaran gagal.";
+
+      try {
+        const details = await error.context.json();
+        if (details?.error) message = details.error;
+      } catch (_) {
+        // Gunakan pesan error standar.
+      }
+
+      throw new Error(message);
+    }
+
+    if (data?.error) {
+      throw new Error(data.error);
+    }
 
     showMessage(
       "ktaMessage",
-      "Pendaftaran tersimpan. Silakan lanjut menghubungi pengurus melalui WhatsApp.",
+      "Pendaftaran dan pembuatan akun berhasil. Silakan lanjut mengirim dokumen melalui WhatsApp. Akun menunggu persetujuan Admin.",
       true
     );
 
     const text = [
       "PENDAFTARAN KTA KAMOJANG ROAD",
+      "",
       "Nama: " + name,
       "Email: " + email,
-      "WhatsApp: " + phone
+      "WhatsApp: " + phone,
+      "",
+      "Saya sudah mengisi formulir pendaftaran KTA melalui website.",
+      "Saya akan mengirim foto KTP dan pas foto kepada pengurus untuk verifikasi.",
+      "",
+      "Mohon dilakukan pemeriksaan dan persetujuan pengajuan KTA saya."
     ].join("\n");
 
     window.open(
@@ -194,7 +251,10 @@ $("ktaForm").addEventListener("submit", async (event) => {
 
     $("ktaForm").reset();
   } catch (error) {
-    showMessage("ktaMessage", "Pendaftaran gagal: " + error.message);
+    showMessage(
+      "ktaMessage",
+      "Pendaftaran gagal: " + error.message
+    );
   } finally {
     button.disabled = false;
     button.textContent = "KIRIM PENDAFTARAN";
@@ -261,7 +321,7 @@ $("resetPasswordButton").addEventListener("click", async () => {
   }
 });
 
-// PANGGIL EDGE FUNCTION manage-kta-v2
+// PANGGIL EDGE FUNCTION manage-kta-v2 UNTUK ADMIN
 async function callManageKta(payload) {
   const { data: sessionData, error: sessionError } =
     await db.auth.getSession();
@@ -678,7 +738,7 @@ async function loadAdminDashboard() {
 async function loadAdminKta() {
   const { data, error } = await db
     .from("kta_requests")
-    .select("id, full_name, email, status, created_at")
+    .select("id, full_name, email, phone, status, created_at")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -698,7 +758,8 @@ async function loadAdminKta() {
     ? items.map((item) => `
         <div class="data-item">
           <strong>${escapeHTML(item.full_name)}</strong>
-          <p>${escapeHTML(item.email)}</p>
+          <p>Email: ${escapeHTML(item.email)}</p>
+          <p>WhatsApp: ${escapeHTML(item.phone || "-")}</p>
           <p>Status: ${escapeHTML(statusLabel(item.status))}</p>
 
           <div class="member-edit-fields">
@@ -709,15 +770,20 @@ async function loadAdminKta() {
               <option value="pending" ${item.status === "pending" ? "selected" : ""}>Menunggu</option>
               <option value="processing" ${item.status === "processing" ? "selected" : ""}>Diproses</option>
               <option value="completed" ${item.status === "completed" ? "selected" : ""}>Selesai</option>
+              <option value="rejected" ${item.status === "rejected" ? "selected" : ""}>Ditolak</option>
             </select>
           </div>
 
-          <button
-            class="btn btn-orange approve-kta-button"
-            data-request-id="${escapeHTML(item.id)}"
-            type="button">
-            SETUJUI KTA & BUAT AKUN ANGGOTA
-          </button>
+          ${item.status !== "rejected"
+            ? `
+              <button
+                class="btn btn-orange approve-kta-button"
+                data-request-id="${escapeHTML(item.id)}"
+                type="button">
+                SETUJUI KTA & AKTIFKAN ANGGOTA
+              </button>
+            `
+            : ""}
         </div>
       `).join("")
     : "Tidak ada pengajuan KTA yang menunggu proses.";
@@ -743,7 +809,7 @@ async function loadAdminKta() {
   document.querySelectorAll(".approve-kta-button").forEach((button) => {
     button.addEventListener("click", async () => {
       const confirmed = confirm(
-        "Setujui pengajuan ini? Sistem akan membuat profil anggota dan mengirim undangan akun ke email pendaftar."
+        "Setujui pengajuan ini? Sistem akan membuat profil anggota dan ID KTA untuk akun yang sudah dibuat saat pendaftaran."
       );
 
       if (!confirmed) return;
@@ -760,7 +826,7 @@ async function loadAdminKta() {
         alert(
           "Pengajuan KTA berhasil disetujui.\nID KTA: " +
           (result.membershipId || "Sudah tersedia") +
-          "\nUndangan akun akan dikirim ke email pendaftar jika akun baru dibuat."
+          "\nAkun anggota sekarang dapat digunakan untuk login."
         );
 
         await Promise.all([
@@ -770,7 +836,7 @@ async function loadAdminKta() {
       } catch (error) {
         alert("Gagal menyetujui KTA: " + error.message);
         button.disabled = false;
-        button.textContent = "SETUJUI KTA & BUAT AKUN ANGGOTA";
+        button.textContent = "SETUJUI KTA & AKTIFKAN ANGGOTA";
       }
     });
   });
