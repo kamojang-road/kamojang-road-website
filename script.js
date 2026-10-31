@@ -1,3 +1,4 @@
+
 const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
@@ -12,6 +13,7 @@ const $ = (id) => document.getElementById(id);
 function showMessage(id, message, success = false) {
   const el = $(id);
   if (!el) return;
+
   el.textContent = message;
   el.style.color = success ? "#66d98a" : "#f47721";
 }
@@ -28,6 +30,7 @@ function escapeHTML(value) {
 
 function formatDate(value) {
   if (!value) return "-";
+
   return new Date(value + "T00:00:00").toLocaleDateString("id-ID", {
     day: "numeric",
     month: "long",
@@ -43,9 +46,11 @@ function statusLabel(status) {
     processing: "Diproses",
     completed: "Selesai"
   };
+
   return labels[status] || status || "Belum diketahui";
 }
 
+// TAMPILAN HALAMAN
 function showPublicPage() {
   $("memberPage").classList.add("hidden");
   $("adminPage").classList.add("hidden");
@@ -72,11 +77,13 @@ function showDashboard(role) {
   } else {
     alert("Jenis akun tidak dikenali. Hubungi pengurus.");
     showPublicPage();
+    return;
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+// PROFIL ANGGOTA
 async function getProfile(userId) {
   const { data, error } = await db
     .from("member_profiles")
@@ -96,6 +103,37 @@ $("menuToggle").addEventListener("click", () => {
 document.querySelectorAll("#nav a").forEach((link) => {
   link.addEventListener("click", () => {
     $("nav").classList.remove("open");
+  });
+});
+
+// MENU DASHBOARD ADMIN
+document.querySelectorAll(".admin-menu-button").forEach((button) => {
+  button.addEventListener("click", () => {
+    const targetId = button.dataset.adminPanel;
+    const targetPanel = $(targetId);
+
+    if (!targetPanel) return;
+
+    document.querySelectorAll(".admin-panel").forEach((panel) => {
+      panel.classList.add("hidden");
+    });
+
+    document.querySelectorAll(".admin-menu-button").forEach((item) => {
+      item.classList.remove("active");
+    });
+
+    targetPanel.classList.remove("hidden");
+    button.classList.add("active");
+
+    if (targetId === "eventPanel") loadAdminEvents();
+    if (targetId === "ktaPanel") loadAdminKta();
+    if (targetId === "memberPanel") loadAdminMembers();
+    if (targetId === "ticketPanel") loadAdminTickets();
+
+    targetPanel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   });
 });
 
@@ -204,7 +242,11 @@ $("resetPasswordButton").addEventListener("click", async () => {
   if (error) {
     showMessage("loginMessage", error.message);
   } else {
-    showMessage("loginMessage", "Permintaan reset dikirim. Periksa email.", true);
+    showMessage(
+      "loginMessage",
+      "Permintaan reset dikirim. Periksa email.",
+      true
+    );
   }
 });
 
@@ -224,6 +266,7 @@ async function getActiveMatch() {
 async function loadMemberDashboard() {
   const { data: sessionData } = await db.auth.getSession();
   const user = sessionData.session?.user;
+
   if (!user) return;
 
   $("activeMatchInfo").textContent = "Memuat informasi pertandingan...";
@@ -232,22 +275,30 @@ async function loadMemberDashboard() {
 
   try {
     const profile = await getProfile(user.id);
+
     $("memberName").textContent = profile.full_name || "-";
-    $("memberId").textContent = profile.membership_id || "Belum tersedia";
+    $("memberId").textContent =
+      profile.membership_id || "Belum tersedia";
 
     const activeMatch = await getActiveMatch();
 
     if (activeMatch) {
       $("activeMatchInfo").innerHTML = `
         <div class="data-item">
-          <strong>${escapeHTML(activeMatch.home_team)} vs ${escapeHTML(activeMatch.away_team)}</strong>
+          <strong>
+            ${escapeHTML(activeMatch.home_team)}
+            vs
+            ${escapeHTML(activeMatch.away_team)}
+          </strong>
           <p>Tanggal: ${escapeHTML(formatDate(activeMatch.match_date))}</p>
           <p>Stadion: ${escapeHTML(activeMatch.stadium)}</p>
         </div>
       `;
+
       $("ticketSubmitButton").disabled = false;
     } else {
-      $("activeMatchInfo").textContent = "Belum ada tiket pertandingan.";
+      $("activeMatchInfo").textContent =
+        "Belum ada penjualan tiket pertandingan yang dibuka.";
     }
 
     const { data: orders, error: orderError } = await db
@@ -267,9 +318,11 @@ async function loadMemberDashboard() {
           </div>
         `).join("")
       : "Belum ada pesanan.";
+
   } catch (error) {
     $("activeMatchInfo").textContent =
       "Gagal memuat pertandingan: " + error.message;
+
     $("memberOrders").textContent =
       "Gagal memuat pesanan: " + error.message;
   }
@@ -290,8 +343,9 @@ $("ticketForm").addEventListener("submit", async (event) => {
     if (!user) throw new Error("Silakan login kembali.");
 
     const activeMatch = await getActiveMatch();
+
     if (!activeMatch) {
-      throw new Error("Belum ada pertandingan yang dibuka.");
+      throw new Error("Penjualan tiket sedang ditutup.");
     }
 
     const matchName =
@@ -307,8 +361,11 @@ $("ticketForm").addEventListener("submit", async (event) => {
 
     if (error) {
       if (error.code === "23505") {
-        throw new Error("KTA ini sudah digunakan untuk memesan tiket pertandingan tersebut.");
+        throw new Error(
+          "KTA ini sudah digunakan untuk memesan tiket pertandingan tersebut."
+        );
       }
+
       throw error;
     }
 
@@ -319,14 +376,15 @@ $("ticketForm").addEventListener("submit", async (event) => {
     );
 
     await loadMemberDashboard();
+
   } catch (error) {
     showMessage("ticketMessage", "Pemesanan gagal: " + error.message);
   } finally {
-    button.disabled = false;
     button.textContent = "AJUKAN PEMESANAN";
+
     try {
       const activeMatch = await getActiveMatch();
-      if (!activeMatch) button.disabled = true;
+      button.disabled = !activeMatch;
     } catch (_) {
       button.disabled = true;
     }
@@ -338,13 +396,17 @@ $("eventForm").addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const button = $("eventSubmitButton");
+
   const home = $("eventHome").value.trim();
   const away = $("eventAway").value.trim();
   const date = $("eventDate").value;
   const stadium = $("eventStadium").value.trim();
 
   if (!home || !away || !date || !stadium) {
-    showMessage("eventMessage", "Lengkapi semua informasi pertandingan.");
+    showMessage(
+      "eventMessage",
+      "Lengkapi semua informasi pertandingan."
+    );
     return;
   }
 
@@ -352,7 +414,6 @@ $("eventForm").addEventListener("submit", async (event) => {
   button.textContent = "MENYIMPAN...";
 
   try {
-    // Nonaktifkan pertandingan aktif sebelumnya.
     const { error: deactivateError } = await db
       .from("match_events")
       .update({ is_active: false })
@@ -360,7 +421,6 @@ $("eventForm").addEventListener("submit", async (event) => {
 
     if (deactivateError) throw deactivateError;
 
-    // Simpan pertandingan baru sebagai pertandingan aktif.
     const { error: insertError } = await db
       .from("match_events")
       .insert({
@@ -373,13 +433,22 @@ $("eventForm").addEventListener("submit", async (event) => {
 
     if (insertError) throw insertError;
 
-    showMessage("eventMessage", "Pertandingan aktif berhasil disimpan.", true);
+    showMessage(
+      "eventMessage",
+      "Pertandingan aktif berhasil disimpan.",
+      true
+    );
+
     $("eventForm").reset();
     $("eventHome").value = "Persija Jakarta";
 
     await loadAdminEvents();
+
   } catch (error) {
-    showMessage("eventMessage", "Gagal menyimpan pertandingan: " + error.message);
+    showMessage(
+      "eventMessage",
+      "Gagal menyimpan pertandingan: " + error.message
+    );
   } finally {
     button.disabled = false;
     button.textContent = "SIMPAN PERTANDINGAN AKTIF";
@@ -402,13 +471,63 @@ async function loadAdminEvents() {
   $("adminEventList").innerHTML = data.length
     ? data.map((item) => `
         <div class="data-item">
-          <strong>${escapeHTML(item.home_team)} vs ${escapeHTML(item.away_team)}</strong>
+          <strong>
+            ${escapeHTML(item.home_team)}
+            vs
+            ${escapeHTML(item.away_team)}
+          </strong>
+
           <p>Tanggal: ${escapeHTML(formatDate(item.match_date))}</p>
           <p>Stadion: ${escapeHTML(item.stadium)}</p>
-          <p>Status: ${item.is_active ? "AKTIF" : "Tidak aktif"}</p>
+
+          <p class="${item.is_active ? "status-open" : "status-closed"}">
+            ${item.is_active ? "PENJUALAN TIKET DIBUKA" : "PENJUALAN DITUTUP"}
+          </p>
+
+          ${
+            item.is_active
+              ? `<button
+                  class="btn btn-danger close-sales-button"
+                  data-event-id="${escapeHTML(item.id)}"
+                  type="button">
+                  TUTUP PENJUALAN TIKET
+                </button>`
+              : `<p class="muted">Pertandingan ini tidak menerima pesanan baru.</p>`
+          }
         </div>
       `).join("")
     : "Belum ada pertandingan.";
+
+  document.querySelectorAll(".close-sales-button").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const confirmed = confirm(
+        "Tutup penjualan tiket pertandingan ini? Riwayat pesanan anggota tetap disimpan."
+      );
+
+      if (!confirmed) return;
+
+      button.disabled = true;
+      button.textContent = "MENUTUP...";
+
+      try {
+        const { error: updateError } = await db
+          .from("match_events")
+          .update({ is_active: false })
+          .eq("id", button.dataset.eventId);
+
+        if (updateError) throw updateError;
+
+        alert("Penjualan tiket berhasil ditutup. Riwayat pesanan tetap tersimpan.");
+
+        await loadAdminEvents();
+
+      } catch (error) {
+        alert("Gagal menutup penjualan: " + error.message);
+        button.disabled = false;
+        button.textContent = "TUTUP PENJUALAN TIKET";
+      }
+    });
+  });
 }
 
 // DASHBOARD ADMIN
@@ -421,6 +540,7 @@ async function loadAdminDashboard() {
   ]);
 }
 
+// PENGAJUAN KTA ADMIN
 async function loadAdminKta() {
   const { data, error } = await db
     .from("kta_requests")
@@ -428,12 +548,15 @@ async function loadAdminKta() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    $("adminKtaList").textContent = "Gagal memuat pengajuan KTA: " + error.message;
+    $("adminKtaList").textContent =
+      "Gagal memuat pengajuan KTA: " + error.message;
     return;
   }
 
   const items = data || [];
+
   $("ktaCount").textContent = items.length;
+  $("ktaMenuCount").textContent = items.length;
 
   $("adminKtaList").innerHTML = items.length
     ? items.map((item) => `
@@ -441,6 +564,7 @@ async function loadAdminKta() {
           <strong>${escapeHTML(item.full_name)}</strong>
           <p>${escapeHTML(item.email)}</p>
           <p>Status: ${escapeHTML(statusLabel(item.status))}</p>
+
           <select data-kta-id="${escapeHTML(item.id)}" class="kta-status">
             <option value="pending" ${item.status === "pending" ? "selected" : ""}>Menunggu</option>
             <option value="processing" ${item.status === "processing" ? "selected" : ""}>Diproses</option>
@@ -466,6 +590,7 @@ async function loadAdminKta() {
   });
 }
 
+// DATA ANGGOTA ADMIN
 async function loadAdminMembers() {
   const { data, error } = await db
     .from("member_profiles")
@@ -473,12 +598,15 @@ async function loadAdminMembers() {
     .eq("role", "member");
 
   if (error) {
-    $("adminMemberList").textContent = "Gagal memuat anggota: " + error.message;
+    $("adminMemberList").textContent =
+      "Gagal memuat anggota: " + error.message;
     return;
   }
 
   const members = data || [];
+
   $("memberCount").textContent = members.length;
+  $("memberMenuCount").textContent = members.length;
 
   $("adminMemberList").innerHTML = members.length
     ? members.map((member) => `
@@ -490,6 +618,7 @@ async function loadAdminMembers() {
     : "Belum ada data anggota.";
 }
 
+// PERMINTAAN TIKET ADMIN
 async function loadAdminTickets() {
   const { data, error } = await db
     .from("ticket_requests")
@@ -497,12 +626,15 @@ async function loadAdminTickets() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    $("adminTicketList").textContent = "Gagal memuat tiket: " + error.message;
+    $("adminTicketList").textContent =
+      "Gagal memuat tiket: " + error.message;
     return;
   }
 
   const tickets = data || [];
+
   $("orderCount").textContent = tickets.length;
+  $("orderMenuCount").textContent = tickets.length;
 
   $("adminTicketList").innerHTML = tickets.length
     ? tickets.map((ticket) => `
@@ -511,11 +643,15 @@ async function loadAdminTickets() {
           <p>ID akun anggota: ${escapeHTML(ticket.user_id)}</p>
           <p>Jumlah: ${escapeHTML(ticket.quantity)} tiket</p>
           <p>Status: ${escapeHTML(statusLabel(ticket.status))}</p>
+
           ${
             ticket.status === "pending"
-              ? `<button class="btn btn-orange approve-ticket"
-                   data-ticket-id="${escapeHTML(ticket.id)}"
-                   type="button">SETUJUI TIKET</button>`
+              ? `<button
+                  class="btn btn-orange approve-ticket"
+                  data-ticket-id="${escapeHTML(ticket.id)}"
+                  type="button">
+                  SETUJUI TIKET
+                </button>`
               : ""
           }
         </div>
@@ -540,6 +676,8 @@ async function loadAdminTickets() {
 
       if (updateError) {
         alert("Gagal menyetujui tiket: " + updateError.message);
+        button.disabled = false;
+        button.textContent = "SETUJUI TIKET";
       } else {
         await loadAdminTickets();
       }
@@ -559,6 +697,7 @@ document.querySelectorAll(".logoutButton").forEach((button) => {
 // PULIHKAN SESI LOGIN
 async function restoreSession() {
   const { data } = await db.auth.getSession();
+
   if (!data.session) return;
 
   try {
