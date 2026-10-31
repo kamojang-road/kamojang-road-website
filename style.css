@@ -1,3 +1,4 @@
+
 :root {
   --black: #101010;
   --dark: #191919;
@@ -159,6 +160,22 @@ nav a:hover {
   color: #111;
 }
 
+.btn-danger {
+  background: #c62828;
+  color: white;
+  border-color: #c62828;
+}
+
+.btn-danger:hover {
+  background: #a71919;
+  border-color: #a71919;
+}
+
+.btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
 .section {
   padding: 75px 8%;
   scroll-margin-top: 75px;
@@ -315,6 +332,90 @@ input:focus {
   border-radius: 4px;
 }
 
+/* MENU ADMIN */
+.admin-menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 25px 0;
+}
+
+.admin-menu-button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  min-height: 115px;
+  padding: 18px;
+  text-align: left;
+  color: white;
+  background: #191919;
+  border: 1px solid #333;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.admin-menu-button:hover,
+.admin-menu-button.active {
+  background: #292019;
+  border-color: var(--orange);
+}
+
+.admin-menu-button > span {
+  color: var(--orange);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-menu-button > strong {
+  font-size: 14px;
+}
+
+.admin-menu-button > small {
+  color: var(--gray);
+  font-size: 11px;
+}
+
+.admin-menu-button > b {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  min-width: 24px;
+  padding: 2px 7px;
+  text-align: center;
+  color: #111;
+  background: var(--orange);
+  border-radius: 20px;
+  font-size: 11px;
+}
+
+/* PANEL MENU ADMIN */
+.admin-panel {
+  scroll-margin-top: 85px;
+}
+
+.admin-panel .subheading {
+  margin-top: 28px;
+}
+
+/* STATUS PENJUALAN TIKET */
+.status-open {
+  color: #66d98a;
+  font-weight: 800;
+}
+
+.status-closed {
+  color: #ff6868;
+  font-weight: 800;
+}
+
+.close-sales-button {
+  margin-top: 10px;
+}
+
+/* FOOTER */
 footer {
   padding: 45px 8%;
   text-align: center;
@@ -343,6 +444,7 @@ footer a {
   margin-top: 20px;
 }
 
+/* RESPONSIVE HP */
 @media (max-width: 700px) {
   .header {
     padding: 13px 5%;
@@ -389,6 +491,10 @@ footer a {
   }
 
   .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-menu {
     grid-template-columns: 1fr;
   }
 
