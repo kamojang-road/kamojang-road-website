@@ -1,4 +1,3 @@
-
 const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
@@ -140,6 +139,7 @@ document.querySelectorAll(".admin-menu-button").forEach((button) => {
     if (targetId === "memberPanel") loadAdminMembers();
     if (targetId === "ticketPanel") loadAdminTickets();
     if (targetId === "ticketHistoryPanel") loadAdminTicketHistory();
+    if (targetId === "paymentSettingsPanel") loadAdminPaymentSettings();
 
     targetPanel.scrollIntoView({
       behavior: "smooth",
@@ -354,7 +354,6 @@ async function callManageKta(payload) {
 }
 
 // PENANGANAN KLIK PERSETUJUAN KTA
-// EVENT DELEGATION AGAR TETAP AKTIF SETELAH DAFTAR DIMUAT ULANG
 $("adminKtaList").addEventListener("click", async (event) => {
   const button = event.target.closest(".approve-kta-button");
 
@@ -410,6 +409,85 @@ async function getActiveMatch() {
 
   if (error) throw error;
   return data;
+}
+
+// INFORMASI PEMBAYARAN UNTUK ANGGOTA
+async function loadMemberPaymentInfo(profile, activeOrders) {
+  const container = $("memberPaymentInfo");
+  if (!container) return;
+
+  if (!activeOrders.length) {
+    container.textContent =
+      "Informasi rekening akan muncul jika kamu memiliki pesanan tiket aktif.";
+    return;
+  }
+
+  container.textContent = "Memuat informasi rekening...";
+
+  try {
+    const { data, error } = await db
+      .from("payment_settings")
+      .select("bank_name, account_number, account_holder")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (
+      !data ||
+      !data.bank_name ||
+      !data.account_number ||
+      !data.account_holder
+    ) {
+      container.textContent = "Rekening belum diatur oleh Admin.";
+      return;
+    }
+
+    container.innerHTML = activeOrders.map((order) => {
+      const message = [
+        "Halo Admin KAMOJANG ROAD, saya ingin mengirim bukti pembayaran tiket.",
+        "",
+        "Nama Anggota: " + (profile.full_name || "-"),
+        "ID KTA: " + (profile.membership_id || "-"),
+        "Pertandingan: " + (order.match_name || "-"),
+        "Jumlah Tiket: " + (order.quantity || 1),
+        "",
+        "Bank: " + data.bank_name,
+        "Nomor Rekening: " + data.account_number,
+        "Atas Nama: " + data.account_holder,
+        "",
+        "Saya akan melampirkan bukti transfer pada chat ini."
+      ].join("\n");
+
+      const whatsappUrl =
+        "https://wa.me/6285283234473?text=" +
+        encodeURIComponent(message);
+
+      return `
+        <div class="data-item">
+          <strong>${escapeHTML(order.match_name)}</strong>
+          <p>Bank: ${escapeHTML(data.bank_name)}</p>
+          <p>Nomor rekening: <strong>${escapeHTML(data.account_number)}</strong></p>
+          <p>Atas nama: ${escapeHTML(data.account_holder)}</p>
+          <p>Jumlah tiket: ${escapeHTML(order.quantity)}</p>
+          <a
+            class="btn btn-orange full"
+            href="${escapeHTML(whatsappUrl)}"
+            target="_blank"
+            rel="noopener">
+            KIRIM BUKTI PEMBAYARAN VIA WHATSAPP
+          </a>
+          <p class="muted">
+            Setelah WhatsApp terbuka, lampirkan foto bukti transfer secara manual.
+          </p>
+        </div>
+      `;
+    }).join("");
+  } catch (error) {
+    console.error("Gagal memuat rekening:", error);
+    container.textContent =
+      "Gagal memuat informasi rekening. Silakan coba muat ulang halaman.";
+  }
 }
 
 // DASHBOARD ANGGOTA
@@ -497,6 +575,8 @@ async function loadMemberDashboard() {
           </div>
         `).join("")
       : "Belum ada riwayat pesanan tiket.";
+
+    await loadMemberPaymentInfo(profile, activeOrders);
   } catch (error) {
     $("activeMatchInfo").textContent =
       "Gagal memuat pertandingan: " + error.message;
@@ -506,6 +586,9 @@ async function loadMemberDashboard() {
 
     $("memberOrderHistory").textContent =
       "Gagal memuat riwayat: " + error.message;
+
+    $("memberPaymentInfo").textContent =
+      "Informasi pembayaran tidak dapat dimuat.";
   }
 }
 
@@ -568,7 +651,6 @@ $("ticketForm").addEventListener("submit", async (event) => {
     }
   }
 });
-
 // SIMPAN PERTANDINGAN DARI ADMIN
 $("eventForm").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -721,7 +803,7 @@ async function loadAdminEvents() {
   });
 }
 
-// RIWAYAT PERTANDINGAN ADMIN - TAMPILAN RINGKAS
+// RIWAYAT PERTANDINGAN ADMIN
 async function loadAdminMatchHistory() {
   const list = $("adminMatchHistoryList");
 
@@ -770,6 +852,90 @@ async function loadAdminDashboard() {
     loadAdminTickets()
   ]);
 }
+
+// PENGATURAN REKENING ADMIN
+async function loadAdminPaymentSettings() {
+  const message = $("paymentSettingsMessage");
+
+  try {
+    const { data, error } = await db
+      .from("payment_settings")
+      .select("bank_name, account_number, account_holder")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    $("paymentBankName").value = data?.bank_name || "";
+    $("paymentAccountNumber").value = data?.account_number || "";
+    $("paymentAccountHolder").value = data?.account_holder || "";
+
+    if (message) {
+      showMessage(
+        "paymentSettingsMessage",
+        "Informasi rekening berhasil dimuat.",
+        true
+      );
+    }
+  } catch (error) {
+    showMessage(
+      "paymentSettingsMessage",
+      "Gagal memuat rekening: " + error.message
+    );
+  }
+}
+
+// SIMPAN INFORMASI REKENING ADMIN
+$("paymentSettingsForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const button = $("paymentSettingsSaveButton");
+
+  const bankName = $("paymentBankName").value.trim();
+  const accountNumber = $("paymentAccountNumber").value.trim();
+  const accountHolder = $("paymentAccountHolder").value.trim();
+
+  if (!bankName || !accountNumber || !accountHolder) {
+    showMessage(
+      "paymentSettingsMessage",
+      "Lengkapi semua informasi rekening."
+    );
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "MENYIMPAN...";
+
+  try {
+    const { error } = await db
+      .from("payment_settings")
+      .upsert({
+        id: 1,
+        bank_name: bankName,
+        account_number: accountNumber,
+        account_holder: accountHolder,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: "id"
+      });
+
+    if (error) throw error;
+
+    showMessage(
+      "paymentSettingsMessage",
+      "Informasi rekening berhasil disimpan.",
+      true
+    );
+  } catch (error) {
+    showMessage(
+      "paymentSettingsMessage",
+      "Gagal menyimpan rekening: " + error.message
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = "SIMPAN INFORMASI REKENING";
+  }
+});
 
 // PENGAJUAN KTA ADMIN
 async function loadAdminKta() {
@@ -842,11 +1008,9 @@ async function loadAdminKta() {
       }
     });
   });
-
-  // Event klik tombol persetujuan KTA ditangani di luar fungsi ini.
 }
 
-// DATA ANGGOTA ADMIN - BARIS RINGKAS, FORM EDIT SAAT DIBUKA
+// DATA ANGGOTA ADMIN
 async function loadAdminMembers() {
   const { data, error } = await db
     .from("member_profiles")
@@ -974,7 +1138,6 @@ async function getTicketProfiles(tickets) {
 }
 
 // TAMPILKAN KARTU PESANAN ADMIN
-// FUNGSI INI TETAP DIPAKAI OLEH PANEL PERMINTAAN TIKET
 function renderAdminTicket(ticket, profile, showAction) {
   return `
     <div class="data-item">
@@ -1058,7 +1221,6 @@ async function loadAdminTickets() {
 }
 
 // RIWAYAT PEMBELI TIKET ADMIN
-// DIKELOMPOKKAN BERDASARKAN PERTANDINGAN
 async function loadAdminTicketHistory() {
   const list = $("adminTicketHistoryList");
 
