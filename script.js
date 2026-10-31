@@ -260,9 +260,9 @@ $("resetPasswordButton").addEventListener("click", async () => {
   }
 });
 
-// PANGGIL EDGE FUNCTION manage-kta
+// PANGGIL EDGE FUNCTION manage-kta-v2
 async function callManageKta(payload) {
-  const { data, error } = await db.functions.invoke("manage-kta", {
+  const { data, error } = await db.functions.invoke("manage-kta-v2", {
     body: payload
   });
 
