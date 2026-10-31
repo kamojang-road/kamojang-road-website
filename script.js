@@ -262,8 +262,28 @@ $("resetPasswordButton").addEventListener("click", async () => {
 
 // PANGGIL EDGE FUNCTION manage-kta-v2
 async function callManageKta(payload) {
+  // Ambil sesi login pengguna
+  const { data: sessionData, error: sessionError } =
+    await db.auth.getSession();
+
+  if (sessionError) {
+    throw new Error("Gagal mengambil sesi login: " + sessionError.message);
+  }
+
+  const accessToken = sessionData?.session?.access_token;
+
+  if (!accessToken) {
+    throw new Error(
+      "Sesi login tidak ditemukan. Silakan logout lalu login kembali."
+    );
+  }
+
+  // Kirim permintaan beserta token admin
   const { data, error } = await db.functions.invoke("manage-kta-v2", {
-    body: payload
+    body: payload,
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    }
   });
 
   if (error) {
@@ -280,7 +300,9 @@ async function callManageKta(payload) {
   }
 
   if (data?.error) throw new Error(data.error);
+
   return data;
+}
 }
 
 // AMBIL PERTANDINGAN AKTIF
