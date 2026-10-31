@@ -1,3 +1,4 @@
+
 const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
@@ -623,8 +624,10 @@ async function loadAdminEvents() {
   });
 }
 
-// RIWAYAT PERTANDINGAN ADMIN
+// RIWAYAT PERTANDINGAN ADMIN - TAMPILAN RINGKAS
 async function loadAdminMatchHistory() {
+  const list = $("adminMatchHistoryList");
+
   const { data, error } = await db
     .from("match_events")
     .select("id, home_team, away_team, match_date, stadium, is_active, is_archived, created_at")
@@ -632,23 +635,30 @@ async function loadAdminMatchHistory() {
     .order("match_date", { ascending: false });
 
   if (error) {
-    $("adminMatchHistoryList").textContent =
+    list.textContent =
       "Gagal memuat riwayat pertandingan: " + error.message;
     return;
   }
 
-  $("adminMatchHistoryList").innerHTML = data.length
+  list.innerHTML = data.length
     ? data.map((item) => `
-        <div class="data-item">
-          <strong>
-            ${escapeHTML(item.home_team)}
-            vs
-            ${escapeHTML(item.away_team)}
-          </strong>
-          <p>Tanggal: ${escapeHTML(formatDate(item.match_date))}</p>
-          <p>Stadion: ${escapeHTML(item.stadium)}</p>
-          <p class="status-closed">PENJUALAN TIKET DITUTUP</p>
-        </div>
+        <details class="compact-record">
+          <summary class="compact-record-summary">
+            <span class="compact-record-title">
+              ${escapeHTML(item.home_team)} vs ${escapeHTML(item.away_team)}
+            </span>
+            <span class="compact-record-meta">
+              ${escapeHTML(formatDate(item.match_date))}
+            </span>
+          </summary>
+
+          <div class="compact-record-body">
+            <p><strong>Pertandingan:</strong> ${escapeHTML(item.home_team)} vs ${escapeHTML(item.away_team)}</p>
+            <p><strong>Tanggal:</strong> ${escapeHTML(formatDate(item.match_date))}</p>
+            <p><strong>Stadion:</strong> ${escapeHTML(item.stadium)}</p>
+            <p class="status-closed">PENJUALAN TIKET DITUTUP</p>
+          </div>
+        </details>
       `).join("")
     : "Belum ada riwayat pertandingan.";
 }
@@ -766,7 +776,7 @@ async function loadAdminKta() {
   });
 }
 
-// DATA ANGGOTA ADMIN - NAMA DAN ID KTA BISA DIEDIT
+// DATA ANGGOTA ADMIN - BARIS RINGKAS, FORM EDIT SAAT DIBUKA
 async function loadAdminMembers() {
   const { data, error } = await db
     .from("member_profiles")
@@ -787,36 +797,45 @@ async function loadAdminMembers() {
 
   $("adminMemberList").innerHTML = members.length
     ? members.map((member) => `
-        <div class="data-item member-edit-card">
-          <strong>${escapeHTML(member.full_name || "Tanpa nama")}</strong>
+        <details class="compact-record member-compact-record">
+          <summary class="compact-record-summary">
+            <span class="compact-record-title">
+              ${escapeHTML(member.full_name || "Tanpa nama")}
+            </span>
+            <span class="compact-record-meta">
+              ${escapeHTML(member.membership_id || "Belum ada ID")}
+            </span>
+          </summary>
 
-          <div class="member-edit-fields">
-            <label>Nama anggota</label>
-            <input
-              class="edit-member-name"
-              type="text"
-              value="${escapeHTML(member.full_name || "")}"
-              maxlength="120"
-            >
+          <div class="compact-record-body member-edit-card">
+            <div class="member-edit-fields">
+              <label>Nama anggota</label>
+              <input
+                class="edit-member-name"
+                type="text"
+                value="${escapeHTML(member.full_name || "")}"
+                maxlength="120"
+              >
 
-            <label>ID KTA</label>
-            <input
-              class="edit-member-kta"
-              type="text"
-              value="${escapeHTML(member.membership_id || "")}"
-              maxlength="40"
-            >
+              <label>ID KTA</label>
+              <input
+                class="edit-member-kta"
+                type="text"
+                value="${escapeHTML(member.membership_id || "")}"
+                maxlength="40"
+              >
+            </div>
+
+            <button
+              class="btn btn-orange save-member-button"
+              data-member-id="${escapeHTML(member.id)}"
+              type="button">
+              SIMPAN PERUBAHAN
+            </button>
+
+            <p class="member-save-message message" aria-live="polite"></p>
           </div>
-
-          <button
-            class="btn btn-orange save-member-button"
-            data-member-id="${escapeHTML(member.id)}"
-            type="button">
-            SIMPAN PERUBAHAN
-          </button>
-
-          <p class="member-save-message message" aria-live="polite"></p>
-        </div>
+        </details>
       `).join("")
     : "Belum ada data anggota.";
 
@@ -885,6 +904,7 @@ async function getTicketProfiles(tickets) {
 }
 
 // TAMPILKAN KARTU PESANAN ADMIN
+// FUNGSI INI TETAP DIPAKAI OLEH PANEL PERMINTAAN TIKET
 function renderAdminTicket(ticket, profile, showAction) {
   return `
     <div class="data-item">
@@ -910,7 +930,7 @@ function renderAdminTicket(ticket, profile, showAction) {
 }
 
 // PERMINTAAN TIKET ADMIN
-// HANYA MENAMPILKAN PESANAN YANG MASIH PERLU DIPROSES
+// TAMPILAN PANEL INI TIDAK DIUBAH
 async function loadAdminTickets() {
   const { data, error } = await db
     .from("ticket_requests")
@@ -968,28 +988,34 @@ async function loadAdminTickets() {
 }
 
 // RIWAYAT PEMBELI TIKET ADMIN
-// MENAMPILKAN PESANAN YANG SUDAH SELESAI ATAU PERTANDINGANNYA DIARSIPKAN
+// DIKELOMPOKKAN BERDASARKAN PERTANDINGAN
 async function loadAdminTicketHistory() {
+  const list = $("adminTicketHistoryList");
+
   const { data: tickets, error: ticketError } = await db
     .from("ticket_requests")
     .select("id, user_id, event_id, match_name, quantity, status, created_at")
     .order("created_at", { ascending: false });
 
   if (ticketError) {
-    $("adminTicketHistoryList").textContent =
+    list.textContent =
       "Gagal memuat riwayat pembeli tiket: " + ticketError.message;
     return;
   }
 
   const { data: events, error: eventError } = await db
     .from("match_events")
-    .select("id, is_archived");
+    .select("id, home_team, away_team, match_date, stadium, is_archived");
 
   if (eventError) {
-    $("adminTicketHistoryList").textContent =
+    list.textContent =
       "Gagal memuat data pertandingan: " + eventError.message;
     return;
   }
+
+  const eventMap = new Map(
+    (events || []).map((event) => [String(event.id), event])
+  );
 
   const archivedEventIds = new Set(
     (events || [])
@@ -1004,14 +1030,99 @@ async function loadAdminTicketHistory() {
     );
   });
 
+  if (!history.length) {
+    list.textContent = "Belum ada riwayat pembeli tiket.";
+    return;
+  }
+
   const profiles = await getTicketProfiles(history);
 
-  $("adminTicketHistoryList").innerHTML = history.length
-    ? history.map((ticket) => {
-        const profile = profiles.get(ticket.user_id);
-        return renderAdminTicket(ticket, profile, false);
-      }).join("")
-    : "Belum ada riwayat pembeli tiket.";
+  // Kelompokkan berdasarkan event_id.
+  // Jika event_id kosong, gunakan nama pertandingan.
+  const groups = new Map();
+
+  history.forEach((ticket) => {
+    const key = ticket.event_id
+      ? "event-" + String(ticket.event_id)
+      : "match-" + String(ticket.match_name || "Pertandingan tidak diketahui");
+
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+
+    groups.get(key).push(ticket);
+  });
+
+  const sortedGroups = [...groups.entries()].sort((a, b) => {
+    const newestA = Math.max(
+      ...a[1].map((ticket) => new Date(ticket.created_at || 0).getTime())
+    );
+
+    const newestB = Math.max(
+      ...b[1].map((ticket) => new Date(ticket.created_at || 0).getTime())
+    );
+
+    return newestB - newestA;
+  });
+
+  list.innerHTML = sortedGroups.map(([key, groupTickets]) => {
+    const firstTicket = groupTickets[0];
+    const event = firstTicket.event_id
+      ? eventMap.get(String(firstTicket.event_id))
+      : null;
+
+    const matchTitle = event
+      ? `${event.home_team} vs ${event.away_team}`
+      : firstTicket.match_name || "Pertandingan tidak diketahui";
+
+    const matchDate = event?.match_date
+      ? formatDate(event.match_date)
+      : "-";
+
+    const buyerRows = groupTickets.map((ticket) => {
+      const profile = profiles.get(ticket.user_id);
+
+      return `
+        <div class="compact-buyer-row">
+          <div class="compact-buyer-heading">
+            <strong>${escapeHTML(profile?.full_name || "Nama tidak ditemukan")}</strong>
+            <span class="compact-buyer-status">${escapeHTML(statusLabel(ticket.status))}</span>
+          </div>
+
+          <p>ID KTA: ${escapeHTML(profile?.membership_id || "Belum tersedia")}</p>
+          <p>Jumlah: ${escapeHTML(ticket.quantity)} tiket</p>
+          <p>Tanggal pesan: ${escapeHTML(formatDateTime(ticket.created_at))}</p>
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <details class="compact-record ticket-history-group" data-group="${escapeHTML(key)}">
+        <summary class="compact-record-summary">
+          <span class="compact-record-title">
+            ${escapeHTML(matchTitle)}
+          </span>
+          <span class="compact-record-meta">
+            ${groupTickets.length} pembeli
+          </span>
+        </summary>
+
+        <div class="compact-record-body">
+          <p class="ticket-group-date">
+            <strong>Tanggal pertandingan:</strong> ${escapeHTML(matchDate)}
+          </p>
+
+          ${event?.stadium
+            ? `<p class="ticket-group-stadium"><strong>Stadion:</strong> ${escapeHTML(event.stadium)}</p>`
+            : ""}
+
+          <div class="compact-buyer-list">
+            ${buyerRows}
+          </div>
+        </div>
+      </details>
+    `;
+  }).join("");
 }
 
 // LOGOUT
