@@ -619,6 +619,7 @@ async function loadAdminMembers() {
 }
 
 // PERMINTAAN TIKET ADMIN
+// MENAMPILKAN NAMA ANGGOTA, BUKAN ID AKUN
 async function loadAdminTickets() {
   const { data, error } = await db
     .from("ticket_requests")
@@ -633,35 +634,76 @@ async function loadAdminTickets() {
 
   const tickets = data || [];
 
+  // Ambil ID akun anggota yang memesan
+  const userIds = [...new Set(
+    tickets.map(ticket => ticket.user_id).filter(Boolean)
+  )];
+
+  let profiles = [];
+
+  // Ambil nama dan ID KTA dari tabel member_profiles
+  if (userIds.length > 0) {
+    const { data: profileData, error: profileError } = await db
+      .from("member_profiles")
+      .select("id, full_name, membership_id")
+      .in("id", userIds);
+
+    if (profileError) {
+      $("adminTicketList").textContent =
+        "Gagal memuat nama anggota: " + profileError.message;
+      return;
+    }
+
+    profiles = profileData || [];
+  }
+
+  // Hubungkan user_id pesanan dengan profil anggota
+  const profileMap = new Map(
+    profiles.map(profile => [profile.id, profile])
+  );
+
   $("orderCount").textContent = tickets.length;
   $("orderMenuCount").textContent = tickets.length;
 
   $("adminTicketList").innerHTML = tickets.length
-    ? tickets.map((ticket) => `
-        <div class="data-item">
-          <strong>${escapeHTML(ticket.match_name)}</strong>
-          <p>ID akun anggota: ${escapeHTML(ticket.user_id)}</p>
-          <p>Jumlah: ${escapeHTML(ticket.quantity)} tiket</p>
-          <p>Status: ${escapeHTML(statusLabel(ticket.status))}</p>
+    ? tickets.map(ticket => {
+        const member = profileMap.get(ticket.user_id);
 
-          ${
-            ticket.status === "pending"
-              ? `<button
-                  class="btn btn-orange approve-ticket"
-                  data-ticket-id="${escapeHTML(ticket.id)}"
-                  type="button">
-                  SETUJUI TIKET
-                </button>`
-              : ""
-          }
-        </div>
-      `).join("")
+        const memberName =
+          member?.full_name || "Nama tidak ditemukan";
+
+        const membershipId =
+          member?.membership_id || "Belum tersedia";
+
+        return `
+          <div class="data-item">
+            <strong>${escapeHTML(ticket.match_name)}</strong>
+
+            <p>Nama Anggota: ${escapeHTML(memberName)}</p>
+            <p>ID KTA: ${escapeHTML(membershipId)}</p>
+            <p>Jumlah: ${escapeHTML(ticket.quantity)} tiket</p>
+            <p>Status: ${escapeHTML(statusLabel(ticket.status))}</p>
+
+            ${
+              ticket.status === "pending"
+                ? `<button
+                    class="btn btn-orange approve-ticket"
+                    data-ticket-id="${escapeHTML(ticket.id)}"
+                    type="button">
+                    SETUJUI TIKET
+                  </button>`
+                : ""
+            }
+          </div>
+        `;
+      }).join("")
     : "Belum ada permintaan tiket.";
 
-  document.querySelectorAll(".approve-ticket").forEach((button) => {
+  // Tombol persetujuan tiket
+  document.querySelectorAll(".approve-ticket").forEach(button => {
     button.addEventListener("click", async () => {
       const confirmed = confirm(
-        "Pastikan pembayaran administrasi anggota sudah diterima. Setujui tiket ini?"
+        "Pastikan pembayaran anggota sudah diterima. Setujui tiket ini?"
       );
 
       if (!confirmed) return;
