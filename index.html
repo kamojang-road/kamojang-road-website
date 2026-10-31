@@ -1,545 +1,332 @@
+
 <!DOCTYPE html>
-
 <html lang="id">
-
 <head>
-
   <meta charset="UTF-8">
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <meta name="theme-color" content="#111111">
-
   <title>KAMOJANG ROAD</title>
-
   <link rel="stylesheet" href="style.css">
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script src="script.js" defer></script>
-
 </head>
-
 <body>
 
 <header class="header">
-
   <a class="brand" href="#beranda">KAMOJANG <span>ROAD</span></a>
-
   <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">☰</button>
-
   <nav id="nav">
-
     <a href="#beranda">Beranda</a>
-
     <a href="#tentang">Tentang</a>
-
     <a href="#kta">Pendaftaran KTA</a>
-
     <a href="#login">Login</a>
-
     <a href="#kontak">Kontak</a>
-
   </nav>
-
 </header>
 
 <main>
 
   <section id="beranda" class="hero">
-
     <div class="hero-content">
-
       <p class="eyebrow">KORWIL KAMPUNG MELAYU</p>
-
       <h1>KAMOJANG <span>ROAD</span></h1>
-
       <h2>SATU IDENTITAS, SATU SOLIDARITAS.</h2>
-
       <p>Tempat berkumpul, bersaudara, dan mendukung kebanggaan bersama.</p>
-
       <div class="hero-actions">
-
         <a href="#login" class="btn btn-orange">LOGIN ANGGOTA</a>
-
         <a href="#kta" class="btn btn-outline">DAFTAR KTA</a>
-
       </div>
-
     </div>
-
   </section>
 
   <section id="tentang" class="section">
-
     <p class="eyebrow">TENTANG KAMI</p>
-
     <h2>KAMOJANG ROAD</h2>
-
     <p class="section-text">
-
       KAMOJANG ROAD adalah wadah kebersamaan dan solidaritas
-
       anggota di wilayah Kampung Melayu.
-
     </p>
-
   </section>
 
   <section id="kta" class="section section-dark">
-
     <p class="eyebrow">PENDAFTARAN</p>
-
     <h2>DAFTAR KTA</h2>
-
     <p class="section-text">
-
       Isi data berikut. Pengurus akan menghubungi melalui WhatsApp.
-
     </p>
 
     <form id="ktaForm" class="form-card">
 
       <label>Nama lengkap</label>
-
       <input id="ktaName" type="text" required placeholder="Nama lengkap">
 
       <label>Email</label>
-
       <input id="ktaEmail" type="email" required placeholder="Alamat email">
 
       <label>Nomor WhatsApp</label>
-
       <input id="ktaPhone" type="tel" required placeholder="08xxxxxxxxxx">
 
+      <label for="ktaPassword">Kata sandi</label>
+      <input
+        id="ktaPassword"
+        type="password"
+        name="password"
+        required
+        minlength="6"
+        autocomplete="new-password"
+        placeholder="Buat kata sandi minimal 6 karakter"
+      >
+
       <button class="btn btn-orange full" type="submit">
-
         KIRIM PENDAFTARAN
-
       </button>
 
       <p id="ktaMessage" class="message"></p>
-
     </form>
-
   </section>
 
   <section id="login" class="section">
-
     <p class="eyebrow">AKSES AKUN</p>
-
     <h2>LOGIN</h2>
-
     <p class="section-text">
-
       Admin dan anggota menggunakan halaman login yang sama.
-
     </p>
 
     <form id="loginForm" class="form-card">
-
       <label>Email</label>
-
       <input id="loginEmail" type="email" required placeholder="Email akun">
 
       <label>Kata sandi</label>
-
       <input id="loginPassword" type="password" required placeholder="Kata sandi">
 
       <button class="btn btn-orange full" type="submit">MASUK</button>
 
       <button id="resetPasswordButton" class="text-button" type="button">
-
         Lupa kata sandi?
-
       </button>
 
       <p id="loginMessage" class="message"></p>
-
     </form>
-
   </section>
 
   <!-- DASHBOARD ANGGOTA -->
-
   <section id="memberPage" class="dashboard hidden">
-
     <div class="dashboard-heading">
-
       <div>
-
         <p class="eyebrow">AREA ANGGOTA</p>
-
         <h2>MENU ANGGOTA</h2>
-
       </div>
-
       <button class="btn btn-outline logoutButton">KELUAR</button>
-
     </div>
 
     <div class="info-card">
-
       <p class="muted">NAMA ANGGOTA</p>
-
       <h3 id="memberName">-</h3>
-
       <p class="muted">ID ANGGOTA / KTA</p>
-
       <h3 id="memberId">Belum tersedia</h3>
-
     </div>
 
     <div class="panel">
-
       <h3>PEMESANAN TIKET</h3>
-
       <div id="activeMatchInfo" class="data-list">
-
         Memuat informasi pertandingan...
-
       </div>
-
       <p id="ticketMessage" class="message"></p>
 
       <form id="ticketForm">
-
         <p>Jumlah tiket: <strong>1 tiket</strong></p>
-
         <button id="ticketSubmitButton" class="btn btn-orange full"
-
           type="submit" disabled>
-
           AJUKAN PEMESANAN
-
         </button>
-
       </form>
-
     </div>
 
     <div class="panel">
-
       <h3>PESANAN TIKET AKTIF</h3>
-
       <div id="memberOrders" class="data-list">
-
         Memuat pesanan...
-
       </div>
-
     </div>
 
     <div class="panel">
-
       <h3>RIWAYAT PESANAN TIKET</h3>
-
       <div id="memberOrderHistory" class="data-list">
-
         Memuat riwayat pesanan...
-
       </div>
-
     </div>
-
   </section>
 
   <!-- DASHBOARD ADMIN -->
-
   <section id="adminPage" class="dashboard hidden">
-
     <div class="dashboard-heading">
-
       <div>
-
         <p class="eyebrow">AREA PENGELOLA</p>
-
         <h2>DASHBOARD ADMIN</h2>
-
       </div>
-
       <button class="btn btn-outline logoutButton">KELUAR</button>
-
     </div>
 
     <!-- RINGKASAN -->
-
     <div class="admin-grid">
-
       <div class="stat-card">
-
         <span>PENGAJUAN KTA</span>
-
         <strong id="ktaCount">0</strong>
-
       </div>
-
       <div class="stat-card">
-
         <span>DATA ANGGOTA</span>
-
         <strong id="memberCount">0</strong>
-
       </div>
-
       <div class="stat-card">
-
         <span>PERMINTAAN TIKET</span>
-
         <strong id="orderCount">0</strong>
-
       </div>
-
     </div>
 
     <!-- MENU ADMIN -->
-
     <div class="admin-menu">
-
       <button type="button" class="admin-menu-button active"
-
         data-admin-panel="eventPanel">
-
         <span>01</span>
-
         <strong>ATUR PERTANDINGAN</strong>
-
         <small>Kelola pertandingan dan penjualan tiket</small>
-
       </button>
 
       <button type="button" class="admin-menu-button"
-
         data-admin-panel="historyMatchPanel">
-
         <span>02</span>
-
         <strong>RIWAYAT PERTANDINGAN</strong>
-
         <small>Lihat pertandingan yang sudah dihentikan</small>
-
       </button>
 
       <button type="button" class="admin-menu-button"
-
         data-admin-panel="ktaPanel">
-
         <span>03</span>
-
         <strong>PENGAJUAN KTA</strong>
-
         <small>Periksa dan proses pendaftaran KTA</small>
-
         <b id="ktaMenuCount">0</b>
-
       </button>
 
       <button type="button" class="admin-menu-button"
-
         data-admin-panel="memberPanel">
-
         <span>04</span>
-
         <strong>DATA ANGGOTA</strong>
-
         <small>Lihat daftar anggota terdaftar</small>
-
         <b id="memberMenuCount">0</b>
-
       </button>
 
       <button type="button" class="admin-menu-button"
-
         data-admin-panel="ticketPanel">
-
         <span>05</span>
-
         <strong>PERMINTAAN TIKET</strong>
-
         <small>Periksa dan setujui pesanan tiket</small>
-
         <b id="orderMenuCount">0</b>
-
       </button>
 
       <button type="button" class="admin-menu-button"
-
         data-admin-panel="ticketHistoryPanel">
-
         <span>06</span>
-
         <strong>RIWAYAT PEMBELI TIKET</strong>
-
         <small>Lihat riwayat pemesanan tiket anggota</small>
-
       </button>
-
     </div>
 
     <!-- PANEL PERTANDINGAN -->
-
     <div id="eventPanel" class="panel admin-panel">
-
       <h3>ATUR PERTANDINGAN</h3>
-
       <p class="section-text">
-
         Pertandingan yang disimpan sebagai aktif akan ditampilkan kepada anggota.
-
       </p>
 
       <form id="eventForm" class="form-card">
-
         <label>Tim kandang</label>
-
         <input id="eventHome" type="text"
-
           value="Persija Jakarta" required>
 
         <label>Lawan pertandingan</label>
-
         <input id="eventAway" type="text"
-
           required placeholder="Nama tim lawan">
 
         <label>Tanggal pertandingan</label>
-
         <input id="eventDate" type="date" required>
 
         <label>Stadion</label>
-
         <input id="eventStadium" type="text"
-
           required placeholder="Nama stadion">
 
         <button id="eventSubmitButton" class="btn btn-orange full"
-
           type="submit">
-
           SIMPAN PERTANDINGAN AKTIF
-
         </button>
 
         <p id="eventMessage" class="message"></p>
-
       </form>
 
       <h3 class="subheading">DAFTAR PERTANDINGAN</h3>
-
       <div id="adminEventList" class="data-list">
-
         Memuat pertandingan...
-
       </div>
-
     </div>
 
     <!-- PANEL RIWAYAT PERTANDINGAN -->
-
     <div id="historyMatchPanel" class="panel admin-panel hidden">
-
       <h3>RIWAYAT PERTANDINGAN</h3>
-
       <p class="section-text">
-
         Pertandingan yang penjualan tiketnya sudah dihentikan.
-
         Data dan pesanan tiket tetap tersimpan.
-
       </p>
-
       <div id="adminMatchHistoryList" class="data-list">
-
         Memuat riwayat pertandingan...
-
       </div>
-
     </div>
 
     <!-- PANEL KTA -->
-
     <div id="ktaPanel" class="panel admin-panel hidden">
-
       <h3>PENGAJUAN KTA</h3>
-
       <div id="adminKtaList" class="data-list">
-
         Memuat data...
-
       </div>
-
     </div>
 
     <!-- PANEL ANGGOTA -->
-
     <div id="memberPanel" class="panel admin-panel hidden">
-
       <h3>DATA ANGGOTA</h3>
-
       <div id="adminMemberList" class="data-list">
-
         Memuat data...
-
       </div>
-
     </div>
 
     <!-- PANEL PERMINTAAN TIKET -->
-
     <div id="ticketPanel" class="panel admin-panel hidden">
-
       <h3>PERMINTAAN TIKET</h3>
-
       <div id="adminTicketList" class="data-list">
-
         Memuat data...
-
       </div>
-
     </div>
 
     <!-- PANEL RIWAYAT PEMBELI TIKET -->
-
     <div id="ticketHistoryPanel" class="panel admin-panel hidden">
-
       <h3>RIWAYAT PEMBELI TIKET</h3>
-
       <p class="section-text">
-
         Riwayat pemesanan tiket dari pertandingan sebelumnya.
-
       </p>
-
       <div id="adminTicketHistoryList" class="data-list">
-
         Memuat riwayat pembeli tiket...
-
       </div>
-
     </div>
 
   </section>
-
 </main>
 
 <footer id="kontak">
-
   <h3>KAMOJANG ROAD</h3>
-
   <p>SATU IDENTITAS, SATU SOLIDARITAS.</p>
-
   <a href="https://wa.me/6285283234473"
-
     target="_blank" rel="noopener">
-
     HUBUNGI PENGURUS VIA WHATSAPP
-
   </a>
-
   <p class="copyright">© 2026 KAMOJANG ROAD</p>
-
 </footer>
 
 </body>
-
 </html>
