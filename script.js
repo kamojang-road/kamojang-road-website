@@ -156,8 +156,6 @@ $("ktaForm").addEventListener("submit", async (event) => {
   const email = $("ktaEmail").value.trim();
   const phone = $("ktaPhone").value.trim();
 
-  // Mengambil kolom password dari ID ktaPassword
-  // atau input password yang berada di dalam formulir.
   const passwordInput =
     $("ktaPassword") ||
     $("ktaForm").querySelector('input[type="password"]');
@@ -192,9 +190,6 @@ $("ktaForm").addEventListener("submit", async (event) => {
   button.textContent = "MEMBUAT AKUN...";
 
   try {
-    // Pendaftaran publik tidak memakai token login Admin.
-    // Edge Function manage-kta-v2 menangani pembuatan akun
-    // dan penyimpanan pengajuan KTA.
     const { data, error } = await db.functions.invoke(
       "manage-kta-v2",
       {
@@ -214,9 +209,7 @@ $("ktaForm").addEventListener("submit", async (event) => {
       try {
         const details = await error.context.json();
         if (details?.error) message = details.error;
-      } catch (_) {
-        // Gunakan pesan error standar.
-      }
+      } catch (_) {}
 
       throw new Error(message);
     }
@@ -351,9 +344,7 @@ async function callManageKta(payload) {
     try {
       const details = await error.context.json();
       if (details?.error) message = details.error;
-    } catch (_) {
-      // Gunakan pesan error standar jika respons bukan JSON.
-    }
+    } catch (_) {}
 
     throw new Error(message);
   }
@@ -361,6 +352,52 @@ async function callManageKta(payload) {
   if (data?.error) throw new Error(data.error);
   return data;
 }
+
+// PENANGANAN KLIK PERSETUJUAN KTA
+// EVENT DELEGATION AGAR TETAP AKTIF SETELAH DAFTAR DIMUAT ULANG
+$("adminKtaList").addEventListener("click", async (event) => {
+  const button = event.target.closest(".approve-kta-button");
+
+  if (!button) return;
+
+  const requestId = button.dataset.requestId;
+
+  if (!requestId) {
+    alert("ID pengajuan KTA tidak ditemukan.");
+    return;
+  }
+
+  const confirmed = confirm(
+    "Setujui pengajuan ini? Sistem akan membuat profil anggota dan ID KTA untuk akun yang sudah dibuat saat pendaftaran."
+  );
+
+  if (!confirmed) return;
+
+  button.disabled = true;
+  button.textContent = "MEMPROSES...";
+
+  try {
+    const result = await callManageKta({
+      action: "approve",
+      requestId: requestId
+    });
+
+    alert(
+      "Pengajuan KTA berhasil disetujui.\nID KTA: " +
+      (result.membershipId || "Sudah tersedia") +
+      "\nAkun anggota sekarang dapat digunakan untuk login."
+    );
+
+    await Promise.all([
+      loadAdminKta(),
+      loadAdminMembers()
+    ]);
+  } catch (error) {
+    alert("Gagal menyetujui KTA: " + error.message);
+    button.disabled = false;
+    button.textContent = "SETUJUI KTA & AKTIFKAN ANGGOTA";
+  }
+});
 
 // AMBIL PERTANDINGAN AKTIF
 async function getActiveMatch() {
@@ -806,40 +843,7 @@ async function loadAdminKta() {
     });
   });
 
-  document.querySelectorAll(".approve-kta-button").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const confirmed = confirm(
-        "Setujui pengajuan ini? Sistem akan membuat profil anggota dan ID KTA untuk akun yang sudah dibuat saat pendaftaran."
-      );
-
-      if (!confirmed) return;
-
-      button.disabled = true;
-      button.textContent = "MEMPROSES...";
-
-      try {
-        const result = await callManageKta({
-          action: "approve",
-          requestId: button.dataset.requestId
-        });
-
-        alert(
-          "Pengajuan KTA berhasil disetujui.\nID KTA: " +
-          (result.membershipId || "Sudah tersedia") +
-          "\nAkun anggota sekarang dapat digunakan untuk login."
-        );
-
-        await Promise.all([
-          loadAdminKta(),
-          loadAdminMembers()
-        ]);
-      } catch (error) {
-        alert("Gagal menyetujui KTA: " + error.message);
-        button.disabled = false;
-        button.textContent = "SETUJUI KTA & AKTIFKAN ANGGOTA";
-      }
-    });
-  });
+  // Event klik tombol persetujuan KTA ditangani di luar fungsi ini.
 }
 
 // DATA ANGGOTA ADMIN - BARIS RINGKAS, FORM EDIT SAAT DIBUKA
@@ -1103,8 +1107,6 @@ async function loadAdminTicketHistory() {
 
   const profiles = await getTicketProfiles(history);
 
-  // Kelompokkan berdasarkan event_id.
-  // Jika event_id kosong, gunakan nama pertandingan.
   const groups = new Map();
 
   history.forEach((ticket) => {
