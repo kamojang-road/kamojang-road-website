@@ -220,9 +220,25 @@
 
     <div class="panel">
 
-      <h3>PESANAN SAYA</h3>
+      <h3>PESANAN TIKET AKTIF</h3>
 
-      <div id="memberOrders" class="data-list">Memuat pesanan...</div>
+      <div id="memberOrders" class="data-list">
+
+        Memuat pesanan...
+
+      </div>
+
+    </div>
+
+    <div class="panel">
+
+      <h3>RIWAYAT PESANAN TIKET</h3>
+
+      <div id="memberOrderHistory" class="data-list">
+
+        Memuat riwayat pesanan...
+
+      </div>
 
     </div>
 
@@ -294,9 +310,21 @@
 
       <button type="button" class="admin-menu-button"
 
-        data-admin-panel="ktaPanel">
+        data-admin-panel="historyMatchPanel">
 
         <span>02</span>
+
+        <strong>RIWAYAT PERTANDINGAN</strong>
+
+        <small>Lihat pertandingan yang sudah dihentikan</small>
+
+      </button>
+
+      <button type="button" class="admin-menu-button"
+
+        data-admin-panel="ktaPanel">
+
+        <span>03</span>
 
         <strong>PENGAJUAN KTA</strong>
 
@@ -310,7 +338,7 @@
 
         data-admin-panel="memberPanel">
 
-        <span>03</span>
+        <span>04</span>
 
         <strong>DATA ANGGOTA</strong>
 
@@ -324,13 +352,25 @@
 
         data-admin-panel="ticketPanel">
 
-        <span>04</span>
+        <span>05</span>
 
         <strong>PERMINTAAN TIKET</strong>
 
         <small>Periksa dan setujui pesanan tiket</small>
 
         <b id="orderMenuCount">0</b>
+
+      </button>
+
+      <button type="button" class="admin-menu-button"
+
+        data-admin-panel="ticketHistoryPanel">
+
+        <span>06</span>
+
+        <strong>RIWAYAT PEMBELI TIKET</strong>
+
+        <small>Lihat riwayat pemesanan tiket anggota</small>
 
       </button>
 
@@ -352,11 +392,15 @@
 
         <label>Tim kandang</label>
 
-        <input id="eventHome" type="text" value="Persija Jakarta" required>
+        <input id="eventHome" type="text"
+
+          value="Persija Jakarta" required>
 
         <label>Lawan pertandingan</label>
 
-        <input id="eventAway" type="text" required placeholder="Nama tim lawan">
+        <input id="eventAway" type="text"
+
+          required placeholder="Nama tim lawan">
 
         <label>Tanggal pertandingan</label>
 
@@ -364,9 +408,13 @@
 
         <label>Stadion</label>
 
-        <input id="eventStadium" type="text" required placeholder="Nama stadion">
+        <input id="eventStadium" type="text"
 
-        <button id="eventSubmitButton" class="btn btn-orange full" type="submit">
+          required placeholder="Nama stadion">
+
+        <button id="eventSubmitButton" class="btn btn-orange full"
+
+          type="submit">
 
           SIMPAN PERTANDINGAN AKTIF
 
@@ -386,13 +434,39 @@
 
     </div>
 
+    <!-- PANEL RIWAYAT PERTANDINGAN -->
+
+    <div id="historyMatchPanel" class="panel admin-panel hidden">
+
+      <h3>RIWAYAT PERTANDINGAN</h3>
+
+      <p class="section-text">
+
+        Pertandingan yang penjualan tiketnya sudah dihentikan.
+
+        Data dan pesanan tiket tetap tersimpan.
+
+      </p>
+
+      <div id="adminMatchHistoryList" class="data-list">
+
+        Memuat riwayat pertandingan...
+
+      </div>
+
+    </div>
+
     <!-- PANEL KTA -->
 
     <div id="ktaPanel" class="panel admin-panel hidden">
 
       <h3>PENGAJUAN KTA</h3>
 
-      <div id="adminKtaList" class="data-list">Memuat data...</div>
+      <div id="adminKtaList" class="data-list">
+
+        Memuat data...
+
+      </div>
 
     </div>
 
@@ -402,17 +476,45 @@
 
       <h3>DATA ANGGOTA</h3>
 
-      <div id="adminMemberList" class="data-list">Memuat data...</div>
+      <div id="adminMemberList" class="data-list">
+
+        Memuat data...
+
+      </div>
 
     </div>
 
-    <!-- PANEL TIKET -->
+    <!-- PANEL PERMINTAAN TIKET -->
 
     <div id="ticketPanel" class="panel admin-panel hidden">
 
       <h3>PERMINTAAN TIKET</h3>
 
-      <div id="adminTicketList" class="data-list">Memuat data...</div>
+      <div id="adminTicketList" class="data-list">
+
+        Memuat data...
+
+      </div>
+
+    </div>
+
+    <!-- PANEL RIWAYAT PEMBELI TIKET -->
+
+    <div id="ticketHistoryPanel" class="panel admin-panel hidden">
+
+      <h3>RIWAYAT PEMBELI TIKET</h3>
+
+      <p class="section-text">
+
+        Riwayat pemesanan tiket dari pertandingan sebelumnya.
+
+      </p>
+
+      <div id="adminTicketHistoryList" class="data-list">
+
+        Memuat riwayat pembeli tiket...
+
+      </div>
 
     </div>
 
@@ -426,7 +528,9 @@
 
   <p>SATU IDENTITAS, SATU SOLIDARITAS.</p>
 
-  <a href="https://wa.me/6285283234473" target="_blank" rel="noopener">
+  <a href="https://wa.me/6285283234473"
+
+    target="_blank" rel="noopener">
 
     HUBUNGI PENGURUS VIA WHATSAPP
 
