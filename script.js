@@ -2806,3 +2806,126 @@ db.auth.onAuthStateChange((event) => {
   }
 });
 
+// ==========================================
+// NOTIFIKASI PUSH ANGGOTA KAMOJANG ROAD
+// ==========================================
+
+const VAPID_PUBLIC_KEY =
+  "BOK4Sxeestc9qD4LQKkgbGQhdh3n8RLayU70M9oUWbYMSJvCoeRmCvZUQUfceMqwRYwmR6f7czoqEB2tColo4lw";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  const rawData = atob(base64);
+  return Uint8Array.from(rawData, (char) => char.charCodeAt(0));
+}
+
+const enableNotificationButton = document.getElementById(
+  "enableNotificationButton"
+);
+
+const notificationMessage = document.getElementById(
+  "notificationMessage"
+);
+
+enableNotificationButton?.addEventListener("click", async () => {
+  const button = enableNotificationButton;
+
+  try {
+    button.disabled = true;
+    notificationMessage.textContent = "Menyiapkan notifikasi...";
+
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      throw new Error(
+        "Browser ini belum mendukung notifikasi push."
+      );
+    }
+
+    if (!("Notification" in window)) {
+      throw new Error(
+        "Fitur notifikasi tidak tersedia di perangkat ini."
+      );
+    }
+
+    const { data: userData, error: userError } =
+      await db.auth.getUser();
+
+    if (userError || !userData.user) {
+      throw new Error("Silakan login terlebih dahulu.");
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
+      throw new Error(
+        "Izin notifikasi belum diberikan. Periksa pengaturan browser."
+      );
+    }
+
+    const registration = await navigator.serviceWorker.register(
+      "./sw.js"
+    );
+
+    await navigator.serviceWorker.ready;
+
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+
+    const subscriptionData = subscription.toJSON();
+
+    if (
+      !subscriptionData.endpoint ||
+      !subscriptionData.keys?.p256dh ||
+      !subscriptionData.keys?.auth
+    ) {
+      throw new Error("Data perangkat tidak lengkap.");
+    }
+
+    // Hapus langganan lama milik akun ini pada endpoint yang sama.
+    const { error: deleteError } = await db
+      .from("push_subscriptions")
+      .delete()
+      .eq("endpoint", subscriptionData.endpoint);
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+    // Simpan langganan perangkat ke Supabase.
+    const { error: insertError } = await db
+      .from("push_subscriptions")
+      .insert({
+        user_id: userData.user.id,
+        endpoint: subscriptionData.endpoint,
+        p256dh: subscriptionData.keys.p256dh,
+        auth: subscriptionData.keys.auth,
+        user_agent: navigator.userAgent
+      });
+
+    if (insertError) {
+      throw insertError;
+    }
+
+    notificationMessage.textContent =
+      "Notifikasi berhasil diaktifkan pada perangkat ini.";
+
+    button.textContent = "NOTIFIKASI AKTIF";
+  } catch (error) {
+    console.error("Aktivasi notifikasi gagal:", error);
+
+    notificationMessage.textContent =
+      error.message || "Gagal mengaktifkan notifikasi.";
+
+    button.disabled = false;
+  }
+});
+
