@@ -2481,3 +2481,19 @@ db.auth.onAuthStateChange((event) => {
     showPublicPage();
   }
 });
+// =====================================================
+// TES KLIK TOMBOL VERIFIKASI PEMBAYARAN
+// =====================================================
+
+document.addEventListener("click", function (event) {
+  const button = event.target.closest(".review-payment-button");
+
+  if (!button) return;
+
+  alert(
+    "TOMBOL TERDETEKSI!\nID Tiket: " +
+    button.dataset.ticketId +
+    "\nStatus: " +
+    button.dataset.approved
+  );
+});
