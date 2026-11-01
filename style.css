@@ -727,3 +727,110 @@ footer a {
   opacity: 0.4;
   cursor: not-allowed;
 }
+/* =========================================
+   RIWAYAT PESANAN ANGGOTA - RINGKAS
+========================================= */
+
+.compact-record {
+  width: 100%;
+  margin-bottom: 8px;
+  overflow: hidden;
+  background: #101010;
+  border: 1px solid #333;
+  border-radius: 6px;
+}
+
+.compact-record[open] {
+  border-color: var(--orange);
+}
+
+.compact-record-summary {
+  min-height: 48px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.compact-record-summary::-webkit-details-marker {
+  display: none;
+}
+
+.compact-record-summary::after {
+  content: "+";
+  flex: 0 0 auto;
+  color: var(--orange);
+  font-size: 19px;
+  font-weight: bold;
+}
+
+.compact-record[open] .compact-record-summary::after {
+  content: "−";
+}
+
+.compact-record-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.compact-record-meta {
+  flex: 0 0 auto;
+  color: var(--gray);
+  font-size: 10px;
+  text-align: right;
+}
+
+.compact-record-body {
+  padding: 10px 12px;
+  border-top: 1px solid #333;
+  background: #171717;
+}
+
+.compact-record-body p {
+  margin: 5px 0;
+  color: #d0d0d0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* =========================================
+   PEMBAYARAN DI DALAM PESANAN AKTIF
+========================================= */
+
+.payment-account-card {
+  border-color: var(--orange);
+}
+
+.payment-upload-area {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #333;
+}
+
+.payment-upload-area label {
+  display: block;
+  margin-bottom: 8px;
+  color: white;
+  font-size: 12px;
+}
+
+.payment-upload-area input[type="file"] {
+  width: 100%;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.payment-upload-area .btn {
+  width: 100%;
+}
+
+.payment-upload-area .muted {
+  color: var(--gray);
+  font-size: 11px;
+}
