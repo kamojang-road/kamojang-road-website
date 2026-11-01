@@ -1259,3 +1259,287 @@ footer a {
     color: #ed7624;
   }
 }
+
+/* =========================================
+   KAMOJANG ROAD
+   WHITE CORPORATE PROFESSIONAL
+========================================= */
+
+:root {
+  --orange: #e87524;
+  --white: #20242a;
+  --gray: #737b85;
+  --black: #f5f6f8;
+  --dark: #ffffff;
+}
+
+/* GLOBAL */
+
+body {
+  background: #f5f6f8;
+  color: #252a31;
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: .05px;
+}
+
+h1, h2, h3, h4 {
+  color: #20242a;
+  letter-spacing: -.3px;
+}
+
+p {
+  color: #626b76;
+  line-height: 1.65;
+}
+
+/* HEADER */
+
+.header {
+  background: #ffffff;
+  border-bottom: 1px solid #e8eaee;
+  box-shadow: 0 2px 12px rgba(20,30,45,.035);
+}
+
+.brand {
+  color: #20242a;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+
+nav a {
+  color: #414954;
+  font-weight: 600;
+}
+
+nav a:hover {
+  color: #e87524;
+}
+
+/* HERO */
+
+.hero {
+  background:
+    linear-gradient(110deg, #ffffff 0%, #f8f9fb 75%);
+  color: #20242a;
+}
+
+.hero h1 {
+  color: #20242a;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.hero h2 {
+  color: #414954;
+  font-weight: 600;
+}
+
+/* BUTTON */
+
+.btn {
+  border-radius: 7px;
+  font-weight: 700;
+  transition: .2s ease;
+}
+
+.btn-orange {
+  background: #e87524;
+  border-color: #e87524;
+  color: #ffffff;
+}
+
+.btn-orange:hover {
+  background: #cf641c;
+  border-color: #cf641c;
+}
+
+.btn-outline {
+  background: #ffffff;
+  border: 1px solid #e87524;
+  color: #e87524;
+}
+
+.btn-outline:hover {
+  background: #fff6ef;
+  color: #cf641c;
+}
+
+/* SECTION */
+
+.section,
+.dashboard {
+  background: #f5f6f8;
+}
+
+.section-dark {
+  background: #eef1f4;
+}
+
+/* CARD DAN PANEL */
+
+.panel,
+.form-card,
+.info-card,
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 10px;
+  box-shadow: 0 3px 14px rgba(20,30,45,.035);
+}
+
+.panel h3,
+.info-card h3 {
+  color: #252a31;
+  font-weight: 700;
+}
+
+/* FORM */
+
+input,
+select,
+textarea {
+  background: #ffffff;
+  color: #252a31;
+  border: 1px solid #dfe3e8;
+  border-radius: 7px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #e87524;
+  box-shadow: 0 0 0 3px rgba(232,117,36,.09);
+  outline: none;
+}
+
+label {
+  color: #414954;
+  font-weight: 600;
+}
+
+/* DATA DAN PESANAN */
+
+.data-item {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 8px;
+}
+
+.data-item strong {
+  color: #252a31;
+}
+
+.data-item p {
+  color: #626b76;
+}
+
+/* ADMIN NAVIGATION */
+
+.admin-menu-button {
+  background: #ffffff;
+  border: 1px solid #e5e8ed;
+  border-radius: 9px;
+  box-shadow: none;
+}
+
+.admin-menu-button:hover,
+.admin-menu-button.active {
+  background: #fff8f3;
+  border-color: #e87524;
+}
+
+.admin-menu-button > strong {
+  color: #252a31;
+}
+
+.admin-menu-button > small {
+  color: #737b85;
+}
+
+.admin-menu-button > span {
+  color: #e87524;
+}
+
+/* STATISTIK */
+
+.stat-card strong {
+  color: #e87524;
+}
+
+.stat-card span {
+  color: #737b85;
+}
+
+/* STATUS DAN RIWAYAT */
+
+.compact-record {
+  background: #ffffff;
+  border: 1px solid #e5e8ed;
+  border-radius: 8px;
+}
+
+.compact-record[open] {
+  border-color: #e87524;
+}
+
+.compact-record-title {
+  color: #252a31;
+}
+
+.compact-record-meta {
+  color: #737b85;
+}
+
+.compact-record-body {
+  background: #f8f9fb;
+  border-color: #e5e8ed;
+}
+
+.compact-record-body p {
+  color: #626b76;
+}
+
+/* PAYMENT */
+
+.payment-account-card {
+  border-color: #e87524;
+}
+
+.payment-upload-area {
+  border-color: #e5e8ed;
+}
+
+.payment-upload-area label {
+  color: #414954;
+}
+
+/* FOOTER */
+
+footer {
+  background: #ffffff;
+  border-top: 1px solid #e5e8ed;
+}
+
+footer h3 {
+  color: #252a31;
+}
+
+footer p {
+  color: #737b85;
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+  nav {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e8ed;
+    box-shadow: 0 5px 15px rgba(20,30,45,.05);
+  }
+
+  .panel,
+  .form-card,
+  .info-card {
+    border-radius: 9px;
+  }
+}
