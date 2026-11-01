@@ -270,15 +270,11 @@
 
       <h3>PESANAN TIKET AKTIF</h3>
 
-      <div id="memberOrders" class="data-list">
-
-        Memuat pesanan...
-
-      </div>
+      <div id="memberOrders" class="data-list">Memuat pesanan...</div>
 
     </div>
 
-    <!-- INFORMASI DAN UPLOAD PEMBAYARAN -->
+    <!-- PEMBAYARAN -->
 
     <div class="panel">
 
@@ -376,19 +372,7 @@
 
         <strong>ATUR PERTANDINGAN</strong>
 
-        <small>Kelola pertandingan dan penjualan tiket</small>
-
-      </button>
-
-      <button type="button" class="admin-menu-button"
-
-        data-admin-panel="categoryPanel">
-
-        <span>02</span>
-
-        <strong>KATEGORI TIKET</strong>
-
-        <small>Atur kategori, harga, dan kuota tiket</small>
+        <small>Kelola pertandingan, kategori, harga, dan kuota</small>
 
       </button>
 
@@ -396,7 +380,7 @@
 
         data-admin-panel="historyMatchPanel">
 
-        <span>03</span>
+        <span>02</span>
 
         <strong>RIWAYAT PERTANDINGAN</strong>
 
@@ -408,7 +392,7 @@
 
         data-admin-panel="ktaPanel">
 
-        <span>04</span>
+        <span>03</span>
 
         <strong>PENGAJUAN KTA</strong>
 
@@ -422,7 +406,7 @@
 
         data-admin-panel="memberPanel">
 
-        <span>05</span>
+        <span>04</span>
 
         <strong>DATA ANGGOTA</strong>
 
@@ -436,7 +420,7 @@
 
         data-admin-panel="ticketPanel">
 
-        <span>06</span>
+        <span>05</span>
 
         <strong>VERIFIKASI PEMBAYARAN</strong>
 
@@ -450,7 +434,7 @@
 
         data-admin-panel="ticketHistoryPanel">
 
-        <span>07</span>
+        <span>06</span>
 
         <strong>RIWAYAT PEMBELI TIKET</strong>
 
@@ -462,7 +446,7 @@
 
         data-admin-panel="paymentSettingsPanel">
 
-        <span>08</span>
+        <span>07</span>
 
         <strong>PENGATURAN PEMBAYARAN</strong>
 
@@ -472,39 +456,121 @@
 
     </div>
 
-    <!-- PANEL PERTANDINGAN -->
+    <!-- PANEL PERTANDINGAN DAN KATEGORI -->
 
     <div id="eventPanel" class="panel admin-panel">
 
-      <h3>ATUR PERTANDINGAN</h3>
+      <h3>BUAT PENJUALAN TIKET PERTANDINGAN</h3>
 
       <p class="section-text">
 
-        Pertandingan yang disimpan sebagai aktif akan ditampilkan kepada anggota.
+        Isi informasi pertandingan, lalu tambahkan kategori tiket
+
+        beserta kuota dan harganya. Semua data disimpan sekaligus.
 
       </p>
 
       <form id="eventForm" class="form-card">
 
-        <label>Tim kandang</label>
+        <h3>INFORMASI PERTANDINGAN</h3>
 
-        <input id="eventHome" type="text" value="Persija Jakarta" required>
+        <label for="eventHome">Tim kandang</label>
 
-        <label>Lawan pertandingan</label>
+        <input
 
-        <input id="eventAway" type="text" required placeholder="Nama tim lawan">
+          id="eventHome"
 
-        <label>Tanggal pertandingan</label>
+          type="text"
+
+          value="Persija Jakarta"
+
+          required
+
+        >
+
+        <label for="eventAway">Lawan pertandingan</label>
+
+        <input
+
+          id="eventAway"
+
+          type="text"
+
+          required
+
+          placeholder="Nama tim lawan"
+
+        >
+
+        <label for="eventDate">Tanggal pertandingan</label>
 
         <input id="eventDate" type="date" required>
 
-        <label>Stadion</label>
+        <label for="eventStadium">Stadion</label>
 
-        <input id="eventStadium" type="text" required placeholder="Nama stadion">
+        <input
 
-        <button id="eventSubmitButton" class="btn btn-orange full" type="submit">
+          id="eventStadium"
 
-          SIMPAN PERTANDINGAN AKTIF
+          type="text"
+
+          required
+
+          placeholder="Nama stadion"
+
+        >
+
+        <div class="divider"></div>
+
+        <h3>KATEGORI TIKET</h3>
+
+        <p class="section-text">
+
+          Tambahkan kategori sesuai pembagian tiket pertandingan ini.
+
+          Setiap kategori memiliki kuota dan harga masing-masing.
+
+        </p>
+
+        <div id="eventCategoryRows">
+
+          <!-- Baris kategori pertama dibuat otomatis oleh JavaScript -->
+
+        </div>
+
+        <button
+
+          id="addEventCategoryButton"
+
+          class="btn btn-outline full"
+
+          type="button"
+
+        >
+
+          + TAMBAH KATEGORI
+
+        </button>
+
+        <p class="section-text">
+
+          Pastikan jumlah kuota dan harga setiap kategori sudah benar
+
+          sebelum menyimpan pertandingan.
+
+        </p>
+
+        <button
+
+          id="eventSubmitButton"
+
+          class="btn btn-orange full"
+
+          type="submit"
+
+        >
+
+          SIMPAN PERTANDINGAN & KATEGORI TIKET
 
         </button>
 
@@ -517,92 +583,6 @@
       <div id="adminEventList" class="data-list">
 
         Memuat pertandingan...
-
-      </div>
-
-    </div>
-
-    <!-- PANEL KATEGORI TIKET -->
-
-    <div id="categoryPanel" class="panel admin-panel hidden">
-
-      <h3>KELOLA KATEGORI TIKET</h3>
-
-      <p class="section-text">
-
-        Kategori, harga, dan kuota berlaku untuk pertandingan aktif.
-
-        Setiap pertandingan dapat memiliki pembagian kategori yang berbeda.
-
-      </p>
-
-      <div id="adminCategoryEventInfo" class="data-list">
-
-        Memuat pertandingan aktif...
-
-      </div>
-
-      <form id="categoryForm" class="form-card">
-
-        <input id="categoryId" type="hidden">
-
-        <label for="categoryName">Nama kategori</label>
-
-        <input id="categoryName" type="text" required
-
-          placeholder="Contoh: Tribun Atas">
-
-        <label for="categoryStand">Keterangan tribun / alokasi</label>
-
-        <input id="categoryStand" type="text"
-
-          placeholder="Contoh: Blok A">
-
-        <label for="categoryQuota">Kuota tiket</label>
-
-        <input id="categoryQuota" type="number" min="0" step="1"
-
-          required placeholder="Masukkan kuota">
-
-        <label for="categoryPrice">Harga per tiket (Rp)</label>
-
-        <input id="categoryPrice" type="number" min="0" step="1000"
-
-          required placeholder="Contoh: 150000">
-
-        <label class="category-active-label">
-
-          <input id="categoryActive" type="checkbox" checked>
-
-          Kategori aktif dan dapat dipesan
-
-        </label>
-
-        <button id="categorySubmitButton" class="btn btn-orange full"
-
-          type="submit">
-
-          SIMPAN KATEGORI
-
-        </button>
-
-        <button id="categoryCancelButton" class="btn btn-outline full"
-
-          type="button">
-
-          BATAL / RESET FORM
-
-        </button>
-
-        <p id="categoryMessage" class="message"></p>
-
-      </form>
-
-      <h3 class="subheading">DAFTAR KATEGORI</h3>
-
-      <div id="adminCategoryList" class="data-list">
-
-        Memuat kategori...
 
       </div>
 
@@ -704,23 +684,57 @@
 
         <label for="paymentBankName">Nama bank</label>
 
-        <input id="paymentBankName" type="text" required placeholder="Contoh: BCA">
+        <input
+
+          id="paymentBankName"
+
+          type="text"
+
+          required
+
+          placeholder="Contoh: BCA"
+
+        >
 
         <label for="paymentAccountNumber">Nomor rekening</label>
 
-        <input id="paymentAccountNumber" type="text" inputmode="numeric"
+        <input
 
-          required placeholder="Masukkan nomor rekening">
+          id="paymentAccountNumber"
+
+          type="text"
+
+          inputmode="numeric"
+
+          required
+
+          placeholder="Masukkan nomor rekening"
+
+        >
 
         <label for="paymentAccountHolder">Atas nama</label>
 
-        <input id="paymentAccountHolder" type="text" required
+        <input
 
-          placeholder="Nama pemilik rekening">
+          id="paymentAccountHolder"
 
-        <button id="paymentSettingsSaveButton" class="btn btn-orange full"
+          type="text"
 
-          type="submit">
+          required
+
+          placeholder="Nama pemilik rekening"
+
+        >
+
+        <button
+
+          id="paymentSettingsSaveButton"
+
+          class="btn btn-orange full"
+
+          type="submit"
+
+        >
 
           SIMPAN INFORMASI REKENING
 
