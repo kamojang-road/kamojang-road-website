@@ -1,4 +1,3 @@
-
 // =====================================================
 // KAMOJANG ROAD - SCRIPT UTAMA
 // Sistem KTA, anggota, pertandingan, kategori tiket,
@@ -6,7 +5,6 @@
 // =====================================================
 
 const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
-alert("SCRIPT.JS BERHASIL DIMUAT");
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
 
@@ -2158,13 +2156,14 @@ async function loadAdminTickets() {
       "Gagal menampilkan data pemesan: " + error.message;
   }
 }
-
-
 // =====================================================
 // ADMIN - VERIFIKASI ATAU TOLAK BUKTI PEMBAYARAN
 // =====================================================
 
 document.addEventListener("click", async (event) => {
+  // Pastikan target klik merupakan elemen HTML.
+  if (!(event.target instanceof Element)) return;
+
   const button = event.target.closest(".review-payment-button");
 
   if (!button) return;
@@ -2177,8 +2176,8 @@ document.addEventListener("click", async (event) => {
   const ticketId = button.dataset.ticketId;
   const approved = button.dataset.approved === "true";
 
-  if (!ticketId) {
-    alert("ID tiket tidak ditemukan.");
+  if (!ticketId || !Number.isFinite(Number(ticketId))) {
+    alert("ID tiket tidak valid atau tidak ditemukan.");
     return;
   }
 
@@ -2208,8 +2207,20 @@ document.addEventListener("click", async (event) => {
 
   const originalText = button.textContent;
 
+  // Nonaktifkan tombol selama proses berlangsung.
   button.disabled = true;
   button.textContent = "MEMPROSES...";
+
+  // Nonaktifkan tombol lain pada tiket yang sama agar
+  // admin tidak mengirim dua permintaan secara bersamaan.
+  const ticketCard = button.closest(".data-item");
+  const relatedButtons = ticketCard
+    ? [...ticketCard.querySelectorAll(".review-payment-button")]
+    : [];
+
+  relatedButtons.forEach((item) => {
+    item.disabled = true;
+  });
 
   try {
     const { error } = await db.rpc(
@@ -2238,10 +2249,15 @@ document.addEventListener("click", async (event) => {
     console.error("Verifikasi pembayaran gagal:", error);
 
     alert(
-      "Gagal memproses pembayaran: " + error.message
+      "Gagal memproses pembayaran: " +
+      (error.message || "Terjadi kesalahan yang tidak diketahui.")
     );
 
-    button.disabled = false;
+    // Aktifkan kembali tombol jika proses gagal.
+    relatedButtons.forEach((item) => {
+      item.disabled = false;
+    });
+
     button.textContent = originalText;
   }
 });
@@ -2481,20 +2497,4 @@ db.auth.onAuthStateChange((event) => {
   if (event === "SIGNED_OUT") {
     showPublicPage();
   }
-});
-// =====================================================
-// TES KLIK TOMBOL VERIFIKASI PEMBAYARAN
-// =====================================================
-
-document.addEventListener("click", function (event) {
-  const button = event.target.closest(".review-payment-button");
-
-  if (!button) return;
-
-  alert(
-    "TOMBOL TERDETEKSI!\nID Tiket: " +
-    button.dataset.ticketId +
-    "\nStatus: " +
-    button.dataset.approved
-  );
 });
