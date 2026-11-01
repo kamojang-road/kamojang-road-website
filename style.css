@@ -1928,13 +1928,14 @@ footer p {
   }
 
 }
+
 /* =========================================
    STATISTIK ADMIN - CORPORATE PROFESSIONAL
 ========================================= */
 
 .admin-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin: 20px 0 25px;
 }
@@ -1966,6 +1967,8 @@ footer p {
   font-weight: 800;
   line-height: 1.2;
 }
+
+/* TAMPILAN HP */
 
 @media (max-width: 600px) {
   .admin-grid {
