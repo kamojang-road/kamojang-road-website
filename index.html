@@ -629,19 +629,73 @@
 
     <!-- VERIFIKASI PEMBAYARAN -->
 
-    <div id="ticketPanel" class="panel admin-panel hidden">
+<div id="ticketPanel" class="panel admin-panel hidden">
 
-      <h3>VERIFIKASI PEMBAYARAN TIKET</h3>
+  <h3>VERIFIKASI PEMBAYARAN TIKET</h3>
 
-      <p class="section-text">
+  <p class="section-text">
 
-        Periksa bukti pembayaran anggota sebelum menyetujui tiket.
+    Cari pesanan berdasarkan nama anggota, ID KTA,
 
-      </p>
+    nama pertandingan, atau kode pesanan.
 
-      <div id="adminTicketList" class="data-list">Memuat data...</div>
+  </p>
+
+  <div class="admin-ticket-filters">
+
+    <div>
+
+      <label for="adminTicketSearch">CARI PESANAN</label>
+
+      <input
+
+        id="adminTicketSearch"
+
+        type="search"
+
+        placeholder="Nama, ID KTA, pertandingan, kode pesanan..."
+
+      >
 
     </div>
+
+    <div>
+
+      <label for="adminTicketStatusFilter">FILTER STATUS PEMBAYARAN</label>
+
+      <select id="adminTicketStatusFilter">
+
+        <option value="all">Semua status</option>
+
+        <option value="awaiting_payment">Menunggu pembayaran</option>
+
+        <option value="under_review">Menunggu verifikasi admin</option>
+
+        <option value="verified">Pembayaran terverifikasi</option>
+
+        <option value="rejected">Bukti pembayaran ditolak</option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+  <p id="adminTicketFilterCount" class="admin-ticket-filter-count"></p>
+
+  <div id="adminTicketList" class="data-list">
+
+    Memuat data pesanan...
+
+  </div>
+
+  <p id="adminTicketFilterEmpty" class="message hidden">
+
+    Tidak ada pesanan yang sesuai dengan pencarian atau filter.
+
+  </p>
+
+</div>
 
     <!-- RIWAYAT PEMBELI -->
 
