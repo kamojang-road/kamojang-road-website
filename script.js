@@ -2169,7 +2169,7 @@ document.addEventListener("click", async (event) => {
   if (!button) return;
 
   // Pastikan tombol berada di daftar pembayaran admin.
-  if (!button.closest("#adminTicketList")) return;
+  
 
   if (button.disabled) return;
 
@@ -2455,18 +2455,83 @@ async function loadAdminTicketHistory() {
 // =====================================================
 
 document.querySelectorAll(".logoutButton").forEach((button) => {
-  button.addEventListener("click", async () => {
-    await db.auth.signOut();
+  document.addEventListener("click", async (event) => {
+  if (!(event.target instanceof Element)) return;
 
-    showPublicPage();
+  const button = event.target.closest(".review-payment-button");
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-  });
+  if (!button) return;
+
+  if (button.disabled) return;
+
+  const ticketId = button.dataset.ticketId;
+  const approved = button.dataset.approved === "true";
+
+  if (!ticketId) {
+    alert("ID tiket tidak ditemukan.");
+    return;
+  }
+
+  let note = null;
+
+  if (approved) {
+    const confirmed = confirm(
+      "Pastikan pembayaran sudah diterima dan nominalnya sesuai. Verifikasi dan setujui tiket ini?"
+    );
+
+    if (!confirmed) return;
+  } else {
+    note = prompt(
+      "Tuliskan alasan penolakan bukti pembayaran:"
+    );
+
+    if (note === null) return;
+
+    note = note.trim();
+
+    if (!note) {
+      alert("Alasan penolakan wajib diisi.");
+      return;
+    }
+  }
+
+  const originalText = button.textContent;
+
+  button.disabled = true;
+  button.textContent = "MEMPROSES...";
+
+  try {
+    const { error } = await db.rpc(
+      "admin_review_ticket_payment",
+      {
+        p_ticket_id: Number(ticketId),
+        p_approved: approved,
+        p_note: note
+      }
+    );
+
+    if (error) throw error;
+
+    alert(
+      approved
+        ? "Pembayaran berhasil diverifikasi dan tiket disetujui."
+        : "Bukti pembayaran berhasil ditolak."
+    );
+
+    await Promise.all([
+      loadAdminTickets(),
+      loadAdminTicketHistory()
+    ]);
+
+  } catch (error) {
+    console.error("Verifikasi pembayaran gagal:", error);
+
+    alert("Gagal memproses pembayaran: " + error.message);
+
+    button.disabled = false;
+    button.textContent = originalText;
+  }
 });
-
 
 // =====================================================
 // PULIHKAN SESI LOGIN
@@ -2497,15 +2562,4 @@ db.auth.onAuthStateChange((event) => {
   if (event === "SIGNED_OUT") {
     showPublicPage();
   }
-});
-console.log("SCRIPT KAMOJANG ROAD AKTIF");
-
-document.addEventListener("click", function (event) {
-  if (!(event.target instanceof Element)) return;
-
-  const button = event.target.closest(".review-payment-button");
-
-  if (!button) return;
-
-  alert("KLIK TOMBOL VERIFIKASI TERDETEKSI!");
 });
