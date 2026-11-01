@@ -2838,9 +2838,17 @@ enableNotificationButton?.addEventListener("click", async () => {
     button.disabled = true;
     notificationMessage.textContent = "Menyiapkan notifikasi...";
 
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      throw new Error(
-        "Browser ini belum mendukung notifikasi push."
+    if (!("serviceWorker" in navigator)) {
+  throw new Error("Service Worker tidak didukung browser.");
+}
+
+if (!("PushManager" in window)) {
+  throw new Error("PushManager tidak didukung browser.");
+}
+
+if (!("Notification" in window)) {
+  throw new Error("Notification API tidak didukung browser.");
+}
       );
     }
 
