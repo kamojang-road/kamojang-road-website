@@ -490,6 +490,7 @@ async function loadMemberPaymentInfo(profile, activeOrders) {
   }
 }
 
+
 // DASHBOARD ANGGOTA
 async function loadMemberDashboard() {
   const { data: sessionData } = await db.auth.getSession();
@@ -540,14 +541,16 @@ async function loadMemberDashboard() {
 
     const allOrders = orders || [];
 
+    // PESANAN PERTANDINGAN YANG PENJUALANNYA MASIH DIBUKA
+    // Status approved tetap masuk ke Pesanan Tiket Aktif.
     const activeOrders = allOrders.filter((order) => {
       return (
         activeMatch &&
-        String(order.event_id) === String(activeMatch.id) &&
-        isPendingTicket(order.status)
+        String(order.event_id) === String(activeMatch.id)
       );
     });
 
+    // PESANAN PERTANDINGAN YANG SUDAH DITUTUP ADMIN
     const historyOrders = allOrders.filter((order) => {
       return !activeOrders.some(
         (activeOrder) => activeOrder.id === order.id
@@ -576,7 +579,13 @@ async function loadMemberDashboard() {
         `).join("")
       : "Belum ada riwayat pesanan tiket.";
 
-    await loadMemberPaymentInfo(profile, activeOrders);
+    // INFORMASI PEMBAYARAN HANYA UNTUK PESANAN YANG BELUM DISETUJUI
+    const paymentOrders = activeOrders.filter((order) => {
+      return isPendingTicket(order.status);
+    });
+
+    await loadMemberPaymentInfo(profile, paymentOrders);
+
   } catch (error) {
     $("activeMatchInfo").textContent =
       "Gagal memuat pertandingan: " + error.message;
@@ -591,7 +600,6 @@ async function loadMemberDashboard() {
       "Informasi pembayaran tidak dapat dimuat.";
   }
 }
-
 // PEMESANAN SATU TIKET PER ANGGOTA PER PERTANDINGAN
 $("ticketForm").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -1292,10 +1300,11 @@ async function loadAdminTicketHistory() {
       .map((event) => String(event.id))
   );
 
+  // HANYA PESANAN DARI PERTANDINGAN YANG SUDAH DIARSIPKAN
   const history = (tickets || []).filter((ticket) => {
     return (
       archivedEventIds.has(String(ticket.event_id)) ||
-      !isPendingTicket(ticket.status)
+      (!ticket.event_id && !isPendingTicket(ticket.status))
     );
   });
 
@@ -1334,6 +1343,7 @@ async function loadAdminTicketHistory() {
 
   list.innerHTML = sortedGroups.map(([key, groupTickets]) => {
     const firstTicket = groupTickets[0];
+
     const event = firstTicket.event_id
       ? eventMap.get(String(firstTicket.event_id))
       : null;
@@ -1353,7 +1363,9 @@ async function loadAdminTicketHistory() {
         <div class="compact-buyer-row">
           <div class="compact-buyer-heading">
             <strong>${escapeHTML(profile?.full_name || "Nama tidak ditemukan")}</strong>
-            <span class="compact-buyer-status">${escapeHTML(statusLabel(ticket.status))}</span>
+            <span class="compact-buyer-status">
+              ${escapeHTML(statusLabel(ticket.status))}
+            </span>
           </div>
 
           <p>ID KTA: ${escapeHTML(profile?.membership_id || "Belum tersedia")}</p>
@@ -1391,7 +1403,6 @@ async function loadAdminTicketHistory() {
     `;
   }).join("");
 }
-
 // LOGOUT
 document.querySelectorAll(".logoutButton").forEach((button) => {
   button.addEventListener("click", async () => {
