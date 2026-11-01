@@ -672,3 +672,58 @@ footer a {
     padding: 10px;
   }
 }
+
+/* =========================================
+   FORM KATEGORI TIKET PERTANDINGAN
+========================================= */
+
+.event-category-row {
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--dark);
+}
+
+.category-row-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.category-row-title {
+  color: var(--orange);
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.category-row-heading .btn {
+  width: auto;
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.event-category-row label {
+  display: block;
+  margin: 12px 0 7px;
+}
+
+.event-category-row input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#addEventCategoryButton {
+  margin: 10px 0 18px;
+}
+
+#eventSubmitButton {
+  margin-top: 18px;
+}
+
+.event-category-row .remove-event-category:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
