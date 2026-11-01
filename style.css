@@ -1543,3 +1543,51 @@ footer p {
     border-radius: 9px;
   }
 }
+
+/* RIWAYAT PESANAN ANGGOTA - COLLAPSIBLE */
+.member-history-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.member-history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.member-history-heading::-webkit-details-marker {
+  display: none;
+}
+
+.member-history-heading h3 {
+  margin: 0;
+}
+
+.member-history-subtitle {
+  display: block;
+  margin-top: 6px;
+  color: #737b85;
+  font-size: 13px;
+}
+
+.member-history-arrow {
+  color: #e87524;
+  font-size: 25px;
+  transition: transform 0.2s ease;
+}
+
+.member-history-panel[open] .member-history-arrow {
+  transform: rotate(180deg);
+}
+
+.member-history-panel #memberOrderHistory {
+  padding: 0 20px 20px;
+  border-top: 1px solid #eeeeee;
+}
+
