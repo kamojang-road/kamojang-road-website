@@ -834,3 +834,428 @@ footer a {
   color: var(--gray);
   font-size: 11px;
 }
+
+/* =========================================
+   KAMOJANG ROAD - WHITE SPORTY MODERN
+   ORANGE ELEGANT THEME
+========================================= */
+
+:root {
+  --black: #f5f6f8;
+  --dark: #ffffff;
+  --orange: #ed7624;
+  --white: #20242a;
+  --gray: #737b85;
+  --line: #e5e7eb;
+}
+
+/* DASAR WEBSITE */
+
+body {
+  background: #f5f6f8;
+  color: #20242a;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: #ed7624;
+  color: #ffffff;
+}
+
+/* HEADER DAN NAVIGASI */
+
+.header {
+  background: rgba(255,255,255,.97);
+  border-bottom: 1px solid #e8e8e8;
+  box-shadow: 0 3px 15px rgba(0,0,0,.04);
+}
+
+.brand {
+  color: #20242a;
+}
+
+.brand span,
+h1 span {
+  color: #ed7624;
+}
+
+nav a {
+  color: #333942;
+  transition: .2s ease;
+}
+
+nav a:hover {
+  color: #ed7624;
+}
+
+.menu-toggle {
+  color: #20242a;
+}
+
+@media (max-width: 700px) {
+  nav {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 8px 18px rgba(0,0,0,.06);
+  }
+}
+
+/* HERO / BERANDA */
+
+.hero {
+  background:
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(237,118,36,.12),
+      transparent 35%
+    ),
+    linear-gradient(135deg,#ffffff,#f2f4f7);
+  color: #20242a;
+}
+
+.hero h1 {
+  color: #20242a;
+}
+
+.hero h2 {
+  color: #303640;
+}
+
+.hero-content > p:not(.eyebrow),
+.section-text {
+  color: #68717c;
+}
+
+/* TOMBOL */
+
+.btn {
+  border-radius: 8px;
+  transition: .2s ease;
+}
+
+.btn-orange {
+  background: #ed7624;
+  color: #ffffff;
+  border-color: #ed7624;
+  box-shadow: 0 4px 10px rgba(237,118,36,.16);
+}
+
+.btn-orange:hover {
+  background: #d96317;
+  color: #ffffff;
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: #ed7624;
+  border-color: #ed7624;
+}
+
+.btn-outline:hover {
+  background: #ed7624;
+  color: #ffffff;
+}
+
+.btn-danger {
+  color: #ffffff;
+}
+
+/* SECTION */
+
+.section {
+  background: #f5f6f8;
+}
+
+.section-dark {
+  background: #eef1f5;
+}
+
+.section h2,
+.dashboard h2 {
+  color: #20242a;
+}
+
+/* FORM LOGIN DAN PENDAFTARAN */
+
+.form-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 13px;
+  box-shadow: 0 5px 22px rgba(0,0,0,.045);
+}
+
+label {
+  color: #343b45;
+}
+
+input,
+select,
+textarea {
+  color: #252b33;
+  background: #ffffff;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #a0a6ae;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #ed7624;
+  box-shadow: 0 0 0 3px rgba(237,118,36,.10);
+  outline: none;
+}
+
+.text-button {
+  color: #ed7624;
+}
+
+/* DASHBOARD ANGGOTA DAN ADMIN */
+
+.dashboard {
+  background: #f5f6f8;
+}
+
+.info-card,
+.panel,
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.035);
+}
+
+.info-card h3,
+.panel h3 {
+  color: #20242a;
+}
+
+.muted {
+  color: #858d98;
+}
+
+.dashboard-heading {
+  color: #20242a;
+}
+
+/* STATISTIK ADMIN */
+
+.stat-card span {
+  color: #737b85;
+}
+
+.stat-card strong {
+  color: #ed7624;
+}
+
+/* DATA PESANAN DAN ANGGOTA */
+
+.data-item {
+  background: #ffffff;
+  border: 1px solid #e8eaee;
+  border-radius: 9px;
+}
+
+.data-item p {
+  color: #5e6671;
+}
+
+.data-item strong {
+  color: #20242a;
+}
+
+.data-item select {
+  color: #20242a;
+  background: #f8f9fb;
+  border-color: #dfe3e8;
+}
+
+/* MENU ADMIN */
+
+.admin-menu-button {
+  color: #252b33;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 11px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.025);
+}
+
+.admin-menu-button:hover,
+.admin-menu-button.active {
+  background: #fff8f3;
+  border-color: #ed7624;
+}
+
+.admin-menu-button > span {
+  color: #ed7624;
+}
+
+.admin-menu-button > strong {
+  color: #252b33;
+}
+
+.admin-menu-button > small {
+  color: #7b838d;
+}
+
+.admin-menu-button > b {
+  color: #ffffff;
+  background: #ed7624;
+}
+
+/* PANEL ADMIN */
+
+.admin-panel {
+  background: #ffffff;
+}
+
+.event-category-row {
+  background: #f8f9fb;
+  border-color: #e5e7eb;
+}
+
+.category-row-title {
+  color: #ed7624;
+}
+
+/* STATUS */
+
+.status-open {
+  color: #16834b;
+}
+
+.status-closed {
+  color: #d93636;
+}
+
+/* RIWAYAT PESANAN RINGKAS */
+
+.compact-record {
+  background: #ffffff;
+  border-color: #e5e7eb;
+  border-radius: 9px;
+}
+
+.compact-record[open] {
+  border-color: #ed7624;
+}
+
+.compact-record-title {
+  color: #252b33;
+}
+
+.compact-record-meta {
+  color: #858d98;
+}
+
+.compact-record-summary::after {
+  color: #ed7624;
+}
+
+.compact-record-body {
+  background: #f8f9fb;
+  border-color: #e5e7eb;
+}
+
+.compact-record-body p {
+  color: #59616c;
+}
+
+/* RIWAYAT PEMBELI */
+
+.compact-buyer-row {
+  background: #f8f9fb;
+  border-color: #e5e7eb;
+}
+
+.compact-buyer-heading strong {
+  color: #252b33;
+}
+
+.compact-buyer-status {
+  color: #ed7624;
+}
+
+.compact-buyer-row p {
+  color: #737b85;
+}
+
+/* EDIT DATA ANGGOTA */
+
+.member-edit-fields label {
+  color: #343b45;
+}
+
+/* PEMBAYARAN */
+
+.payment-account-card {
+  border-color: #ed7624;
+}
+
+.payment-upload-area {
+  border-color: #e5e7eb;
+}
+
+.payment-upload-area label {
+  color: #343b45;
+}
+
+.payment-upload-area .muted {
+  color: #737b85;
+}
+
+/* PESAN DAN NOTIFIKASI */
+
+.message {
+  color: #d96a1e;
+}
+
+/* FOOTER */
+
+footer {
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+
+footer h3 {
+  color: #20242a;
+}
+
+footer p {
+  color: #737b85;
+}
+
+footer a {
+  color: #ed7624;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 700px) {
+  .hero {
+    background:
+      radial-gradient(
+        circle at 90% 15%,
+        rgba(237,118,36,.12),
+        transparent 38%
+      ),
+      linear-gradient(135deg,#ffffff,#f2f4f7);
+  }
+
+  .form-card {
+    box-shadow: 0 4px 15px rgba(0,0,0,.04);
+  }
+
+  .admin-menu-button {
+    min-height: 105px;
+  }
+
+  .dashboard-heading .btn-outline {
+    background: #ffffff;
+    color: #ed7624;
+  }
+}
