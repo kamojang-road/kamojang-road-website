@@ -2163,12 +2163,23 @@ async function loadAdminTickets() {
 // ADMIN - VERIFIKASI ATAU TOLAK BUKTI PEMBAYARAN
 // =====================================================
 
-$("adminTicketList")?.addEventListener("click", async (event) => {
+document.addEventListener("click", async (event) => {
   const button = event.target.closest(".review-payment-button");
+
   if (!button) return;
+
+  // Pastikan tombol berada di daftar pembayaran admin.
+  if (!button.closest("#adminTicketList")) return;
+
+  if (button.disabled) return;
 
   const ticketId = button.dataset.ticketId;
   const approved = button.dataset.approved === "true";
+
+  if (!ticketId) {
+    alert("ID tiket tidak ditemukan.");
+    return;
+  }
 
   let note = null;
 
@@ -2194,15 +2205,20 @@ $("adminTicketList")?.addEventListener("click", async (event) => {
     }
   }
 
+  const originalText = button.textContent;
+
   button.disabled = true;
   button.textContent = "MEMPROSES...";
 
   try {
-    const { error } = await db.rpc("admin_review_ticket_payment", {
-      p_ticket_id: Number(ticketId),
-      p_approved: approved,
-      p_note: note
-    });
+    const { error } = await db.rpc(
+      "admin_review_ticket_payment",
+      {
+        p_ticket_id: Number(ticketId),
+        p_approved: approved,
+        p_note: note
+      }
+    );
 
     if (error) throw error;
 
@@ -2218,12 +2234,14 @@ $("adminTicketList")?.addEventListener("click", async (event) => {
     ]);
 
   } catch (error) {
-    alert("Gagal memproses pembayaran: " + error.message);
+    console.error("Verifikasi pembayaran gagal:", error);
+
+    alert(
+      "Gagal memproses pembayaran: " + error.message
+    );
 
     button.disabled = false;
-    button.textContent = approved
-      ? "VERIFIKASI & SETUJUI"
-      : "TOLAK BUKTI";
+    button.textContent = originalText;
   }
 });
 
