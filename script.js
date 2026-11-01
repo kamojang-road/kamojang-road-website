@@ -28,6 +28,145 @@ const ALLOWED_PROOF_TYPES = [
 let currentActiveMatch = null;
 let memberCategories = [];
 
+
+// =====================================================
+// PEMBUAT BARIS KATEGORI PADA FORM PERTANDINGAN
+// =====================================================
+
+let eventCategoryCounter = 0;
+
+function addEventCategoryRow() {
+  const container = $("eventCategoryRows");
+  if (!container) return;
+
+  eventCategoryCounter++;
+
+  const row = document.createElement("div");
+  row.className = "event-category-row data-item";
+
+  row.innerHTML = `
+    <div class="category-row-heading">
+      <strong class="category-row-title">
+        KATEGORI ${eventCategoryCounter}
+      </strong>
+
+      <button
+        type="button"
+        class="btn btn-danger remove-event-category">
+        HAPUS
+      </button>
+    </div>
+
+    <label>Nama kategori</label>
+    <input
+      type="text"
+      data-field="name"
+      required
+      maxlength="100"
+      placeholder="Contoh: Kategori 1">
+
+    <label>Keterangan tribun / alokasi</label>
+    <input
+      type="text"
+      data-field="stand"
+      maxlength="100"
+      placeholder="Contoh: Tribun Atas / Blok A">
+
+    <label>Kuota tiket</label>
+    <input
+      type="number"
+      data-field="quota"
+      min="0"
+      step="1"
+      required
+      placeholder="Contoh: 100">
+
+    <label>Harga per tiket (Rp)</label>
+    <input
+      type="number"
+      data-field="price"
+      min="0"
+      step="1000"
+      required
+      placeholder="Contoh: 150000">
+  `;
+
+  container.appendChild(row);
+  updateEventCategoryTitles();
+}
+
+function updateEventCategoryTitles() {
+  const rows = document.querySelectorAll(".event-category-row");
+
+  rows.forEach((row, index) => {
+    const title = row.querySelector(".category-row-title");
+    const removeButton = row.querySelector(".remove-event-category");
+
+    if (title) title.textContent = "KATEGORI " + (index + 1);
+
+    if (removeButton) {
+      removeButton.disabled = rows.length <= 1;
+    }
+  });
+
+  eventCategoryCounter = rows.length;
+}
+
+function getEventCategoryValues() {
+  const rows = [
+    ...document.querySelectorAll(".event-category-row")
+  ];
+
+  return rows.map((row) => {
+    const name = row.querySelector('[data-field="name"]').value.trim();
+    const stand = row.querySelector('[data-field="stand"]').value.trim();
+    const quotaValue = row.querySelector('[data-field="quota"]').value;
+    const priceValue = row.querySelector('[data-field="price"]').value;
+
+    return {
+      name,
+      stand,
+      quota: Number(quotaValue),
+      price: Number(priceValue),
+      quotaValue,
+      priceValue
+    };
+  });
+}
+
+function resetEventCategoryRows() {
+  const container = $("eventCategoryRows");
+  if (!container) return;
+
+  container.innerHTML = "";
+  eventCategoryCounter = 0;
+  addEventCategoryRow();
+}
+
+// Tambah kategori
+$("addEventCategoryButton")?.addEventListener("click", () => {
+  addEventCategoryRow();
+});
+
+// Hapus kategori
+$("eventCategoryRows")?.addEventListener("click", (event) => {
+  const button = event.target.closest(".remove-event-category");
+  if (!button) return;
+
+  const rows = document.querySelectorAll(".event-category-row");
+
+  if (rows.length <= 1) {
+    alert("Minimal harus ada satu kategori tiket.");
+    return;
+  }
+
+  button.closest(".event-category-row")?.remove();
+  updateEventCategoryTitles();
+});
+
+// Buat satu baris kategori saat halaman dimuat
+resetEventCategoryRows();
+
 // =====================================================
 // FUNGSI BANTU
 // =====================================================
@@ -195,6 +334,7 @@ document.querySelectorAll("#nav a").forEach((link) => {
   });
 });
 
+
 // =====================================================
 // MENU DASHBOARD ADMIN
 // =====================================================
@@ -218,7 +358,6 @@ document.querySelectorAll(".admin-menu-button").forEach((button) => {
     button.classList.add("active");
 
     if (targetId === "eventPanel") loadAdminEvents();
-    if (targetId === "categoryPanel") loadAdminCategories();
     if (targetId === "historyMatchPanel") loadAdminMatchHistory();
     if (targetId === "ktaPanel") loadAdminKta();
     if (targetId === "memberPanel") loadAdminMembers();
@@ -1137,8 +1276,9 @@ $("ticketForm")?.addEventListener("submit", async (event) => {
   }
 });
 
+
 // =====================================================
-// ADMIN - SIMPAN PERTANDINGAN
+// ADMIN - SIMPAN PERTANDINGAN BESERTA KATEGORI
 // =====================================================
 
 $("eventForm")?.addEventListener("submit", async (event) => {
@@ -1152,66 +1292,223 @@ $("eventForm")?.addEventListener("submit", async (event) => {
   const stadium = $("eventStadium").value.trim();
 
   if (!home || !away || !date || !stadium) {
-    showMessage("eventMessage", "Lengkapi semua informasi pertandingan.");
+    showMessage(
+      "eventMessage",
+      "Lengkapi semua informasi pertandingan."
+    );
+    return;
+  }
+
+  const categories = getEventCategoryValues();
+
+  if (!categories.length) {
+    showMessage(
+      "eventMessage",
+      "Tambahkan minimal satu kategori tiket."
+    );
+    return;
+  }
+
+  for (let i = 0; i < categories.length; i++) {
+    const category = categories[i];
+
+    if (!category.name) {
+      showMessage(
+        "eventMessage",
+        `Nama kategori ${i + 1} wajib diisi.`
+      );
+      return;
+    }
+
+    if (
+      category.quotaValue === "" ||
+      !Number.isInteger(category.quota) ||
+      category.quota < 0
+    ) {
+      showMessage(
+        "eventMessage",
+        `Kuota kategori ${i + 1} harus berupa bilangan bulat minimal 0.`
+      );
+      return;
+    }
+
+    if (
+      category.priceValue === "" ||
+      !Number.isFinite(category.price) ||
+      category.price < 0
+    ) {
+      showMessage(
+        "eventMessage",
+        `Harga kategori ${i + 1} tidak valid.`
+      );
+      return;
+    }
+  }
+
+  // Cegah kategori ganda dengan nama dan tribun yang sama.
+  const categoryKeys = categories.map((category) => {
+    return (
+      category.name.toLowerCase() +
+      "||" +
+      category.stand.toLowerCase()
+    );
+  });
+
+  if (new Set(categoryKeys).size !== categoryKeys.length) {
+    showMessage(
+      "eventMessage",
+      "Ada kategori dengan nama dan keterangan tribun yang sama. Periksa kembali."
+    );
     return;
   }
 
   setButtonLoading(
     button,
     true,
-    "MENYIMPAN...",
-    "SIMPAN PERTANDINGAN AKTIF"
+    "MENYIMPAN PERTANDINGAN & KATEGORI...",
+    "SIMPAN PERTANDINGAN & KATEGORI TIKET"
   );
 
+  let newEventId = null;
+  let previousActiveEventId = null;
+  let previousEventArchived = false;
+
   try {
-    const { error: archiveError } = await db
-      .from("match_events")
-      .update({
-        is_active: false,
-        is_archived: true
-      })
-      .eq("is_active", true);
-
-    if (archiveError) throw archiveError;
-
-    const { error: insertError } = await db
+    // Simpan pertandingan baru dalam keadaan belum aktif.
+    // Dengan cara ini, pertandingan lama tetap aktif jika
+    // penyimpanan kategori gagal.
+    const { data: newEvent, error: eventError } = await db
       .from("match_events")
       .insert({
         home_team: home,
         away_team: away,
         match_date: date,
         stadium,
+        is_active: false,
+        is_archived: false
+      })
+      .select("id")
+      .single();
+
+    if (eventError) throw eventError;
+
+    newEventId = newEvent.id;
+
+    // Siapkan semua kategori untuk pertandingan baru.
+    const categoryRows = categories.map((category) => ({
+      event_id: newEventId,
+      name: category.name,
+      stand: category.stand || null,
+      quota: category.quota,
+      price: category.price,
+      is_active: true
+    }));
+
+    // Simpan seluruh kategori sekaligus.
+    const { error: categoryError } = await db
+      .from("match_ticket_categories")
+      .insert(categoryRows);
+
+    if (categoryError) throw categoryError;
+
+    // Cari pertandingan aktif sebelumnya.
+    const { data: previousEvent, error: previousError } = await db
+      .from("match_events")
+      .select("id")
+      .eq("is_active", true)
+      .eq("is_archived", false)
+      .neq("id", newEventId)
+      .maybeSingle();
+
+    if (previousError) throw previousError;
+
+    if (previousEvent) {
+      previousActiveEventId = previousEvent.id;
+
+      // Tutup dan arsipkan pertandingan sebelumnya.
+      const { error: archiveError } = await db
+        .from("match_events")
+        .update({
+          is_active: false,
+          is_archived: true
+        })
+        .eq("id", previousActiveEventId);
+
+      if (archiveError) throw archiveError;
+
+      previousEventArchived = true;
+    }
+
+    // Aktifkan pertandingan baru setelah semua kategori berhasil disimpan.
+    const { error: activateError } = await db
+      .from("match_events")
+      .update({
         is_active: true,
         is_archived: false
-      });
+      })
+      .eq("id", newEventId);
 
-    if (insertError) throw insertError;
+    if (activateError) throw activateError;
 
     showMessage(
       "eventMessage",
-      "Pertandingan aktif berhasil disimpan. Pertandingan sebelumnya masuk riwayat.",
+      `Berhasil! Pertandingan ${home} vs ${away} dan ${categories.length} kategori tiket sudah disimpan. Penjualan tiket sekarang aktif.`,
       true
     );
 
     $("eventForm").reset();
     $("eventHome").value = "Persija Jakarta";
+    resetEventCategoryRows();
+
+    await Promise.all([
+      loadAdminEvents(),
+      loadAdminMatchHistory()
+    ]);
+
+  } catch (error) {
+    console.error("Gagal menyimpan pertandingan dan kategori:", error);
+
+    // Jika proses gagal setelah pertandingan baru dibuat,
+    // jangan biarkan pertandingan setengah jadi menjadi aktif.
+    if (newEventId) {
+      await db
+        .from("match_events")
+        .update({
+          is_active: false,
+          is_archived: true
+        })
+        .eq("id", newEventId);
+
+      // Jika pertandingan lama sudah diarsipkan tetapi
+      // pengaktifan pertandingan baru gagal, pulihkan pertandingan lama.
+      if (previousEventArchived && previousActiveEventId) {
+        await db
+          .from("match_events")
+          .update({
+            is_active: true,
+            is_archived: false
+          })
+          .eq("id", previousActiveEventId);
+      }
+    }
+
+    showMessage(
+      "eventMessage",
+      "Gagal menyimpan pertandingan atau kategori: " + error.message
+    );
 
     await loadAdminEvents();
 
-  } catch (error) {
-    showMessage(
-      "eventMessage",
-      "Gagal menyimpan pertandingan: " + error.message
-    );
   } finally {
     setButtonLoading(
       button,
       false,
-      "MENYIMPAN...",
-      "SIMPAN PERTANDINGAN AKTIF"
+      "MENYIMPAN PERTANDINGAN & KATEGORI...",
+      "SIMPAN PERTANDINGAN & KATEGORI TIKET"
     );
   }
 });
+
 
 // =====================================================
 // ADMIN - DAFTAR PERTANDINGAN
@@ -1362,332 +1659,6 @@ async function loadAdminMatchHistory() {
     : "Belum ada riwayat pertandingan.";
 }
 
-// =====================================================
-// ADMIN - KATEGORI TIKET
-// =====================================================
-
-function resetCategoryForm() {
-  $("categoryForm")?.reset();
-
-  if ($("categoryId")) $("categoryId").value = "";
-  if ($("categoryActive")) $("categoryActive").checked = true;
-
-  if ($("categorySubmitButton")) {
-    $("categorySubmitButton").textContent = "SIMPAN KATEGORI";
-  }
-
-  if ($("categoryCancelButton")) {
-    $("categoryCancelButton").classList.add("hidden");
-  }
-}
-
-async function loadAdminCategories() {
-  const list = $("adminCategoryList");
-  const info = $("adminCategoryEventInfo");
-
-  if (!list) return;
-
-  list.textContent = "Memuat kategori tiket...";
-
-  try {
-    const activeMatch = await getActiveMatch();
-
-    if (!activeMatch) {
-      if (info) {
-        info.textContent =
-          "Belum ada pertandingan aktif. Buat pertandingan terlebih dahulu.";
-      }
-
-      list.textContent = "Kategori belum dapat dibuat.";
-      $("categoryForm")?.querySelectorAll("input, button").forEach((el) => {
-        el.disabled = true;
-      });
-
-      return;
-    }
-
-    $("categoryForm")?.querySelectorAll("input, button").forEach((el) => {
-      el.disabled = false;
-    });
-
-    if (info) {
-      info.innerHTML = `
-        <div class="data-item">
-          <strong>
-            ${escapeHTML(activeMatch.home_team)} vs
-            ${escapeHTML(activeMatch.away_team)}
-          </strong>
-          <p>${escapeHTML(formatDate(activeMatch.match_date))}</p>
-          <p>Stadion: ${escapeHTML(activeMatch.stadium)}</p>
-        </div>
-      `;
-    }
-
-    const { data, error } = await db
-      .from("match_ticket_categories")
-      .select(`
-        id,
-        event_id,
-        name,
-        stand,
-        quota,
-        price,
-        is_active,
-        created_at
-      `)
-      .eq("event_id", activeMatch.id)
-      .order("created_at", { ascending: true });
-
-    if (error) throw error;
-
-    const categories = await Promise.all(
-      (data || []).map((category) => getCategoryRemaining(category))
-    );
-
-    if (!categories.length) {
-      list.textContent =
-        "Belum ada kategori tiket. Tambahkan kategori melalui formulir.";
-      return;
-    }
-
-    list.innerHTML = categories.map((category) => `
-      <div class="data-item">
-        <strong>${escapeHTML(category.name)}</strong>
-        <p>Tribun: ${escapeHTML(category.stand || "-")}</p>
-        <p>Harga: ${escapeHTML(formatRupiah(category.price))}</p>
-        <p>Total kuota: ${escapeHTML(category.quota)}</p>
-        <p>Sudah dipesan: ${escapeHTML(category.reserved)}</p>
-        <p>Sisa kuota: <strong>${escapeHTML(category.remaining)}</strong></p>
-        <p class="${category.is_active ? "status-open" : "status-closed"}">
-          ${category.is_active ? "AKTIF" : "NONAKTIF"}
-        </p>
-
-        <div class="category-actions">
-          <button
-            class="btn btn-orange edit-category-button"
-            data-category-id="${escapeHTML(category.id)}"
-            type="button">
-            EDIT
-          </button>
-
-          <button
-            class="btn btn-danger toggle-category-button"
-            data-category-id="${escapeHTML(category.id)}"
-            data-active="${category.is_active}"
-            type="button">
-            ${category.is_active ? "NONAKTIFKAN" : "AKTIFKAN"}
-          </button>
-
-          <button
-            class="btn btn-danger delete-category-button"
-            data-category-id="${escapeHTML(category.id)}"
-            type="button">
-            HAPUS
-          </button>
-        </div>
-      </div>
-    `).join("");
-
-  } catch (error) {
-    list.textContent =
-      "Gagal memuat kategori: " + error.message;
-  }
-}
-
-// SIMPAN ATAU EDIT KATEGORI
-$("categoryForm")?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  const button = $("categorySubmitButton");
-
-  const categoryId = $("categoryId").value;
-  const name = $("categoryName").value.trim();
-  const stand = $("categoryStand").value.trim();
-  const quota = Number($("categoryQuota").value);
-  const price = Number($("categoryPrice").value);
-  const isActive = $("categoryActive").checked;
-
-  if (!name) {
-    showMessage("categoryMessage", "Nama kategori wajib diisi.");
-    return;
-  }
-
-  if (!Number.isInteger(quota) || quota < 0) {
-    showMessage("categoryMessage", "Kuota harus berupa angka 0 atau lebih.");
-    return;
-  }
-
-  if (!Number.isFinite(price) || price < 0) {
-    showMessage("categoryMessage", "Harga tidak valid.");
-    return;
-  }
-
-  setButtonLoading(
-    button,
-    true,
-    "MENYIMPAN...",
-    categoryId ? "SIMPAN PERUBAHAN" : "SIMPAN KATEGORI"
-  );
-
-  try {
-    const activeMatch = await getActiveMatch();
-
-    if (!activeMatch) {
-      throw new Error("Tidak ada pertandingan aktif.");
-    }
-
-    const payload = {
-      event_id: activeMatch.id,
-      name,
-      stand,
-      quota,
-      price,
-      is_active: isActive
-    };
-
-    let result;
-
-    if (categoryId) {
-      result = await db
-        .from("match_ticket_categories")
-        .update(payload)
-        .eq("id", categoryId)
-        .eq("event_id", activeMatch.id);
-    } else {
-      result = await db
-        .from("match_ticket_categories")
-        .insert(payload);
-    }
-
-    if (result.error) throw result.error;
-
-    showMessage(
-      "categoryMessage",
-      categoryId
-        ? "Kategori berhasil diperbarui."
-        : "Kategori berhasil ditambahkan.",
-      true
-    );
-
-    resetCategoryForm();
-    await loadAdminCategories();
-
-  } catch (error) {
-    showMessage(
-      "categoryMessage",
-      "Gagal menyimpan kategori: " + error.message
-    );
-  } finally {
-    button.disabled = false;
-    button.textContent = "SIMPAN KATEGORI";
-  }
-});
-
-// EDIT, AKTIFKAN, NONAKTIFKAN, DAN HAPUS KATEGORI
-$("adminCategoryList")?.addEventListener("click", async (event) => {
-  const editButton = event.target.closest(".edit-category-button");
-  const toggleButton = event.target.closest(".toggle-category-button");
-  const deleteButton = event.target.closest(".delete-category-button");
-
-  if (editButton) {
-    try {
-      const { data, error } = await db
-        .from("match_ticket_categories")
-        .select("id, name, stand, quota, price, is_active")
-        .eq("id", editButton.dataset.categoryId)
-        .single();
-
-      if (error) throw error;
-
-      $("categoryId").value = data.id;
-      $("categoryName").value = data.name || "";
-      $("categoryStand").value = data.stand || "";
-      $("categoryQuota").value = data.quota;
-      $("categoryPrice").value = data.price;
-      $("categoryActive").checked = data.is_active;
-
-      $("categorySubmitButton").textContent = "SIMPAN PERUBAHAN";
-      $("categoryCancelButton")?.classList.remove("hidden");
-
-      $("categoryForm").scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-
-    } catch (error) {
-      alert("Gagal membuka kategori: " + error.message);
-    }
-
-    return;
-  }
-
-  if (toggleButton) {
-    const currentlyActive = toggleButton.dataset.active === "true";
-    const nextActive = !currentlyActive;
-
-    const confirmed = confirm(
-      nextActive
-        ? "Aktifkan kembali kategori ini?"
-        : "Nonaktifkan kategori ini? Pesanan yang sudah ada tetap tersimpan."
-    );
-
-    if (!confirmed) return;
-
-    toggleButton.disabled = true;
-
-    try {
-      const { error } = await db
-        .from("match_ticket_categories")
-        .update({ is_active: nextActive })
-        .eq("id", toggleButton.dataset.categoryId);
-
-      if (error) throw error;
-
-      await loadAdminCategories();
-
-    } catch (error) {
-      alert("Gagal mengubah kategori: " + error.message);
-      toggleButton.disabled = false;
-    }
-
-    return;
-  }
-
-  if (deleteButton) {
-    const confirmed = confirm(
-      "Hapus kategori ini secara permanen? Jika sudah memiliki pesanan, kategori tidak dapat dihapus dan harus dinonaktifkan."
-    );
-
-    if (!confirmed) return;
-
-    deleteButton.disabled = true;
-
-    try {
-      const { error } = await db
-        .from("match_ticket_categories")
-        .delete()
-        .eq("id", deleteButton.dataset.categoryId);
-
-      if (error) throw error;
-
-      alert("Kategori berhasil dihapus.");
-      await loadAdminCategories();
-
-    } catch (error) {
-      alert(
-        "Kategori tidak dapat dihapus. Jika sudah memiliki pesanan, gunakan NONAKTIFKAN.\n\n" +
-        error.message
-      );
-
-      deleteButton.disabled = false;
-    }
-  }
-});
-
-$("categoryCancelButton")?.addEventListener("click", () => {
-  resetCategoryForm();
-  showMessage("categoryMessage", "");
-});
 
 // =====================================================
 // DASHBOARD ADMIN
