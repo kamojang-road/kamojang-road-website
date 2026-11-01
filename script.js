@@ -358,33 +358,58 @@ document.querySelectorAll("#nav a").forEach((link) => {
 // =====================================================
 
 document.querySelectorAll(".admin-menu-button").forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", async () => {
     const targetId = button.dataset.adminPanel;
     const targetPanel = $(targetId);
 
-    if (!targetPanel) return;
+    if (!targetPanel) {
+      console.error("Panel admin tidak ditemukan:", targetId);
+      return;
+    }
 
+    // Sembunyikan semua panel admin
     document.querySelectorAll(".admin-panel").forEach((panel) => {
       panel.classList.add("hidden");
     });
 
+    // Hapus status aktif dari semua tombol
     document.querySelectorAll(".admin-menu-button").forEach((item) => {
       item.classList.remove("active");
     });
 
+    // Tampilkan panel yang dipilih
     targetPanel.classList.remove("hidden");
     button.classList.add("active");
 
-    if (targetId === "eventPanel") {
-  loadAdminEvents();
-  loadAdminPaymentSettings();
-}
-    if (targetId === "historyMatchPanel") loadAdminMatchHistory();
-    if (targetId === "ktaPanel") loadAdminKta();
-    if (targetId === "memberPanel") loadAdminMembers();
-    if (targetId === "ticketPanel") loadAdminTickets();
-    if (targetId === "ticketHistoryPanel") loadAdminTicketHistory();
-    
+    // Muat data sesuai panel
+    try {
+      if (targetId === "eventPanel") {
+        await loadAdminEvents();
+        await loadAdminPaymentSettings();
+      }
+
+      if (targetId === "historyMatchPanel") {
+        await loadAdminMatchHistory();
+      }
+
+      if (targetId === "ktaPanel") {
+        await loadAdminKta();
+      }
+
+      if (targetId === "memberPanel") {
+        await loadAdminMembers();
+      }
+
+      if (targetId === "ticketPanel") {
+        await loadAdminTickets();
+      }
+
+      if (targetId === "ticketHistoryPanel") {
+        await loadAdminTicketHistory();
+      }
+    } catch (error) {
+      console.error("Gagal memuat panel admin:", targetId, error);
+    }
 
     targetPanel.scrollIntoView({
       behavior: "smooth",
@@ -392,7 +417,6 @@ document.querySelectorAll(".admin-menu-button").forEach((button) => {
     });
   });
 });
-
 
 // =====================================================
 // PENDAFTARAN KTA DAN PEMBUATAN AKUN
