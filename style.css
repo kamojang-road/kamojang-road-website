@@ -1684,3 +1684,248 @@ footer p {
   }
 }
 
+/* ==================================================
+   KAMOJANG ROAD - TATA LETAK LAPTOP / DESKTOP
+   MOBILE TETAP MENGGUNAKAN TAMPILAN LAMA
+================================================== */
+
+@media (min-width: 701px) {
+
+  /* BATAS LEBAR KONTEN UTAMA */
+  main {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* HEADER DESKTOP */
+  .header {
+    padding: 15px max(5%, calc((100% - 1200px) / 2));
+  }
+
+  nav {
+    gap: 30px;
+  }
+
+  nav a {
+    font-size: 13px;
+  }
+
+  /* BERANDA PUBLIK - SEMUA DI TENGAH */
+  .hero {
+    min-height: 620px;
+    padding: 100px 30px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .hero-content {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .hero-content .eyebrow {
+    margin-bottom: 18px;
+  }
+
+  .hero h1 {
+    font-size: clamp(64px, 6vw, 86px);
+    letter-spacing: 1px;
+  }
+
+  .hero h2 {
+    margin-top: 24px;
+    font-size: 25px;
+  }
+
+  .hero-content > p:not(.eyebrow) {
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .hero-actions {
+    justify-content: center;
+    margin-top: 32px;
+    gap: 15px;
+  }
+
+  .hero-actions .btn {
+    min-width: 175px;
+    min-height: 48px;
+  }
+
+  /* TENTANG, PENDAFTARAN, DAN LOGIN */
+  .section {
+    padding: 85px 30px;
+    text-align: center;
+  }
+
+  .section .eyebrow {
+    margin-bottom: 12px;
+  }
+
+  .section h2 {
+    font-size: 34px;
+    margin-bottom: 16px;
+  }
+
+  .section-text {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* FORMULIR DI TENGAH */
+  .form-card {
+    width: 100%;
+    max-width: 520px;
+    margin: 30px auto 0;
+    padding: 32px;
+    text-align: left;
+  }
+
+  .form-card h3 {
+    text-align: left;
+  }
+
+  .form-card .message {
+    text-align: center;
+  }
+
+  /* DASHBOARD ANGGOTA DAN ADMIN */
+  .dashboard {
+    width: 100%;
+    max-width: 1280px;
+    min-height: 75vh;
+    margin: 0 auto;
+    padding: 55px 45px 75px;
+  }
+
+  .dashboard-heading {
+    margin-bottom: 30px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #e5e8ed;
+  }
+
+  .dashboard-heading h2 {
+    font-size: 30px;
+  }
+
+  /* DASHBOARD ANGGOTA */
+  #memberPage .info-card {
+    padding: 28px 32px;
+  }
+
+  #memberPage > .panel {
+    padding: 28px;
+  }
+
+  #memberPage .member-history-panel {
+    padding: 0;
+  }
+
+  /* PEMESANAN DAN PESANAN ANGGOTA */
+  #memberPage > .panel {
+    min-width: 0;
+  }
+
+  #memberPage .data-list {
+    gap: 14px;
+  }
+
+  /* DASHBOARD ADMIN */
+  #adminPage {
+    max-width: 1380px;
+  }
+
+  /* STATISTIK ADMIN */
+  .admin-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin: 25px 0 32px;
+  }
+
+  .admin-grid .stat-card {
+    min-height: 125px;
+    padding: 22px;
+    border-left: 4px solid #e87524;
+  }
+
+  .admin-grid .stat-card strong {
+    font-size: 34px;
+    margin-top: 12px;
+  }
+
+  /* MENU ADMIN */
+  .admin-menu {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 30px 0;
+  }
+
+  .admin-menu-button {
+    min-height: 135px;
+    padding: 22px;
+    justify-content: center;
+  }
+
+  .admin-menu-button > strong {
+    font-size: 14px;
+  }
+
+  .admin-menu-button > small {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  /* PANEL ADMIN */
+  #adminPage > .admin-panel {
+    padding: 30px;
+    margin-bottom: 25px;
+  }
+
+  #adminPage > .admin-panel > h3 {
+    font-size: 19px;
+    margin-bottom: 18px;
+  }
+
+  /* FORM ADMIN */
+  #adminPage .form-card {
+    max-width: 760px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* PENCARIAN TIKET ADMIN */
+  .admin-ticket-filters {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+    padding: 22px;
+  }
+
+  /* DAFTAR DATA */
+  .data-item {
+    padding: 20px;
+  }
+
+  .data-item p {
+    line-height: 1.7;
+  }
+
+  /* RIWAYAT ANGGOTA */
+  .member-history-heading {
+    padding: 24px 28px;
+  }
+
+  .member-history-panel #memberOrderHistory {
+    padding: 20px 28px 28px;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 55px 30px;
+    text-align: center;
+  }
+
+}
+
