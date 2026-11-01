@@ -2450,113 +2450,64 @@ async function loadAdminTicketHistory() {
 }
 
 
+
 // =====================================================
 // LOGOUT
 // =====================================================
 
 document.querySelectorAll(".logoutButton").forEach((button) => {
-  document.addEventListener("click", async (event) => {
-  if (!(event.target instanceof Element)) return;
+  button.addEventListener("click", async () => {
+    button.disabled = true;
 
-  const button = event.target.closest(".review-payment-button");
+    try {
+      const { error } = await db.auth.signOut();
 
-  if (!button) return;
+      if (error) throw error;
 
-  if (button.disabled) return;
+      showPublicPage();
 
-  const ticketId = button.dataset.ticketId;
-  const approved = button.dataset.approved === "true";
+    } catch (error) {
+      console.error("Gagal logout:", error);
 
-  if (!ticketId) {
-    alert("ID tiket tidak ditemukan.");
-    return;
-  }
+      alert("Gagal keluar dari akun: " + error.message);
 
-  let note = null;
-
-  if (approved) {
-    const confirmed = confirm(
-      "Pastikan pembayaran sudah diterima dan nominalnya sesuai. Verifikasi dan setujui tiket ini?"
-    );
-
-    if (!confirmed) return;
-  } else {
-    note = prompt(
-      "Tuliskan alasan penolakan bukti pembayaran:"
-    );
-
-    if (note === null) return;
-
-    note = note.trim();
-
-    if (!note) {
-      alert("Alasan penolakan wajib diisi.");
-      return;
+      button.disabled = false;
     }
-  }
-
-  const originalText = button.textContent;
-
-  button.disabled = true;
-  button.textContent = "MEMPROSES...";
-
-  try {
-    const { error } = await db.rpc(
-      "admin_review_ticket_payment",
-      {
-        p_ticket_id: Number(ticketId),
-        p_approved: approved,
-        p_note: note
-      }
-    );
-
-    if (error) throw error;
-
-    alert(
-      approved
-        ? "Pembayaran berhasil diverifikasi dan tiket disetujui."
-        : "Bukti pembayaran berhasil ditolak."
-    );
-
-    await Promise.all([
-      loadAdminTickets(),
-      loadAdminTicketHistory()
-    ]);
-
-  } catch (error) {
-    console.error("Verifikasi pembayaran gagal:", error);
-
-    alert("Gagal memproses pembayaran: " + error.message);
-
-    button.disabled = false;
-    button.textContent = originalText;
-  }
+  });
 });
+
 
 // =====================================================
 // PULIHKAN SESI LOGIN
 // =====================================================
 
 async function restoreSession() {
-  const { data, error } = await db.auth.getSession();
-
-  if (error || !data.session) return;
-
   try {
+    const { data, error } = await db.auth.getSession();
+
+    if (error) throw error;
+
+    if (!data.session) return;
+
     const profile = await getProfile(data.session.user.id);
+
     showDashboard(profile.role);
 
   } catch (error) {
+    console.error("Gagal memulihkan sesi:", error);
+
     await db.auth.signOut();
 
-    console.error(
-      "Profil akun tidak ditemukan:",
-      error.message
-    );
+    showPublicPage();
   }
 }
 
 restoreSession();
+
+
+// =====================================================
+// PANTAU PERUBAHAN STATUS LOGIN
+// =====================================================
 
 db.auth.onAuthStateChange((event) => {
   if (event === "SIGNED_OUT") {
