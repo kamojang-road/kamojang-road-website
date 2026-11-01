@@ -831,41 +831,55 @@ async function getPaymentSettings() {
 }
 
 async function loadMemberPaymentInfo(profile, activeOrders) {
-  const container = $("memberPaymentInfo");
+  const container = $("memberOrders");
   if (!container) return;
 
   if (!activeOrders.length) {
     container.textContent =
-      "Informasi pembayaran akan muncul setelah kamu memesan tiket.";
+      "Belum ada pesanan untuk pertandingan yang sedang dibuka.";
     return;
   }
 
-  container.textContent = "Memuat informasi pembayaran...";
+  container.textContent = "Memuat pesanan dan pembayaran...";
 
   try {
-    const settings = await getPaymentSettings();
+    // Rekening hanya ditampilkan jika ada pesanan
+    // yang masih perlu membayar atau mengunggah ulang bukti.
+    const needsPayment = activeOrders.some((order) =>
+      ["awaiting_payment", "rejected"].includes(
+        order.payment_status || "awaiting_payment"
+      )
+    );
 
-    const accountHTML = settings?.bank_name &&
-      settings?.account_number &&
-      settings?.account_holder
-      ? `
-        <div class="data-item">
-          <strong>Informasi Rekening Pembayaran</strong>
-          <p>Bank: ${escapeHTML(settings.bank_name)}</p>
-          <p>Nomor rekening:
-            <strong>${escapeHTML(settings.account_number)}</strong>
-          </p>
-          <p>Atas nama: ${escapeHTML(settings.account_holder)}</p>
-        </div>
-      `
-      : `
-        <div class="data-item">
-          Informasi rekening belum diatur oleh Admin.
-        </div>
-      `;
+    let accountHTML = "";
+
+    if (needsPayment) {
+      const settings = await getPaymentSettings();
+
+      accountHTML = settings?.bank_name &&
+        settings?.account_number &&
+        settings?.account_holder
+        ? `
+          <div class="data-item payment-account-card">
+            <strong>INFORMASI REKENING PEMBAYARAN</strong>
+            <p>Transfer sesuai jumlah pembayaran ke rekening berikut:</p>
+            <p>Bank: ${escapeHTML(settings.bank_name)}</p>
+            <p>Nomor rekening:
+              <strong>${escapeHTML(settings.account_number)}</strong>
+            </p>
+            <p>Atas nama: ${escapeHTML(settings.account_holder)}</p>
+          </div>
+        `
+        : `
+          <div class="data-item">
+            Informasi rekening belum diatur oleh Admin.
+          </div>
+        `;
+    }
 
     const ordersHTML = activeOrders.map((order) => {
-      const paymentStatus = order.payment_status || "awaiting_payment";
+      const paymentStatus =
+        order.payment_status || "awaiting_payment";
 
       let statusHTML = "";
 
@@ -878,7 +892,7 @@ async function loadMemberPaymentInfo(profile, activeOrders) {
       } else if (paymentStatus === "verified") {
         statusHTML = `
           <p class="status-open">
-            Pembayaran sudah diverifikasi. Tiket disetujui.
+            LUNAS / TERVERIFIKASI
           </p>
         `;
       } else if (paymentStatus === "rejected") {
@@ -887,7 +901,10 @@ async function loadMemberPaymentInfo(profile, activeOrders) {
             Bukti pembayaran ditolak.
           </p>
           <p>Catatan Admin:
-            ${escapeHTML(order.payment_note || "Silakan unggah ulang bukti pembayaran.")}
+            ${escapeHTML(
+              order.payment_note ||
+              "Silakan unggah ulang bukti pembayaran."
+            )}
           </p>
         `;
       }
@@ -930,14 +947,39 @@ async function loadMemberPaymentInfo(profile, activeOrders) {
         : "";
 
       return `
-        <div class="data-item payment-order-item">
+        <div class="data-item">
           <strong>${escapeHTML(order.match_name)}</strong>
-          <p>Kategori: ${escapeHTML(order.category_name_snapshot || "-")}</p>
-          <p>Tribun: ${escapeHTML(order.stand_snapshot || "-")}</p>
-          <p>Harga tiket: ${escapeHTML(formatRupiah(order.unit_price_snapshot))}</p>
-          <p>Status pembayaran:
-            <strong>${escapeHTML(paymentStatusLabel(paymentStatus))}</strong>
+
+          <p>Kategori:
+            ${escapeHTML(order.category_name_snapshot || "-")}
           </p>
+
+          <p>Tribun:
+            ${escapeHTML(order.stand_snapshot || "-")}
+          </p>
+
+          <p>Jumlah: ${escapeHTML(order.quantity || 1)} tiket</p>
+
+          <p>Harga:
+            <strong>
+              ${escapeHTML(formatRupiah(order.unit_price_snapshot))}
+            </strong>
+          </p>
+
+          <p>Status tiket:
+            ${escapeHTML(statusLabel(order.status))}
+          </p>
+
+          <p>Status pembayaran:
+            <strong>
+              ${escapeHTML(paymentStatusLabel(paymentStatus))}
+            </strong>
+          </p>
+
+          <p>Tanggal pesan:
+            ${escapeHTML(formatDateTime(order.created_at))}
+          </p>
+
           ${statusHTML}
           ${uploadHTML}
         </div>
@@ -954,20 +996,19 @@ async function loadMemberPaymentInfo(profile, activeOrders) {
   }
 }
 
-
 // PENANGANAN UPLOAD BUKTI PEMBAYARAN
 
-$("memberPaymentInfo")?.addEventListener("click", async (event) => {
+$("memberOrders")?.addEventListener("click", async (event) => {
   const button = event.target.closest(".upload-payment-proof");
 
   if (!button) return;
 
   const ticketId = button.dataset.ticketId;
-  const fileInput = $("memberPaymentInfo").querySelector(
+  const fileInput = $("memberOrders").querySelector(
     `.payment-proof-file[data-ticket-id="${ticketId}"]`
   );
 
-  const message = $("memberPaymentInfo").querySelector(
+  const message = $("memberOrders").querySelector(
     `[data-message-ticket="${ticketId}"]`
   );
 
@@ -1175,7 +1216,7 @@ async function loadMemberDashboard() {
       );
     });
 
-    $("memberOrders").innerHTML = activeOrders.length
+   $("memberOrderHistory").innerHTML = historyOrders.length
       ? activeOrders.map((order) => `
           <div class="data-item">
             <strong>${escapeHTML(order.match_name)}</strong>
@@ -1194,24 +1235,47 @@ async function loadMemberDashboard() {
         `).join("")
       : "Belum ada pesanan untuk pertandingan yang sedang dibuka.";
 
-    $("memberOrderHistory").innerHTML = historyOrders.length
-      ? historyOrders.map((order) => `
-          <div class="data-item">
-            <strong>${escapeHTML(order.match_name)}</strong>
-            <p>Kategori: ${escapeHTML(order.category_name_snapshot || "-")}</p>
-            <p>Tribun: ${escapeHTML(order.stand_snapshot || "-")}</p>
-            <p>Jumlah: 1 tiket</p>
-            <p>Harga: ${escapeHTML(formatRupiah(order.unit_price_snapshot))}</p>
-            <p>Status tiket: ${escapeHTML(statusLabel(order.status))}</p>
-            <p>Status pembayaran:
-              ${escapeHTML(paymentStatusLabel(order.payment_status))}
-            </p>
-            <p>Tanggal pesan:
-              ${escapeHTML(formatDateTime(order.created_at))}
-            </p>
-          </div>
-        `).join("")
-      : "Belum ada riwayat pesanan tiket.";
+$("memberOrderHistory").innerHTML = historyOrders.length
+  ? historyOrders.map((order) => `
+      <details class="compact-record">
+
+        <summary class="compact-record-summary">
+
+          <span class="compact-record-title">
+            ${escapeHTML(order.match_name)}
+          </span>
+
+          <span class="compact-record-meta">
+            ${escapeHTML(formatDateTime(order.created_at))}
+          </span>
+
+        </summary>
+
+        <div class="compact-record-body">
+
+          <p>Jumlah:
+            ${escapeHTML(order.quantity || 1)} tiket
+          </p>
+
+          <p>Harga:
+            <strong>
+              ${escapeHTML(formatRupiah(order.unit_price_snapshot))}
+            </strong>
+          </p>
+
+          <p>Status tiket:
+            ${escapeHTML(statusLabel(order.status))}
+          </p>
+
+          <p>Status pembayaran:
+            ${escapeHTML(paymentStatusLabel(order.payment_status))}
+          </p>
+
+        </div>
+
+      </details>
+    `).join("")
+  : "Belum ada riwayat pesanan tiket.";
 
     await loadMemberPaymentInfo(profile, activeOrders);
 
