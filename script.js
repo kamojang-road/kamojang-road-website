@@ -2135,6 +2135,42 @@ async function loadAdminTickets() {
     $("orderMenuCount").textContent = pendingCount;
   }
 
+// =====================================================
+// UPDATE STATISTIK PESANAN DAN PEMBAYARAN
+// =====================================================
+
+const totalOrders = tickets.length;
+
+const totalTicketQuantity = tickets.reduce(
+  (total, ticket) =>
+    total + Number(ticket.quantity || 0),
+  0
+);
+
+const verifiedPayments = tickets.filter(
+  ticket => ticket.payment_status === "verified"
+).length;
+
+const rejectedPayments = tickets.filter(
+  ticket => ticket.payment_status === "rejected"
+).length;
+
+if ($("totalTicketOrders")) {
+  $("totalTicketOrders").textContent = totalOrders;
+}
+
+if ($("totalTicketsSold")) {
+  $("totalTicketsSold").textContent = totalTicketQuantity;
+}
+
+if ($("verifiedPaymentCount")) {
+  $("verifiedPaymentCount").textContent = verifiedPayments;
+}
+
+if ($("rejectedPaymentCount")) {
+  $("rejectedPaymentCount").textContent = rejectedPayments;
+}
+
   if (!tickets.length) {
     container.textContent = "Belum ada pesanan tiket.";
     if ($("adminTicketFilterCount")) {
