@@ -63,14 +63,15 @@ function addEventCategoryRow() {
       data-field="name"
       required
       maxlength="100"
-      placeholder="Contoh: Kategori 1">
+      value="Kategori ${eventCategoryCounter}"
+      placeholder="Contoh: Tribun Timur">
 
     <label>Keterangan tribun / alokasi</label>
     <input
       type="text"
       data-field="stand"
       maxlength="100"
-      placeholder="Contoh: Tribun Atas / Blok A">
+      placeholder="Contoh: Blok A">
 
     <label>Kuota tiket</label>
     <input
@@ -79,7 +80,7 @@ function addEventCategoryRow() {
       min="0"
       step="1"
       required
-      placeholder="Contoh: 100">
+      value="100">
 
     <label>Harga per tiket (Rp)</label>
     <input
@@ -88,7 +89,7 @@ function addEventCategoryRow() {
       min="0"
       step="1000"
       required
-      placeholder="Contoh: 150000">
+      value="0">
   `;
 
   container.appendChild(row);
@@ -96,13 +97,18 @@ function addEventCategoryRow() {
 }
 
 function updateEventCategoryTitles() {
-  const rows = document.querySelectorAll(".event-category-row");
+  const container = $("eventCategoryRows");
+  if (!container) return;
+
+  const rows = container.querySelectorAll(".event-category-row");
 
   rows.forEach((row, index) => {
     const title = row.querySelector(".category-row-title");
     const removeButton = row.querySelector(".remove-event-category");
 
-    if (title) title.textContent = "KATEGORI " + (index + 1);
+    if (title) {
+      title.textContent = "KATEGORI " + (index + 1);
+    }
 
     if (removeButton) {
       removeButton.disabled = rows.length <= 1;
@@ -113,8 +119,14 @@ function updateEventCategoryTitles() {
 }
 
 function getEventCategoryValues() {
+  const container = $("eventCategoryRows");
+
+  if (!container) {
+    throw new Error("Form kategori tiket tidak ditemukan.");
+  }
+
   const rows = [
-    ...document.querySelectorAll(".event-category-row")
+    ...container.querySelectorAll(".event-category-row")
   ];
 
   return rows.map((row) => {
@@ -140,32 +152,36 @@ function resetEventCategoryRows() {
 
   container.innerHTML = "";
   eventCategoryCounter = 0;
+
   addEventCategoryRow();
 }
 
-// Tambah kategori
+// Tombol tambah kategori
 $("addEventCategoryButton")?.addEventListener("click", () => {
   addEventCategoryRow();
 });
 
-// Hapus kategori
+// Tombol hapus kategori
 $("eventCategoryRows")?.addEventListener("click", (event) => {
   const button = event.target.closest(".remove-event-category");
   if (!button) return;
 
-  const rows = document.querySelectorAll(".event-category-row");
+  const container = $("eventCategoryRows");
+  const rows = container.querySelectorAll(".event-category-row");
 
   if (rows.length <= 1) {
     alert("Minimal harus ada satu kategori tiket.");
     return;
   }
 
-  button.closest(".event-category-row")?.remove();
+  button.closest(".event-category-row").remove();
+
   updateEventCategoryTitles();
 });
 
-// Buat satu baris kategori saat halaman dimuat
+// Buat satu kategori otomatis
 resetEventCategoryRows();
+
 
 // =====================================================
 // FUNGSI BANTU
@@ -269,6 +285,7 @@ function getUniqueFileName(file) {
   return uniqueId + "." + getFileExtension(file);
 }
 
+
 // =====================================================
 // TAMPILAN HALAMAN
 // =====================================================
@@ -305,6 +322,7 @@ function showDashboard(role) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+
 // =====================================================
 // PROFIL ANGGOTA
 // =====================================================
@@ -319,6 +337,7 @@ async function getProfile(userId) {
   if (error) throw error;
   return data;
 }
+
 
 // =====================================================
 // MENU HP
@@ -371,6 +390,7 @@ document.querySelectorAll(".admin-menu-button").forEach((button) => {
     });
   });
 });
+
 
 // =====================================================
 // PENDAFTARAN KTA DAN PEMBUATAN AKUN
@@ -486,6 +506,7 @@ $("ktaForm")?.addEventListener("submit", async (event) => {
   }
 });
 
+
 // =====================================================
 // LOGIN ADMIN DAN ANGGOTA
 // =====================================================
@@ -526,6 +547,7 @@ $("loginForm")?.addEventListener("submit", async (event) => {
   }
 });
 
+
 // =====================================================
 // LUPA KATA SANDI
 // =====================================================
@@ -552,6 +574,7 @@ $("resetPasswordButton")?.addEventListener("click", async () => {
     );
   }
 });
+
 
 // =====================================================
 // EDGE FUNCTION manage-kta-v2
@@ -597,6 +620,7 @@ async function callManageKta(payload) {
 
   return data;
 }
+
 
 // =====================================================
 // PERSETUJUAN KTA ADMIN
@@ -646,6 +670,7 @@ $("adminKtaList")?.addEventListener("click", async (event) => {
   }
 });
 
+
 // =====================================================
 // AMBIL PERTANDINGAN AKTIF
 // =====================================================
@@ -662,6 +687,7 @@ async function getActiveMatch() {
 
   return data;
 }
+
 
 // =====================================================
 // KATEGORI TIKET DAN SISA KUOTA
@@ -728,6 +754,7 @@ async function loadMemberCategories(eventId) {
 
   select.innerHTML = '<option value="">Memuat kategori...</option>';
   select.disabled = true;
+
   if (button) button.disabled = true;
 
   try {
@@ -786,6 +813,7 @@ $("ticketCategory")?.addEventListener("change", () => {
     $("ticketSubmitButton").disabled = !category;
   }
 });
+
 
 // =====================================================
 // INFORMASI REKENING DAN UPLOAD BUKTI PEMBAYARAN
@@ -927,7 +955,9 @@ async function loadMemberPaymentInfo(profile, activeOrders) {
   }
 }
 
+
 // PENANGANAN UPLOAD BUKTI PEMBAYARAN
+
 $("memberPaymentInfo")?.addEventListener("click", async (event) => {
   const button = event.target.closest(".upload-payment-proof");
 
@@ -1034,6 +1064,7 @@ $("memberPaymentInfo")?.addEventListener("click", async (event) => {
     button.textContent = "UPLOAD BUKTI PEMBAYARAN";
   }
 });
+
 
 // =====================================================
 // DASHBOARD ANGGOTA
@@ -1202,6 +1233,7 @@ async function loadMemberDashboard() {
   }
 }
 
+
 // =====================================================
 // PEMESANAN TIKET - SATU KTA MAKSIMAL SATU TIKET
 // =====================================================
@@ -1231,7 +1263,7 @@ $("ticketForm")?.addEventListener("submit", async (event) => {
       throw new Error("Penjualan tiket sedang ditutup.");
     }
 
-    const { data, error } = await db.rpc("book_ticket", {
+    const { error } = await db.rpc("book_ticket", {
       p_event_id: activeMatch.id,
       p_category_id: categoryId
     });
@@ -1375,8 +1407,6 @@ $("eventForm")?.addEventListener("submit", async (event) => {
 
   try {
     // Simpan pertandingan baru dalam keadaan belum aktif.
-    // Dengan cara ini, pertandingan lama tetap aktif jika
-    // penyimpanan kategori gagal.
     const { data: newEvent, error: eventError } = await db
       .from("match_events")
       .insert({
@@ -1479,8 +1509,7 @@ $("eventForm")?.addEventListener("submit", async (event) => {
         })
         .eq("id", newEventId);
 
-      // Jika pertandingan lama sudah diarsipkan tetapi
-      // pengaktifan pertandingan baru gagal, pulihkan pertandingan lama.
+      // Pulihkan pertandingan lama jika sebelumnya sudah diarsipkan.
       if (previousEventArchived && previousActiveEventId) {
         await db
           .from("match_events")
@@ -1601,6 +1630,7 @@ $("adminEventList")?.addEventListener("click", async (event) => {
   }
 });
 
+
 // =====================================================
 // ADMIN - RIWAYAT PERTANDINGAN
 // =====================================================
@@ -1673,6 +1703,7 @@ async function loadAdminDashboard() {
     loadAdminTickets()
   ]);
 }
+
 
 // =====================================================
 // PENGATURAN REKENING ADMIN
@@ -1760,6 +1791,7 @@ $("paymentSettingsForm")?.addEventListener("submit", async (event) => {
   }
 });
 
+
 // =====================================================
 // ADMIN - PENGAJUAN KTA
 // =====================================================
@@ -1842,6 +1874,7 @@ $("adminKtaList")?.addEventListener("change", async (event) => {
     select.disabled = false;
   }
 });
+
 
 // =====================================================
 // ADMIN - DATA ANGGOTA
@@ -1955,6 +1988,7 @@ $("adminMemberList")?.addEventListener("click", async (event) => {
   }
 });
 
+
 // =====================================================
 // ADMIN - PROFIL PEMESAN TIKET
 // =====================================================
@@ -1979,6 +2013,7 @@ async function getTicketProfiles(tickets) {
     (data || []).map((profile) => [profile.id, profile])
   );
 }
+
 
 // =====================================================
 // ADMIN - DAFTAR BUKTI PEMBAYARAN
@@ -2123,6 +2158,7 @@ async function loadAdminTickets() {
   }
 }
 
+
 // =====================================================
 // ADMIN - VERIFIKASI ATAU TOLAK BUKTI PEMBAYARAN
 // =====================================================
@@ -2190,6 +2226,7 @@ $("adminTicketList")?.addEventListener("click", async (event) => {
       : "TOLAK BUKTI";
   }
 });
+
 
 // =====================================================
 // ADMIN - RIWAYAT PEMBELI TIKET
@@ -2377,6 +2414,7 @@ async function loadAdminTicketHistory() {
   }
 }
 
+
 // =====================================================
 // LOGOUT
 // =====================================================
@@ -2393,6 +2431,7 @@ document.querySelectorAll(".logoutButton").forEach((button) => {
     });
   });
 });
+
 
 // =====================================================
 // PULIHKAN SESI LOGIN
