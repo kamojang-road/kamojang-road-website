@@ -6,6 +6,7 @@
 // =====================================================
 
 const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
+alert("SCRIPT.JS BERHASIL DIMUAT");
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
 
