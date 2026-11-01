@@ -2498,3 +2498,14 @@ db.auth.onAuthStateChange((event) => {
     showPublicPage();
   }
 });
+console.log("SCRIPT KAMOJANG ROAD AKTIF");
+
+document.addEventListener("click", function (event) {
+  if (!(event.target instanceof Element)) return;
+
+  const button = event.target.closest(".review-payment-button");
+
+  if (!button) return;
+
+  alert("KLIK TOMBOL VERIFIKASI TERDETEKSI!");
+});
