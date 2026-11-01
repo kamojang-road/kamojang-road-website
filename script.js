@@ -375,13 +375,16 @@ document.querySelectorAll(".admin-menu-button").forEach((button) => {
     targetPanel.classList.remove("hidden");
     button.classList.add("active");
 
-    if (targetId === "eventPanel") loadAdminEvents();
+    if (targetId === "eventPanel") {
+  loadAdminEvents();
+  loadAdminPaymentSettings();
+}
     if (targetId === "historyMatchPanel") loadAdminMatchHistory();
     if (targetId === "ktaPanel") loadAdminKta();
     if (targetId === "memberPanel") loadAdminMembers();
     if (targetId === "ticketPanel") loadAdminTickets();
     if (targetId === "ticketHistoryPanel") loadAdminTicketHistory();
-    if (targetId === "paymentSettingsPanel") loadAdminPaymentSettings();
+    
 
     targetPanel.scrollIntoView({
       behavior: "smooth",
