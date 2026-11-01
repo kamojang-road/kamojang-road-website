@@ -2078,15 +2078,20 @@ async function getTicketProfiles(tickets) {
 }
 
 
+
 // =====================================================
-// ADMIN - DAFTAR BUKTI PEMBAYARAN
+// ADMIN - DAFTAR DAN FILTER PESANAN TIKET
 // =====================================================
 
 async function loadAdminTickets() {
   const container = $("adminTicketList");
   if (!container) return;
 
-  container.textContent = "Memuat bukti pembayaran...";
+  container.textContent = "Memuat data pesanan...";
+
+  if ($("adminTicketFilterEmpty")) {
+    $("adminTicketFilterEmpty").classList.add("hidden");
+  }
 
   const { data, error } = await db
     .from("ticket_requests")
@@ -2106,23 +2111,35 @@ async function loadAdminTickets() {
       payment_submitted_at,
       payment_note
     `)
-    .eq("payment_status", "under_review")
-    .order("payment_submitted_at", { ascending: true });
+    .order("created_at", { ascending: false });
 
   if (error) {
     container.textContent =
-      "Gagal memuat bukti pembayaran: " + error.message;
+      "Gagal memuat pesanan: " + error.message;
     return;
   }
 
   const tickets = data || [];
 
-  if ($("orderCount")) $("orderCount").textContent = tickets.length;
-  if ($("orderMenuCount")) $("orderMenuCount").textContent = tickets.length;
+  // Jumlah yang menunggu verifikasi tetap menjadi
+  // angka pada menu verifikasi admin.
+  const pendingCount = tickets.filter(
+    ticket => ticket.payment_status === "under_review"
+  ).length;
+
+  if ($("orderCount")) {
+    $("orderCount").textContent = pendingCount;
+  }
+
+  if ($("orderMenuCount")) {
+    $("orderMenuCount").textContent = pendingCount;
+  }
 
   if (!tickets.length) {
-    container.textContent =
-      "Belum ada bukti pembayaran yang menunggu verifikasi.";
+    container.textContent = "Belum ada pesanan tiket.";
+    if ($("adminTicketFilterCount")) {
+      $("adminTicketFilterCount").textContent = "0 pesanan";
+    }
     return;
   }
 
@@ -2133,17 +2150,33 @@ async function loadAdminTickets() {
       tickets.map(async (ticket) => {
         const profile = profiles.get(ticket.user_id);
 
-        let proofHTML = `
-          <p class="status-closed">
-            Bukti pembayaran tidak ditemukan.
-          </p>
-        `;
+        const memberName =
+          profile?.full_name || "Nama tidak ditemukan";
+
+        const memberId =
+          profile?.membership_id || "Belum tersedia";
+
+        const paymentStatus =
+          ticket.payment_status || "unknown";
+
+        const searchText = [
+          ticket.id,
+          ticket.match_name,
+          memberName,
+          memberId,
+          ticket.category_name_snapshot,
+          ticket.stand_snapshot
+        ].join(" ").toLowerCase();
+
+        let proofHTML = "";
 
         if (ticket.payment_proof_path) {
-          const { data: signedData, error: signedError } =
-            await db.storage
-              .from(PROOF_BUCKET)
-              .createSignedUrl(ticket.payment_proof_path, 300);
+          const {
+            data: signedData,
+            error: signedError
+          } = await db.storage
+            .from(PROOF_BUCKET)
+            .createSignedUrl(ticket.payment_proof_path, 300);
 
           if (!signedError && signedData?.signedUrl) {
             proofHTML = `
@@ -2166,32 +2199,12 @@ async function loadAdminTickets() {
           }
         }
 
-        return `
-          <div class="data-item">
-            <strong>${escapeHTML(ticket.match_name)}</strong>
-            <p>Nama Anggota:
-              ${escapeHTML(profile?.full_name || "Nama tidak ditemukan")}
-            </p>
-            <p>ID KTA:
-              ${escapeHTML(profile?.membership_id || "Belum tersedia")}
-            </p>
-            <p>Kategori:
-              ${escapeHTML(ticket.category_name_snapshot || "-")}
-            </p>
-            <p>Tribun:
-              ${escapeHTML(ticket.stand_snapshot || "-")}
-            </p>
-            <p>Jumlah: 1 tiket</p>
-            <p>Harga:
-              <strong>${escapeHTML(formatRupiah(ticket.unit_price_snapshot))}</strong>
-            </p>
-            <p>Dikirim:
-              ${escapeHTML(formatDateTime(ticket.payment_submitted_at))}
-            </p>
+        let reviewActions = "";
 
-            ${proofHTML}
-
+        if (paymentStatus === "under_review") {
+          reviewActions = `
             <div class="payment-review-actions">
+
               <button
                 class="btn btn-orange review-payment-button"
                 data-ticket-id="${escapeHTML(ticket.id)}"
@@ -2207,7 +2220,86 @@ async function loadAdminTickets() {
                 type="button">
                 TOLAK BUKTI
               </button>
+
             </div>
+          `;
+        }
+
+        return `
+          <div
+            class="data-item admin-ticket-card"
+            data-admin-ticket-card
+            data-search="${escapeHTML(searchText)}"
+            data-payment-status="${escapeHTML(paymentStatus)}">
+
+            <strong>
+              ${escapeHTML(ticket.match_name || "-")}
+            </strong>
+
+            <p>
+              Kode Pesanan:
+              <strong>#${escapeHTML(ticket.id)}</strong>
+            </p>
+
+            <p>
+              Nama Anggota:
+              ${escapeHTML(memberName)}
+            </p>
+
+            <p>
+              ID KTA:
+              ${escapeHTML(memberId)}
+            </p>
+
+            <p>
+              Kategori:
+              ${escapeHTML(ticket.category_name_snapshot || "-")}
+            </p>
+
+            <p>
+              Tribun:
+              ${escapeHTML(ticket.stand_snapshot || "-")}
+            </p>
+
+            <p>Jumlah: ${escapeHTML(ticket.quantity || 1)} tiket</p>
+
+            <p>
+              Harga:
+              <strong>
+                ${escapeHTML(formatRupiah(
+                  Number(ticket.unit_price_snapshot || 0) *
+                  Number(ticket.quantity || 1)
+                ))}
+              </strong>
+            </p>
+
+            <p>
+              Status pembayaran:
+              <strong>
+                ${escapeHTML(paymentStatusLabel(paymentStatus))}
+              </strong>
+            </p>
+
+            <p>
+              Tanggal pesanan:
+              ${escapeHTML(formatDateTime(ticket.created_at))}
+            </p>
+
+            <p>
+              Bukti dikirim:
+              ${escapeHTML(formatDateTime(ticket.payment_submitted_at))}
+            </p>
+
+            ${
+              ticket.payment_note
+                ? `<p>Catatan: ${escapeHTML(ticket.payment_note)}</p>`
+                : ""
+            }
+
+            ${proofHTML}
+
+            ${reviewActions}
+
           </div>
         `;
       })
@@ -2215,11 +2307,83 @@ async function loadAdminTickets() {
 
     container.innerHTML = cards.join("");
 
+    filterAdminTickets();
+
   } catch (error) {
     container.textContent =
-      "Gagal menampilkan data pemesan: " + error.message;
+      "Gagal menampilkan data pesanan: " + error.message;
   }
 }
+
+
+// =====================================================
+// ADMIN - PENCARIAN DAN FILTER PESANAN
+// =====================================================
+
+function filterAdminTickets() {
+  const container = $("adminTicketList");
+  if (!container) return;
+
+  const searchValue =
+    ($("adminTicketSearch")?.value || "")
+      .trim()
+      .toLowerCase();
+
+  const statusValue =
+    $("adminTicketStatusFilter")?.value || "all";
+
+  const cards = [
+    ...container.querySelectorAll("[data-admin-ticket-card]")
+  ];
+
+  let visibleCount = 0;
+
+  cards.forEach((card) => {
+    const searchText = card.dataset.search || "";
+    const paymentStatus = card.dataset.paymentStatus || "";
+
+    const matchesSearch =
+      !searchValue || searchText.includes(searchValue);
+
+    const matchesStatus =
+      statusValue === "all" ||
+      paymentStatus === statusValue;
+
+    const visible = matchesSearch && matchesStatus;
+
+    card.classList.toggle("hidden", !visible);
+
+    if (visible) visibleCount++;
+  });
+
+  const emptyMessage = $("adminTicketFilterEmpty");
+
+  if (emptyMessage) {
+    emptyMessage.classList.toggle(
+      "hidden",
+      visibleCount > 0 || cards.length === 0
+    );
+  }
+
+  if ($("adminTicketFilterCount")) {
+    $("adminTicketFilterCount").textContent =
+      visibleCount + " dari " + cards.length + " pesanan ditampilkan";
+  }
+}
+
+
+// Event pencarian
+$("adminTicketSearch")?.addEventListener(
+  "input",
+  filterAdminTickets
+);
+
+// Event filter status
+$("adminTicketStatusFilter")?.addEventListener(
+  "change",
+  filterAdminTickets
+);
+
 // =====================================================
 // ADMIN - VERIFIKASI ATAU TOLAK BUKTI PEMBAYARAN
 // =====================================================
