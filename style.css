@@ -1591,3 +1591,96 @@ footer p {
   border-top: 1px solid #eeeeee;
 }
 
+/* =========================================
+   ADMIN - PENCARIAN DAN FILTER PESANAN
+========================================= */
+
+.admin-ticket-filters {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 14px;
+  margin: 20px 0 12px;
+  padding: 17px;
+  background: #f8f9fb;
+  border: 1px solid #e7e9ed;
+  border-radius: 9px;
+}
+
+.admin-ticket-filters > div {
+  min-width: 0;
+}
+
+.admin-ticket-filters label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #414954;
+}
+
+.admin-ticket-filters input,
+.admin-ticket-filters select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: #252a31;
+  background: #ffffff;
+  border: 1px solid #dfe3e8;
+  border-radius: 7px;
+  box-sizing: border-box;
+}
+
+.admin-ticket-filters input:focus,
+.admin-ticket-filters select:focus {
+  border-color: #e87524;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(232,117,36,.09);
+}
+
+.admin-ticket-filter-count {
+  margin: 10px 0 15px;
+  color: #737b85;
+  font-size: 12px;
+}
+
+.admin-ticket-card {
+  margin-bottom: 12px;
+}
+
+.admin-ticket-card[hidden] {
+  display: none !important;
+}
+
+.admin-ticket-card .payment-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.admin-ticket-card .payment-review-actions .btn {
+  flex: 1 1 160px;
+}
+
+#adminTicketFilterEmpty {
+  padding: 12px;
+  text-align: center;
+  color: #737b85;
+}
+
+@media (max-width: 600px) {
+  .admin-ticket-filters {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 13px;
+  }
+
+  .admin-ticket-card .payment-review-actions {
+    flex-direction: column;
+  }
+
+  .admin-ticket-card .payment-review-actions .btn {
+    width: 100%;
+  }
+}
+
