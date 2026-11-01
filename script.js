@@ -1,3 +1,10 @@
+
+// =====================================================
+// KAMOJANG ROAD - SCRIPT UTAMA
+// Sistem KTA, anggota, pertandingan, kategori tiket,
+// kuota otomatis, upload bukti pembayaran, dan verifikasi
+// =====================================================
+
 const SUPABASE_URL = "https://nvgpprjwzwqakgjtaukn.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_EIjm_-SB9c-STxPHRYKQSg_a1FROgmR";
@@ -9,9 +16,26 @@ const db = window.supabase.createClient(
 
 const $ = (id) => document.getElementById(id);
 
+const PROOF_BUCKET = "ticket-payment-proofs";
+const MAX_PROOF_SIZE = 5 * 1024 * 1024;
+const ALLOWED_PROOF_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf"
+];
+
+let currentActiveMatch = null;
+let memberCategories = [];
+
+// =====================================================
+// FUNGSI BANTU
+// =====================================================
+
 function showMessage(id, message, success = false) {
   const el = $(id);
   if (!el) return;
+
   el.textContent = message;
   el.style.color = success ? "#66d98a" : "#f47721";
 }
@@ -28,6 +52,7 @@ function escapeHTML(value) {
 
 function formatDate(value) {
   if (!value) return "-";
+
   return new Date(value + "T00:00:00").toLocaleDateString("id-ID", {
     day: "numeric",
     month: "long",
@@ -37,20 +62,41 @@ function formatDate(value) {
 
 function formatDateTime(value) {
   if (!value) return "-";
+
   return new Date(value).toLocaleString("id-ID", {
     dateStyle: "medium",
     timeStyle: "short"
   });
 }
 
+function formatRupiah(value) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0
+  }).format(Number(value || 0));
+}
+
 function statusLabel(status) {
   const labels = {
-    pending: "Menunggu persetujuan",
+    pending: "Menunggu pembayaran",
     approved: "Disetujui",
     rejected: "Ditolak",
     processing: "Diproses",
     completed: "Selesai"
   };
+
+  return labels[status] || status || "Belum diketahui";
+}
+
+function paymentStatusLabel(status) {
+  const labels = {
+    awaiting_payment: "Menunggu pembayaran",
+    under_review: "Menunggu verifikasi admin",
+    verified: "Pembayaran terverifikasi",
+    rejected: "Bukti pembayaran ditolak"
+  };
+
   return labels[status] || status || "Belum diketahui";
 }
 
@@ -58,10 +104,39 @@ function isPendingTicket(status) {
   return status === "pending" || status === "processing";
 }
 
+function setButtonLoading(button, loading, loadingText, normalText) {
+  if (!button) return;
+
+  button.disabled = loading;
+  button.textContent = loading ? loadingText : normalText;
+}
+
+function getFileExtension(file) {
+  const extensions = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "application/pdf": "pdf"
+  };
+
+  return extensions[file.type] || "file";
+}
+
+function getUniqueFileName(file) {
+  const uniqueId = window.crypto?.randomUUID
+    ? window.crypto.randomUUID()
+    : Date.now() + "-" + Math.random().toString(36).slice(2);
+
+  return uniqueId + "." + getFileExtension(file);
+}
+
+// =====================================================
 // TAMPILAN HALAMAN
+// =====================================================
+
 function showPublicPage() {
-  $("memberPage").classList.add("hidden");
-  $("adminPage").classList.add("hidden");
+  $("memberPage")?.classList.add("hidden");
+  $("adminPage")?.classList.add("hidden");
 
   document.querySelectorAll(".hero, .section").forEach((el) => {
     el.classList.remove("hidden");
@@ -73,14 +148,14 @@ function showDashboard(role) {
     el.classList.add("hidden");
   });
 
-  $("memberPage").classList.add("hidden");
-  $("adminPage").classList.add("hidden");
+  $("memberPage")?.classList.add("hidden");
+  $("adminPage")?.classList.add("hidden");
 
   if (role === "admin") {
-    $("adminPage").classList.remove("hidden");
+    $("adminPage")?.classList.remove("hidden");
     loadAdminDashboard();
   } else if (role === "member") {
-    $("memberPage").classList.remove("hidden");
+    $("memberPage")?.classList.remove("hidden");
     loadMemberDashboard();
   } else {
     alert("Jenis akun tidak dikenali. Hubungi pengurus.");
@@ -91,7 +166,10 @@ function showDashboard(role) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+// =====================================================
 // PROFIL ANGGOTA
+// =====================================================
+
 async function getProfile(userId) {
   const { data, error } = await db
     .from("member_profiles")
@@ -103,18 +181,24 @@ async function getProfile(userId) {
   return data;
 }
 
+// =====================================================
 // MENU HP
-$("menuToggle").addEventListener("click", () => {
-  $("nav").classList.toggle("open");
+// =====================================================
+
+$("menuToggle")?.addEventListener("click", () => {
+  $("nav")?.classList.toggle("open");
 });
 
 document.querySelectorAll("#nav a").forEach((link) => {
   link.addEventListener("click", () => {
-    $("nav").classList.remove("open");
+    $("nav")?.classList.remove("open");
   });
 });
 
+// =====================================================
 // MENU DASHBOARD ADMIN
+// =====================================================
+
 document.querySelectorAll(".admin-menu-button").forEach((button) => {
   button.addEventListener("click", () => {
     const targetId = button.dataset.adminPanel;
@@ -134,6 +218,7 @@ document.querySelectorAll(".admin-menu-button").forEach((button) => {
     button.classList.add("active");
 
     if (targetId === "eventPanel") loadAdminEvents();
+    if (targetId === "categoryPanel") loadAdminCategories();
     if (targetId === "historyMatchPanel") loadAdminMatchHistory();
     if (targetId === "ktaPanel") loadAdminKta();
     if (targetId === "memberPanel") loadAdminMembers();
@@ -148,8 +233,11 @@ document.querySelectorAll(".admin-menu-button").forEach((button) => {
   });
 });
 
-// PENDAFTARAN KTA SEKALIGUS PEMBUATAN AKUN
-$("ktaForm").addEventListener("submit", async (event) => {
+// =====================================================
+// PENDAFTARAN KTA DAN PEMBUATAN AKUN
+// =====================================================
+
+$("ktaForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const name = $("ktaName").value.trim();
@@ -161,6 +249,7 @@ $("ktaForm").addEventListener("submit", async (event) => {
     $("ktaForm").querySelector('input[type="password"]');
 
   const password = passwordInput?.value || "";
+
   const button = event.submitter || $("ktaForm").querySelector(
     'button[type="submit"], input[type="submit"]'
   );
@@ -174,10 +263,7 @@ $("ktaForm").addEventListener("submit", async (event) => {
   }
 
   if (password.length < 6) {
-    showMessage(
-      "ktaMessage",
-      "Password minimal 6 karakter."
-    );
+    showMessage("ktaMessage", "Password minimal 6 karakter.");
     return;
   }
 
@@ -186,8 +272,12 @@ $("ktaForm").addEventListener("submit", async (event) => {
     return;
   }
 
-  button.disabled = true;
-  button.textContent = "MEMBUAT AKUN...";
+  setButtonLoading(
+    button,
+    true,
+    "MEMBUAT AKUN...",
+    "KIRIM PENDAFTARAN"
+  );
 
   try {
     const { data, error } = await db.functions.invoke(
@@ -214,13 +304,11 @@ $("ktaForm").addEventListener("submit", async (event) => {
       throw new Error(message);
     }
 
-    if (data?.error) {
-      throw new Error(data.error);
-    }
+    if (data?.error) throw new Error(data.error);
 
     showMessage(
       "ktaMessage",
-      "Pendaftaran dan pembuatan akun berhasil. Silakan lanjut mengirim dokumen melalui WhatsApp. Akun menunggu persetujuan Admin.",
+      "Pendaftaran berhasil. Silakan kirim dokumen melalui WhatsApp. Akun menunggu persetujuan Admin.",
       true
     );
 
@@ -232,7 +320,7 @@ $("ktaForm").addEventListener("submit", async (event) => {
       "WhatsApp: " + phone,
       "",
       "Saya sudah mengisi formulir pendaftaran KTA melalui website.",
-      "Saya akan mengirim foto KTP dan pas foto kepada pengurus untuk verifikasi.",
+      "Saya akan mengirim foto KTP dan pas foto untuk verifikasi.",
       "",
       "Mohon dilakukan pemeriksaan dan persetujuan pengajuan KTA saya."
     ].join("\n");
@@ -243,27 +331,36 @@ $("ktaForm").addEventListener("submit", async (event) => {
     );
 
     $("ktaForm").reset();
+
   } catch (error) {
     showMessage(
       "ktaMessage",
       "Pendaftaran gagal: " + error.message
     );
   } finally {
-    button.disabled = false;
-    button.textContent = "KIRIM PENDAFTARAN";
+    setButtonLoading(
+      button,
+      false,
+      "MEMBUAT AKUN...",
+      "KIRIM PENDAFTARAN"
+    );
   }
 });
 
+// =====================================================
 // LOGIN ADMIN DAN ANGGOTA
-$("loginForm").addEventListener("submit", async (event) => {
+// =====================================================
+
+$("loginForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const email = $("loginEmail").value.trim();
   const password = $("loginPassword").value;
   const button = event.submitter;
 
-  button.disabled = true;
-  button.textContent = "MEMERIKSA...";
+  if (!button) return;
+
+  setButtonLoading(button, true, "MEMERIKSA...", "MASUK");
 
   try {
     const { data, error } = await db.auth.signInWithPassword({
@@ -281,17 +378,20 @@ $("loginForm").addEventListener("submit", async (event) => {
 
     $("loginForm").reset();
     showDashboard(profile.role);
+
   } catch (error) {
     await db.auth.signOut();
     showMessage("loginMessage", "Login gagal: " + error.message);
   } finally {
-    button.disabled = false;
-    button.textContent = "MASUK";
+    setButtonLoading(button, false, "MEMERIKSA...", "MASUK");
   }
 });
 
+// =====================================================
 // LUPA KATA SANDI
-$("resetPasswordButton").addEventListener("click", async () => {
+// =====================================================
+
+$("resetPasswordButton")?.addEventListener("click", async () => {
   const email = $("loginEmail").value.trim();
 
   if (!email) {
@@ -314,20 +414,25 @@ $("resetPasswordButton").addEventListener("click", async () => {
   }
 });
 
-// PANGGIL EDGE FUNCTION manage-kta-v2 UNTUK ADMIN
+// =====================================================
+// EDGE FUNCTION manage-kta-v2
+// =====================================================
+
 async function callManageKta(payload) {
   const { data: sessionData, error: sessionError } =
     await db.auth.getSession();
 
   if (sessionError) {
-    throw new Error("Gagal mengambil sesi login: " + sessionError.message);
+    throw new Error(
+      "Gagal mengambil sesi login: " + sessionError.message
+    );
   }
 
   const accessToken = sessionData?.session?.access_token;
 
   if (!accessToken) {
     throw new Error(
-      "Sesi login tidak ditemukan. Silakan logout lalu login kembali."
+      "Sesi login tidak ditemukan. Silakan login kembali."
     );
   }
 
@@ -350,11 +455,15 @@ async function callManageKta(payload) {
   }
 
   if (data?.error) throw new Error(data.error);
+
   return data;
 }
 
-// PENANGANAN KLIK PERSETUJUAN KTA
-$("adminKtaList").addEventListener("click", async (event) => {
+// =====================================================
+// PERSETUJUAN KTA ADMIN
+// =====================================================
+
+$("adminKtaList")?.addEventListener("click", async (event) => {
   const button = event.target.closest(".approve-kta-button");
 
   if (!button) return;
@@ -367,7 +476,7 @@ $("adminKtaList").addEventListener("click", async (event) => {
   }
 
   const confirmed = confirm(
-    "Setujui pengajuan ini? Sistem akan membuat profil anggota dan ID KTA untuk akun yang sudah dibuat saat pendaftaran."
+    "Setujui pengajuan ini dan aktifkan anggota?"
   );
 
   if (!confirmed) return;
@@ -378,19 +487,19 @@ $("adminKtaList").addEventListener("click", async (event) => {
   try {
     const result = await callManageKta({
       action: "approve",
-      requestId: requestId
+      requestId
     });
 
     alert(
       "Pengajuan KTA berhasil disetujui.\nID KTA: " +
-      (result.membershipId || "Sudah tersedia") +
-      "\nAkun anggota sekarang dapat digunakan untuk login."
+      (result.membershipId || "Sudah tersedia")
     );
 
     await Promise.all([
       loadAdminKta(),
       loadAdminMembers()
     ]);
+
   } catch (error) {
     alert("Gagal menyetujui KTA: " + error.message);
     button.disabled = false;
@@ -398,7 +507,10 @@ $("adminKtaList").addEventListener("click", async (event) => {
   }
 });
 
+// =====================================================
 // AMBIL PERTANDINGAN AKTIF
+// =====================================================
+
 async function getActiveMatch() {
   const { data, error } = await db
     .from("match_events")
@@ -408,100 +520,407 @@ async function getActiveMatch() {
     .maybeSingle();
 
   if (error) throw error;
+
   return data;
 }
 
-// INFORMASI PEMBAYARAN UNTUK ANGGOTA
+// =====================================================
+// KATEGORI TIKET DAN SISA KUOTA
+// =====================================================
+
+async function getCategoryRemaining(category) {
+  const { count, error } = await db
+    .from("ticket_requests")
+    .select("id", { count: "exact", head: true })
+    .eq("category_id", category.id)
+    .in("status", ["pending", "approved"]);
+
+  if (error) throw error;
+
+  const reserved = count || 0;
+
+  return {
+    ...category,
+    reserved,
+    remaining: Math.max(0, Number(category.quota) - reserved)
+  };
+}
+
+async function getMatchCategories(eventId) {
+  const { data, error } = await db
+    .from("match_ticket_categories")
+    .select("id, event_id, name, stand, quota, price, is_active")
+    .eq("event_id", eventId)
+    .eq("is_active", true)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  return Promise.all(
+    (data || []).map((category) => getCategoryRemaining(category))
+  );
+}
+
+function renderCategoryInfo(category) {
+  const container = $("ticketCategoryInfo");
+  if (!container) return;
+
+  if (!category) {
+    container.textContent = "Pilih kategori tiket untuk melihat informasi.";
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="data-item">
+      <strong>${escapeHTML(category.name)}</strong>
+      <p>Tribun: ${escapeHTML(category.stand || "-")}</p>
+      <p>Harga: <strong>${escapeHTML(formatRupiah(category.price))}</strong></p>
+      <p>Sisa kuota: <strong>${escapeHTML(category.remaining)}</strong></p>
+    </div>
+  `;
+}
+
+async function loadMemberCategories(eventId) {
+  const select = $("ticketCategory");
+  const info = $("ticketCategoryInfo");
+  const button = $("ticketSubmitButton");
+
+  if (!select) return;
+
+  select.innerHTML = '<option value="">Memuat kategori...</option>';
+  select.disabled = true;
+  if (button) button.disabled = true;
+
+  try {
+    const categories = await getMatchCategories(eventId);
+
+    memberCategories = categories.filter(
+      (category) => category.remaining > 0
+    );
+
+    if (!memberCategories.length) {
+      select.innerHTML = '<option value="">Tidak ada kategori tersedia</option>';
+
+      if (info) {
+        info.textContent =
+          "Belum ada kategori tersedia atau seluruh kuota telah habis.";
+      }
+
+      return;
+    }
+
+    select.innerHTML = `
+      <option value="">Pilih kategori tiket</option>
+      ${memberCategories.map((category) => `
+        <option value="${escapeHTML(category.id)}">
+          ${escapeHTML(category.name)}
+          - ${escapeHTML(category.stand || "Tanpa tribun")}
+          - ${escapeHTML(formatRupiah(category.price))}
+          (Sisa ${escapeHTML(category.remaining)})
+        </option>
+      `).join("")}
+    `;
+
+    select.disabled = false;
+
+    if (info) {
+      info.textContent = "Silakan pilih satu kategori tiket.";
+    }
+
+  } catch (error) {
+    select.innerHTML = '<option value="">Gagal memuat kategori</option>';
+
+    if (info) {
+      info.textContent = "Gagal memuat kategori: " + error.message;
+    }
+  }
+}
+
+$("ticketCategory")?.addEventListener("change", () => {
+  const category = memberCategories.find(
+    (item) => String(item.id) === String($("ticketCategory").value)
+  );
+
+  renderCategoryInfo(category);
+
+  if ($("ticketSubmitButton")) {
+    $("ticketSubmitButton").disabled = !category;
+  }
+});
+
+// =====================================================
+// INFORMASI REKENING DAN UPLOAD BUKTI PEMBAYARAN
+// =====================================================
+
+async function getPaymentSettings() {
+  const { data, error } = await db
+    .from("payment_settings")
+    .select("bank_name, account_number, account_holder")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data;
+}
+
 async function loadMemberPaymentInfo(profile, activeOrders) {
   const container = $("memberPaymentInfo");
   if (!container) return;
 
   if (!activeOrders.length) {
     container.textContent =
-      "Informasi rekening akan muncul jika kamu memiliki pesanan tiket aktif.";
+      "Informasi pembayaran akan muncul setelah kamu memesan tiket.";
     return;
   }
 
-  container.textContent = "Memuat informasi rekening...";
+  container.textContent = "Memuat informasi pembayaran...";
 
   try {
-    const { data, error } = await db
-      .from("payment_settings")
-      .select("bank_name, account_number, account_holder")
-      .eq("id", 1)
-      .maybeSingle();
+    const settings = await getPaymentSettings();
 
-    if (error) throw error;
+    const accountHTML = settings?.bank_name &&
+      settings?.account_number &&
+      settings?.account_holder
+      ? `
+        <div class="data-item">
+          <strong>Informasi Rekening Pembayaran</strong>
+          <p>Bank: ${escapeHTML(settings.bank_name)}</p>
+          <p>Nomor rekening:
+            <strong>${escapeHTML(settings.account_number)}</strong>
+          </p>
+          <p>Atas nama: ${escapeHTML(settings.account_holder)}</p>
+        </div>
+      `
+      : `
+        <div class="data-item">
+          Informasi rekening belum diatur oleh Admin.
+        </div>
+      `;
 
-    if (
-      !data ||
-      !data.bank_name ||
-      !data.account_number ||
-      !data.account_holder
-    ) {
-      container.textContent = "Rekening belum diatur oleh Admin.";
-      return;
-    }
+    const ordersHTML = activeOrders.map((order) => {
+      const paymentStatus = order.payment_status || "awaiting_payment";
 
-    container.innerHTML = activeOrders.map((order) => {
-      const message = [
-        "Halo Admin KAMOJANG ROAD, saya ingin mengirim bukti pembayaran tiket.",
-        "",
-        "Nama Anggota: " + (profile.full_name || "-"),
-        "ID KTA: " + (profile.membership_id || "-"),
-        "Pertandingan: " + (order.match_name || "-"),
-        "Jumlah Tiket: " + (order.quantity || 1),
-        "",
-        "Bank: " + data.bank_name,
-        "Nomor Rekening: " + data.account_number,
-        "Atas Nama: " + data.account_holder,
-        "",
-        "Saya akan melampirkan bukti transfer pada chat ini."
-      ].join("\n");
+      let statusHTML = "";
 
-      const whatsappUrl =
-        "https://wa.me/6285283234473?text=" +
-        encodeURIComponent(message);
+      if (paymentStatus === "under_review") {
+        statusHTML = `
+          <p class="status-open">
+            Bukti pembayaran sedang diperiksa Admin.
+          </p>
+        `;
+      } else if (paymentStatus === "verified") {
+        statusHTML = `
+          <p class="status-open">
+            Pembayaran sudah diverifikasi. Tiket disetujui.
+          </p>
+        `;
+      } else if (paymentStatus === "rejected") {
+        statusHTML = `
+          <p class="status-closed">
+            Bukti pembayaran ditolak.
+          </p>
+          <p>Catatan Admin:
+            ${escapeHTML(order.payment_note || "Silakan unggah ulang bukti pembayaran.")}
+          </p>
+        `;
+      }
+
+      const canUpload =
+        isPendingTicket(order.status) &&
+        ["awaiting_payment", "rejected"].includes(paymentStatus);
+
+      const uploadHTML = canUpload
+        ? `
+          <div class="payment-upload-area">
+            <label for="proof-${escapeHTML(order.id)}">
+              Pilih bukti pembayaran (JPG, PNG, WEBP, atau PDF)
+            </label>
+
+            <input
+              class="payment-proof-file"
+              id="proof-${escapeHTML(order.id)}"
+              type="file"
+              data-ticket-id="${escapeHTML(order.id)}"
+              accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+            >
+
+            <button
+              class="btn btn-orange upload-payment-proof"
+              data-ticket-id="${escapeHTML(order.id)}"
+              type="button">
+              UPLOAD BUKTI PEMBAYARAN
+            </button>
+
+            <p class="payment-upload-message message"
+              data-message-ticket="${escapeHTML(order.id)}"
+              aria-live="polite"></p>
+
+            <p class="muted">
+              Maksimal ukuran file 5 MB. Pastikan bukti pembayaran terlihat jelas.
+            </p>
+          </div>
+        `
+        : "";
 
       return `
-        <div class="data-item">
+        <div class="data-item payment-order-item">
           <strong>${escapeHTML(order.match_name)}</strong>
-          <p>Bank: ${escapeHTML(data.bank_name)}</p>
-          <p>Nomor rekening: <strong>${escapeHTML(data.account_number)}</strong></p>
-          <p>Atas nama: ${escapeHTML(data.account_holder)}</p>
-          <p>Jumlah tiket: ${escapeHTML(order.quantity)}</p>
-          <a
-            class="btn btn-orange full"
-            href="${escapeHTML(whatsappUrl)}"
-            target="_blank"
-            rel="noopener">
-            KIRIM BUKTI PEMBAYARAN VIA WHATSAPP
-          </a>
-          <p class="muted">
-            Setelah WhatsApp terbuka, lampirkan foto bukti transfer secara manual.
+          <p>Kategori: ${escapeHTML(order.category_name_snapshot || "-")}</p>
+          <p>Tribun: ${escapeHTML(order.stand_snapshot || "-")}</p>
+          <p>Harga tiket: ${escapeHTML(formatRupiah(order.unit_price_snapshot))}</p>
+          <p>Status pembayaran:
+            <strong>${escapeHTML(paymentStatusLabel(paymentStatus))}</strong>
           </p>
+          ${statusHTML}
+          ${uploadHTML}
         </div>
       `;
     }).join("");
+
+    container.innerHTML = accountHTML + ordersHTML;
+
   } catch (error) {
-    console.error("Gagal memuat rekening:", error);
+    console.error("Gagal memuat informasi pembayaran:", error);
+
     container.textContent =
-      "Gagal memuat informasi rekening. Silakan coba muat ulang halaman.";
+      "Gagal memuat informasi pembayaran: " + error.message;
   }
 }
 
+// PENANGANAN UPLOAD BUKTI PEMBAYARAN
+$("memberPaymentInfo")?.addEventListener("click", async (event) => {
+  const button = event.target.closest(".upload-payment-proof");
 
+  if (!button) return;
+
+  const ticketId = button.dataset.ticketId;
+  const fileInput = $("memberPaymentInfo").querySelector(
+    `.payment-proof-file[data-ticket-id="${ticketId}"]`
+  );
+
+  const message = $("memberPaymentInfo").querySelector(
+    `[data-message-ticket="${ticketId}"]`
+  );
+
+  const file = fileInput?.files?.[0];
+
+  if (!file) {
+    if (message) {
+      message.textContent = "Pilih file bukti pembayaran terlebih dahulu.";
+    }
+    return;
+  }
+
+  if (!ALLOWED_PROOF_TYPES.includes(file.type)) {
+    if (message) {
+      message.textContent =
+        "Format file tidak didukung. Gunakan JPG, PNG, WEBP, atau PDF.";
+    }
+    return;
+  }
+
+  if (file.size > MAX_PROOF_SIZE) {
+    if (message) {
+      message.textContent = "Ukuran file maksimal 5 MB.";
+    }
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "MENGUPLOAD...";
+
+  if (message) message.textContent = "";
+
+  let uploadedPath = null;
+
+  try {
+    const { data: sessionData, error: sessionError } =
+      await db.auth.getSession();
+
+    if (sessionError) throw sessionError;
+
+    const user = sessionData.session?.user;
+
+    if (!user) {
+      throw new Error("Sesi login berakhir. Silakan login kembali.");
+    }
+
+    const fileName = getUniqueFileName(file);
+    uploadedPath = `${user.id}/${ticketId}/${fileName}`;
+
+    const { error: uploadError } = await db.storage
+      .from(PROOF_BUCKET)
+      .upload(uploadedPath, file, {
+        upsert: false,
+        contentType: file.type
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { error: submitError } = await db.rpc(
+      "submit_ticket_payment_proof",
+      {
+        p_ticket_id: Number(ticketId),
+        p_proof_path: uploadedPath
+      }
+    );
+
+    if (submitError) throw submitError;
+
+    if (message) {
+      message.textContent =
+        "Bukti pembayaran berhasil diunggah. Menunggu verifikasi Admin.";
+      message.style.color = "#66d98a";
+    }
+
+    await loadMemberDashboard();
+
+  } catch (error) {
+    console.error("Upload bukti pembayaran gagal:", error);
+
+    if (uploadedPath) {
+      await db.storage
+        .from(PROOF_BUCKET)
+        .remove([uploadedPath])
+        .catch(() => {});
+    }
+
+    if (message) {
+      message.textContent = "Upload gagal: " + error.message;
+      message.style.color = "#f47721";
+    }
+
+    button.disabled = false;
+    button.textContent = "UPLOAD BUKTI PEMBAYARAN";
+  }
+});
+
+// =====================================================
 // DASHBOARD ANGGOTA
+// =====================================================
+
 async function loadMemberDashboard() {
   const { data: sessionData } = await db.auth.getSession();
   const user = sessionData.session?.user;
 
   if (!user) return;
 
-  $("activeMatchInfo").textContent = "Memuat informasi pertandingan...";
-  $("memberOrders").textContent = "Memuat pesanan...";
-  $("memberOrderHistory").textContent = "Memuat riwayat pesanan...";
-  $("ticketSubmitButton").disabled = true;
+  if ($("activeMatchInfo")) {
+    $("activeMatchInfo").textContent = "Memuat pertandingan...";
+  }
+
+  if ($("memberOrders")) {
+    $("memberOrders").textContent = "Memuat pesanan...";
+  }
+
+  if ($("memberOrderHistory")) {
+    $("memberOrderHistory").textContent = "Memuat riwayat...";
+  }
+
+  if ($("ticketSubmitButton")) {
+    $("ticketSubmitButton").disabled = true;
+  }
 
   try {
     const profile = await getProfile(user.id);
@@ -510,30 +929,63 @@ async function loadMemberDashboard() {
     $("memberId").textContent =
       profile.membership_id || "Belum tersedia";
 
-    const activeMatch = await getActiveMatch();
+    currentActiveMatch = await getActiveMatch();
 
-    if (activeMatch) {
+    if (currentActiveMatch) {
       $("activeMatchInfo").innerHTML = `
         <div class="data-item">
           <strong>
-            ${escapeHTML(activeMatch.home_team)}
+            ${escapeHTML(currentActiveMatch.home_team)}
             vs
-            ${escapeHTML(activeMatch.away_team)}
+            ${escapeHTML(currentActiveMatch.away_team)}
           </strong>
-          <p>Tanggal: ${escapeHTML(formatDate(activeMatch.match_date))}</p>
-          <p>Stadion: ${escapeHTML(activeMatch.stadium)}</p>
+          <p>Tanggal:
+            ${escapeHTML(formatDate(currentActiveMatch.match_date))}
+          </p>
+          <p>Stadion:
+            ${escapeHTML(currentActiveMatch.stadium)}
+          </p>
         </div>
       `;
 
-      $("ticketSubmitButton").disabled = false;
+      await loadMemberCategories(currentActiveMatch.id);
+
     } else {
       $("activeMatchInfo").textContent =
         "Belum ada penjualan tiket pertandingan yang dibuka.";
+
+      if ($("ticketCategory")) {
+        $("ticketCategory").innerHTML =
+          '<option value="">Belum ada pertandingan aktif</option>';
+        $("ticketCategory").disabled = true;
+      }
+
+      if ($("ticketCategoryInfo")) {
+        $("ticketCategoryInfo").textContent =
+          "Kategori tiket belum tersedia.";
+      }
     }
 
     const { data: orders, error: orderError } = await db
       .from("ticket_requests")
-      .select("id, event_id, match_name, quantity, status, created_at")
+      .select(`
+        id,
+        user_id,
+        event_id,
+        match_name,
+        quantity,
+        status,
+        created_at,
+        category_id,
+        category_name_snapshot,
+        stand_snapshot,
+        unit_price_snapshot,
+        payment_status,
+        payment_proof_path,
+        payment_submitted_at,
+        payment_verified_at,
+        payment_note
+      `)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -541,16 +993,13 @@ async function loadMemberDashboard() {
 
     const allOrders = orders || [];
 
-    // PESANAN PERTANDINGAN YANG PENJUALANNYA MASIH DIBUKA
-    // Status approved tetap masuk ke Pesanan Tiket Aktif.
     const activeOrders = allOrders.filter((order) => {
       return (
-        activeMatch &&
-        String(order.event_id) === String(activeMatch.id)
+        currentActiveMatch &&
+        String(order.event_id) === String(currentActiveMatch.id)
       );
     });
 
-    // PESANAN PERTANDINGAN YANG SUDAH DITUTUP ADMIN
     const historyOrders = allOrders.filter((order) => {
       return !activeOrders.some(
         (activeOrder) => activeOrder.id === order.id
@@ -561,32 +1010,45 @@ async function loadMemberDashboard() {
       ? activeOrders.map((order) => `
           <div class="data-item">
             <strong>${escapeHTML(order.match_name)}</strong>
-            <p>${escapeHTML(order.quantity)} tiket pertandingan</p>
-            <p>Status: ${escapeHTML(statusLabel(order.status))}</p>
-            <p>Tanggal pesan: ${escapeHTML(formatDateTime(order.created_at))}</p>
+            <p>Kategori: ${escapeHTML(order.category_name_snapshot || "-")}</p>
+            <p>Tribun: ${escapeHTML(order.stand_snapshot || "-")}</p>
+            <p>Jumlah: 1 tiket</p>
+            <p>Harga: ${escapeHTML(formatRupiah(order.unit_price_snapshot))}</p>
+            <p>Status tiket: ${escapeHTML(statusLabel(order.status))}</p>
+            <p>Status pembayaran:
+              ${escapeHTML(paymentStatusLabel(order.payment_status))}
+            </p>
+            <p>Tanggal pesan:
+              ${escapeHTML(formatDateTime(order.created_at))}
+            </p>
           </div>
         `).join("")
-      : "Belum ada pesanan aktif untuk pertandingan yang sedang dibuka.";
+      : "Belum ada pesanan untuk pertandingan yang sedang dibuka.";
 
     $("memberOrderHistory").innerHTML = historyOrders.length
       ? historyOrders.map((order) => `
           <div class="data-item">
             <strong>${escapeHTML(order.match_name)}</strong>
-            <p>${escapeHTML(order.quantity)} tiket pertandingan</p>
-            <p>Status: ${escapeHTML(statusLabel(order.status))}</p>
-            <p>Tanggal pesan: ${escapeHTML(formatDateTime(order.created_at))}</p>
+            <p>Kategori: ${escapeHTML(order.category_name_snapshot || "-")}</p>
+            <p>Tribun: ${escapeHTML(order.stand_snapshot || "-")}</p>
+            <p>Jumlah: 1 tiket</p>
+            <p>Harga: ${escapeHTML(formatRupiah(order.unit_price_snapshot))}</p>
+            <p>Status tiket: ${escapeHTML(statusLabel(order.status))}</p>
+            <p>Status pembayaran:
+              ${escapeHTML(paymentStatusLabel(order.payment_status))}
+            </p>
+            <p>Tanggal pesan:
+              ${escapeHTML(formatDateTime(order.created_at))}
+            </p>
           </div>
         `).join("")
       : "Belum ada riwayat pesanan tiket.";
 
-    // INFORMASI PEMBAYARAN HANYA UNTUK PESANAN YANG BELUM DISETUJUI
-    const paymentOrders = activeOrders.filter((order) => {
-      return isPendingTicket(order.status);
-    });
-
-    await loadMemberPaymentInfo(profile, paymentOrders);
+    await loadMemberPaymentInfo(profile, activeOrders);
 
   } catch (error) {
+    console.error("Dashboard anggota gagal dimuat:", error);
+
     $("activeMatchInfo").textContent =
       "Gagal memuat pertandingan: " + error.message;
 
@@ -600,67 +1062,86 @@ async function loadMemberDashboard() {
       "Informasi pembayaran tidak dapat dimuat.";
   }
 }
-// PEMESANAN SATU TIKET PER ANGGOTA PER PERTANDINGAN
-$("ticketForm").addEventListener("submit", async (event) => {
+
+// =====================================================
+// PEMESANAN TIKET - SATU KTA MAKSIMAL SATU TIKET
+// =====================================================
+
+$("ticketForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const button = $("ticketSubmitButton");
+  const categoryId = $("ticketCategory")?.value;
 
-  button.disabled = true;
-  button.textContent = "MENGIRIM...";
+  if (!categoryId) {
+    showMessage("ticketMessage", "Pilih kategori tiket terlebih dahulu.");
+    return;
+  }
+
+  setButtonLoading(
+    button,
+    true,
+    "MENGIRIM...",
+    "AJUKAN PEMESANAN"
+  );
 
   try {
-    const { data: sessionData } = await db.auth.getSession();
-    const user = sessionData.session?.user;
-
-    if (!user) throw new Error("Silakan login kembali.");
-
     const activeMatch = await getActiveMatch();
 
     if (!activeMatch) {
       throw new Error("Penjualan tiket sedang ditutup.");
     }
 
-    const matchName =
-      activeMatch.home_team + " vs " + activeMatch.away_team;
-
-    const { error } = await db.from("ticket_requests").insert({
-      user_id: user.id,
-      event_id: activeMatch.id,
-      match_name: matchName,
-      quantity: 1,
-      status: "pending"
+    const { data, error } = await db.rpc("book_ticket", {
+      p_event_id: activeMatch.id,
+      p_category_id: categoryId
     });
 
-    if (error?.code === "23505") {
-      throw new Error(
-        "KTA ini sudah digunakan untuk memesan tiket pertandingan tersebut."
-      );
-    }
+    if (error) {
+      if (error.code === "23505") {
+        throw new Error(
+          "KTA ini sudah digunakan untuk memesan tiket pertandingan tersebut."
+        );
+      }
 
-    if (error) throw error;
+      throw error;
+    }
 
     showMessage(
       "ticketMessage",
-      "Permintaan satu tiket berhasil dikirim. Menunggu persetujuan Admin.",
+      "Pemesanan berhasil. Silakan lakukan pembayaran dan unggah bukti transfer.",
       true
     );
 
+    $("ticketForm").reset();
+
     await loadMemberDashboard();
+
   } catch (error) {
-    showMessage("ticketMessage", "Pemesanan gagal: " + error.message);
+    console.error("Pemesanan tiket gagal:", error);
+
+    showMessage(
+      "ticketMessage",
+      "Pemesanan gagal: " + error.message
+    );
+
   } finally {
     button.textContent = "AJUKAN PEMESANAN";
 
     try {
-      button.disabled = !(await getActiveMatch());
+      const match = await getActiveMatch();
+      button.disabled = !match || !($("ticketCategory")?.value);
     } catch (_) {
       button.disabled = true;
     }
   }
 });
-// SIMPAN PERTANDINGAN DARI ADMIN
-$("eventForm").addEventListener("submit", async (event) => {
+
+// =====================================================
+// ADMIN - SIMPAN PERTANDINGAN
+// =====================================================
+
+$("eventForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const button = $("eventSubmitButton");
@@ -671,15 +1152,16 @@ $("eventForm").addEventListener("submit", async (event) => {
   const stadium = $("eventStadium").value.trim();
 
   if (!home || !away || !date || !stadium) {
-    showMessage(
-      "eventMessage",
-      "Lengkapi semua informasi pertandingan."
-    );
+    showMessage("eventMessage", "Lengkapi semua informasi pertandingan.");
     return;
   }
 
-  button.disabled = true;
-  button.textContent = "MENYIMPAN...";
+  setButtonLoading(
+    button,
+    true,
+    "MENYIMPAN...",
+    "SIMPAN PERTANDINGAN AKTIF"
+  );
 
   try {
     const { error: archiveError } = await db
@@ -707,7 +1189,7 @@ $("eventForm").addEventListener("submit", async (event) => {
 
     showMessage(
       "eventMessage",
-      "Pertandingan aktif berhasil disimpan. Pertandingan aktif sebelumnya masuk riwayat.",
+      "Pertandingan aktif berhasil disimpan. Pertandingan sebelumnya masuk riwayat.",
       true
     );
 
@@ -715,109 +1197,133 @@ $("eventForm").addEventListener("submit", async (event) => {
     $("eventHome").value = "Persija Jakarta";
 
     await loadAdminEvents();
+
   } catch (error) {
     showMessage(
       "eventMessage",
       "Gagal menyimpan pertandingan: " + error.message
     );
   } finally {
-    button.disabled = false;
-    button.textContent = "SIMPAN PERTANDINGAN AKTIF";
+    setButtonLoading(
+      button,
+      false,
+      "MENYIMPAN...",
+      "SIMPAN PERTANDINGAN AKTIF"
+    );
   }
 });
 
-// DAFTAR PERTANDINGAN AKTIF / BELUM DIARSIPKAN
+// =====================================================
+// ADMIN - DAFTAR PERTANDINGAN
+// =====================================================
+
 async function loadAdminEvents() {
+  const list = $("adminEventList");
+  if (!list) return;
+
   const { data, error } = await db
     .from("match_events")
-    .select("id, home_team, away_team, match_date, stadium, is_active, is_archived, created_at")
+    .select(`
+      id,
+      home_team,
+      away_team,
+      match_date,
+      stadium,
+      is_active,
+      is_archived,
+      created_at
+    `)
     .eq("is_archived", false)
     .order("created_at", { ascending: false });
 
   if (error) {
-    $("adminEventList").textContent =
-      "Gagal memuat pertandingan: " + error.message;
+    list.textContent = "Gagal memuat pertandingan: " + error.message;
     return;
   }
 
-  $("adminEventList").innerHTML = data.length
+  list.innerHTML = data.length
     ? data.map((item) => `
         <div class="data-item">
           <strong>
-            ${escapeHTML(item.home_team)}
-            vs
-            ${escapeHTML(item.away_team)}
+            ${escapeHTML(item.home_team)} vs ${escapeHTML(item.away_team)}
           </strong>
           <p>Tanggal: ${escapeHTML(formatDate(item.match_date))}</p>
           <p>Stadion: ${escapeHTML(item.stadium)}</p>
           <p class="${item.is_active ? "status-open" : "status-closed"}">
             ${item.is_active ? "PENJUALAN TIKET DIBUKA" : "PENJUALAN DITUTUP"}
           </p>
-          ${item.is_active
-            ? `
-              <button
-                class="btn btn-danger close-sales-button"
-                data-event-id="${escapeHTML(item.id)}"
-                type="button">
-                TUTUP PENJUALAN & PINDAHKAN KE RIWAYAT
-              </button>
-            `
-            : `
-              <button
-                class="btn btn-danger archive-event-button"
-                data-event-id="${escapeHTML(item.id)}"
-                type="button">
-                PINDAHKAN KE RIWAYAT
-              </button>
-            `
-          }
+
+          <button
+            class="btn btn-danger archive-event-button"
+            data-event-id="${escapeHTML(item.id)}"
+            type="button">
+            ${item.is_active
+              ? "TUTUP PENJUALAN & PINDAHKAN KE RIWAYAT"
+              : "PINDAHKAN KE RIWAYAT"}
+          </button>
         </div>
       `).join("")
-    : "Tidak ada pertandingan aktif atau pertandingan yang belum diarsipkan.";
-
-  document.querySelectorAll(
-    ".close-sales-button, .archive-event-button"
-  ).forEach((button) => {
-    button.addEventListener("click", async () => {
-      const confirmed = confirm(
-        "Pindahkan pertandingan ini ke Riwayat Pertandingan? Semua pesanan tiket tetap tersimpan."
-      );
-
-      if (!confirmed) return;
-
-      button.disabled = true;
-      button.textContent = "MEMINDAHKAN...";
-
-      try {
-        const { error: updateError } = await db
-          .from("match_events")
-          .update({
-            is_active: false,
-            is_archived: true
-          })
-          .eq("id", button.dataset.eventId);
-
-        if (updateError) throw updateError;
-
-        alert("Pertandingan berhasil dipindahkan ke riwayat.");
-        await loadAdminEvents();
-        await loadAdminMatchHistory();
-      } catch (error) {
-        alert("Gagal memindahkan pertandingan: " + error.message);
-        button.disabled = false;
-        button.textContent = "PINDAHKAN KE RIWAYAT";
-      }
-    });
-  });
+    : "Tidak ada pertandingan yang belum diarsipkan.";
 }
 
-// RIWAYAT PERTANDINGAN ADMIN
+$("adminEventList")?.addEventListener("click", async (event) => {
+  const button = event.target.closest(".archive-event-button");
+  if (!button) return;
+
+  const confirmed = confirm(
+    "Pindahkan pertandingan ini ke riwayat? Semua pesanan tiket tetap tersimpan."
+  );
+
+  if (!confirmed) return;
+
+  button.disabled = true;
+  button.textContent = "MEMINDAHKAN...";
+
+  try {
+    const { error } = await db
+      .from("match_events")
+      .update({
+        is_active: false,
+        is_archived: true
+      })
+      .eq("id", button.dataset.eventId);
+
+    if (error) throw error;
+
+    alert("Pertandingan berhasil dipindahkan ke riwayat.");
+
+    await Promise.all([
+      loadAdminEvents(),
+      loadAdminMatchHistory()
+    ]);
+
+  } catch (error) {
+    alert("Gagal memindahkan pertandingan: " + error.message);
+    button.disabled = false;
+    button.textContent = "PINDAHKAN KE RIWAYAT";
+  }
+});
+
+// =====================================================
+// ADMIN - RIWAYAT PERTANDINGAN
+// =====================================================
+
 async function loadAdminMatchHistory() {
   const list = $("adminMatchHistoryList");
+  if (!list) return;
 
   const { data, error } = await db
     .from("match_events")
-    .select("id, home_team, away_team, match_date, stadium, is_active, is_archived, created_at")
+    .select(`
+      id,
+      home_team,
+      away_team,
+      match_date,
+      stadium,
+      is_active,
+      is_archived,
+      created_at
+    `)
     .eq("is_archived", true)
     .order("match_date", { ascending: false });
 
@@ -840,9 +1346,15 @@ async function loadAdminMatchHistory() {
           </summary>
 
           <div class="compact-record-body">
-            <p><strong>Pertandingan:</strong> ${escapeHTML(item.home_team)} vs ${escapeHTML(item.away_team)}</p>
-            <p><strong>Tanggal:</strong> ${escapeHTML(formatDate(item.match_date))}</p>
-            <p><strong>Stadion:</strong> ${escapeHTML(item.stadium)}</p>
+            <p><strong>Pertandingan:</strong>
+              ${escapeHTML(item.home_team)} vs ${escapeHTML(item.away_team)}
+            </p>
+            <p><strong>Tanggal:</strong>
+              ${escapeHTML(formatDate(item.match_date))}
+            </p>
+            <p><strong>Stadion:</strong>
+              ${escapeHTML(item.stadium)}
+            </p>
             <p class="status-closed">PENJUALAN TIKET DITUTUP</p>
           </div>
         </details>
@@ -850,7 +1362,337 @@ async function loadAdminMatchHistory() {
     : "Belum ada riwayat pertandingan.";
 }
 
+// =====================================================
+// ADMIN - KATEGORI TIKET
+// =====================================================
+
+function resetCategoryForm() {
+  $("categoryForm")?.reset();
+
+  if ($("categoryId")) $("categoryId").value = "";
+  if ($("categoryActive")) $("categoryActive").checked = true;
+
+  if ($("categorySubmitButton")) {
+    $("categorySubmitButton").textContent = "SIMPAN KATEGORI";
+  }
+
+  if ($("categoryCancelButton")) {
+    $("categoryCancelButton").classList.add("hidden");
+  }
+}
+
+async function loadAdminCategories() {
+  const list = $("adminCategoryList");
+  const info = $("adminCategoryEventInfo");
+
+  if (!list) return;
+
+  list.textContent = "Memuat kategori tiket...";
+
+  try {
+    const activeMatch = await getActiveMatch();
+
+    if (!activeMatch) {
+      if (info) {
+        info.textContent =
+          "Belum ada pertandingan aktif. Buat pertandingan terlebih dahulu.";
+      }
+
+      list.textContent = "Kategori belum dapat dibuat.";
+      $("categoryForm")?.querySelectorAll("input, button").forEach((el) => {
+        el.disabled = true;
+      });
+
+      return;
+    }
+
+    $("categoryForm")?.querySelectorAll("input, button").forEach((el) => {
+      el.disabled = false;
+    });
+
+    if (info) {
+      info.innerHTML = `
+        <div class="data-item">
+          <strong>
+            ${escapeHTML(activeMatch.home_team)} vs
+            ${escapeHTML(activeMatch.away_team)}
+          </strong>
+          <p>${escapeHTML(formatDate(activeMatch.match_date))}</p>
+          <p>Stadion: ${escapeHTML(activeMatch.stadium)}</p>
+        </div>
+      `;
+    }
+
+    const { data, error } = await db
+      .from("match_ticket_categories")
+      .select(`
+        id,
+        event_id,
+        name,
+        stand,
+        quota,
+        price,
+        is_active,
+        created_at
+      `)
+      .eq("event_id", activeMatch.id)
+      .order("created_at", { ascending: true });
+
+    if (error) throw error;
+
+    const categories = await Promise.all(
+      (data || []).map((category) => getCategoryRemaining(category))
+    );
+
+    if (!categories.length) {
+      list.textContent =
+        "Belum ada kategori tiket. Tambahkan kategori melalui formulir.";
+      return;
+    }
+
+    list.innerHTML = categories.map((category) => `
+      <div class="data-item">
+        <strong>${escapeHTML(category.name)}</strong>
+        <p>Tribun: ${escapeHTML(category.stand || "-")}</p>
+        <p>Harga: ${escapeHTML(formatRupiah(category.price))}</p>
+        <p>Total kuota: ${escapeHTML(category.quota)}</p>
+        <p>Sudah dipesan: ${escapeHTML(category.reserved)}</p>
+        <p>Sisa kuota: <strong>${escapeHTML(category.remaining)}</strong></p>
+        <p class="${category.is_active ? "status-open" : "status-closed"}">
+          ${category.is_active ? "AKTIF" : "NONAKTIF"}
+        </p>
+
+        <div class="category-actions">
+          <button
+            class="btn btn-orange edit-category-button"
+            data-category-id="${escapeHTML(category.id)}"
+            type="button">
+            EDIT
+          </button>
+
+          <button
+            class="btn btn-danger toggle-category-button"
+            data-category-id="${escapeHTML(category.id)}"
+            data-active="${category.is_active}"
+            type="button">
+            ${category.is_active ? "NONAKTIFKAN" : "AKTIFKAN"}
+          </button>
+
+          <button
+            class="btn btn-danger delete-category-button"
+            data-category-id="${escapeHTML(category.id)}"
+            type="button">
+            HAPUS
+          </button>
+        </div>
+      </div>
+    `).join("");
+
+  } catch (error) {
+    list.textContent =
+      "Gagal memuat kategori: " + error.message;
+  }
+}
+
+// SIMPAN ATAU EDIT KATEGORI
+$("categoryForm")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const button = $("categorySubmitButton");
+
+  const categoryId = $("categoryId").value;
+  const name = $("categoryName").value.trim();
+  const stand = $("categoryStand").value.trim();
+  const quota = Number($("categoryQuota").value);
+  const price = Number($("categoryPrice").value);
+  const isActive = $("categoryActive").checked;
+
+  if (!name) {
+    showMessage("categoryMessage", "Nama kategori wajib diisi.");
+    return;
+  }
+
+  if (!Number.isInteger(quota) || quota < 0) {
+    showMessage("categoryMessage", "Kuota harus berupa angka 0 atau lebih.");
+    return;
+  }
+
+  if (!Number.isFinite(price) || price < 0) {
+    showMessage("categoryMessage", "Harga tidak valid.");
+    return;
+  }
+
+  setButtonLoading(
+    button,
+    true,
+    "MENYIMPAN...",
+    categoryId ? "SIMPAN PERUBAHAN" : "SIMPAN KATEGORI"
+  );
+
+  try {
+    const activeMatch = await getActiveMatch();
+
+    if (!activeMatch) {
+      throw new Error("Tidak ada pertandingan aktif.");
+    }
+
+    const payload = {
+      event_id: activeMatch.id,
+      name,
+      stand,
+      quota,
+      price,
+      is_active: isActive
+    };
+
+    let result;
+
+    if (categoryId) {
+      result = await db
+        .from("match_ticket_categories")
+        .update(payload)
+        .eq("id", categoryId)
+        .eq("event_id", activeMatch.id);
+    } else {
+      result = await db
+        .from("match_ticket_categories")
+        .insert(payload);
+    }
+
+    if (result.error) throw result.error;
+
+    showMessage(
+      "categoryMessage",
+      categoryId
+        ? "Kategori berhasil diperbarui."
+        : "Kategori berhasil ditambahkan.",
+      true
+    );
+
+    resetCategoryForm();
+    await loadAdminCategories();
+
+  } catch (error) {
+    showMessage(
+      "categoryMessage",
+      "Gagal menyimpan kategori: " + error.message
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = "SIMPAN KATEGORI";
+  }
+});
+
+// EDIT, AKTIFKAN, NONAKTIFKAN, DAN HAPUS KATEGORI
+$("adminCategoryList")?.addEventListener("click", async (event) => {
+  const editButton = event.target.closest(".edit-category-button");
+  const toggleButton = event.target.closest(".toggle-category-button");
+  const deleteButton = event.target.closest(".delete-category-button");
+
+  if (editButton) {
+    try {
+      const { data, error } = await db
+        .from("match_ticket_categories")
+        .select("id, name, stand, quota, price, is_active")
+        .eq("id", editButton.dataset.categoryId)
+        .single();
+
+      if (error) throw error;
+
+      $("categoryId").value = data.id;
+      $("categoryName").value = data.name || "";
+      $("categoryStand").value = data.stand || "";
+      $("categoryQuota").value = data.quota;
+      $("categoryPrice").value = data.price;
+      $("categoryActive").checked = data.is_active;
+
+      $("categorySubmitButton").textContent = "SIMPAN PERUBAHAN";
+      $("categoryCancelButton")?.classList.remove("hidden");
+
+      $("categoryForm").scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+    } catch (error) {
+      alert("Gagal membuka kategori: " + error.message);
+    }
+
+    return;
+  }
+
+  if (toggleButton) {
+    const currentlyActive = toggleButton.dataset.active === "true";
+    const nextActive = !currentlyActive;
+
+    const confirmed = confirm(
+      nextActive
+        ? "Aktifkan kembali kategori ini?"
+        : "Nonaktifkan kategori ini? Pesanan yang sudah ada tetap tersimpan."
+    );
+
+    if (!confirmed) return;
+
+    toggleButton.disabled = true;
+
+    try {
+      const { error } = await db
+        .from("match_ticket_categories")
+        .update({ is_active: nextActive })
+        .eq("id", toggleButton.dataset.categoryId);
+
+      if (error) throw error;
+
+      await loadAdminCategories();
+
+    } catch (error) {
+      alert("Gagal mengubah kategori: " + error.message);
+      toggleButton.disabled = false;
+    }
+
+    return;
+  }
+
+  if (deleteButton) {
+    const confirmed = confirm(
+      "Hapus kategori ini secara permanen? Jika sudah memiliki pesanan, kategori tidak dapat dihapus dan harus dinonaktifkan."
+    );
+
+    if (!confirmed) return;
+
+    deleteButton.disabled = true;
+
+    try {
+      const { error } = await db
+        .from("match_ticket_categories")
+        .delete()
+        .eq("id", deleteButton.dataset.categoryId);
+
+      if (error) throw error;
+
+      alert("Kategori berhasil dihapus.");
+      await loadAdminCategories();
+
+    } catch (error) {
+      alert(
+        "Kategori tidak dapat dihapus. Jika sudah memiliki pesanan, gunakan NONAKTIFKAN.\n\n" +
+        error.message
+      );
+
+      deleteButton.disabled = false;
+    }
+  }
+});
+
+$("categoryCancelButton")?.addEventListener("click", () => {
+  resetCategoryForm();
+  showMessage("categoryMessage", "");
+});
+
+// =====================================================
 // DASHBOARD ADMIN
+// =====================================================
+
 async function loadAdminDashboard() {
   await Promise.all([
     loadAdminEvents(),
@@ -861,30 +1703,24 @@ async function loadAdminDashboard() {
   ]);
 }
 
+// =====================================================
 // PENGATURAN REKENING ADMIN
+// =====================================================
+
 async function loadAdminPaymentSettings() {
-  const message = $("paymentSettingsMessage");
-
   try {
-    const { data, error } = await db
-      .from("payment_settings")
-      .select("bank_name, account_number, account_holder")
-      .eq("id", 1)
-      .maybeSingle();
-
-    if (error) throw error;
+    const data = await getPaymentSettings();
 
     $("paymentBankName").value = data?.bank_name || "";
     $("paymentAccountNumber").value = data?.account_number || "";
     $("paymentAccountHolder").value = data?.account_holder || "";
 
-    if (message) {
-      showMessage(
-        "paymentSettingsMessage",
-        "Informasi rekening berhasil dimuat.",
-        true
-      );
-    }
+    showMessage(
+      "paymentSettingsMessage",
+      "Informasi rekening berhasil dimuat.",
+      true
+    );
+
   } catch (error) {
     showMessage(
       "paymentSettingsMessage",
@@ -893,8 +1729,7 @@ async function loadAdminPaymentSettings() {
   }
 }
 
-// SIMPAN INFORMASI REKENING ADMIN
-$("paymentSettingsForm").addEventListener("submit", async (event) => {
+$("paymentSettingsForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const button = $("paymentSettingsSaveButton");
@@ -911,8 +1746,12 @@ $("paymentSettingsForm").addEventListener("submit", async (event) => {
     return;
   }
 
-  button.disabled = true;
-  button.textContent = "MENYIMPAN...";
+  setButtonLoading(
+    button,
+    true,
+    "MENYIMPAN...",
+    "SIMPAN INFORMASI REKENING"
+  );
 
   try {
     const { error } = await db
@@ -934,26 +1773,37 @@ $("paymentSettingsForm").addEventListener("submit", async (event) => {
       "Informasi rekening berhasil disimpan.",
       true
     );
+
   } catch (error) {
     showMessage(
       "paymentSettingsMessage",
       "Gagal menyimpan rekening: " + error.message
     );
   } finally {
-    button.disabled = false;
-    button.textContent = "SIMPAN INFORMASI REKENING";
+    setButtonLoading(
+      button,
+      false,
+      "MENYIMPAN...",
+      "SIMPAN INFORMASI REKENING"
+    );
   }
 });
 
-// PENGAJUAN KTA ADMIN
+// =====================================================
+// ADMIN - PENGAJUAN KTA
+// =====================================================
+
 async function loadAdminKta() {
+  const list = $("adminKtaList");
+  if (!list) return;
+
   const { data, error } = await db
     .from("kta_requests")
     .select("id, full_name, email, phone, status, created_at")
     .order("created_at", { ascending: false });
 
   if (error) {
-    $("adminKtaList").textContent =
+    list.textContent =
       "Gagal memuat pengajuan KTA: " + error.message;
     return;
   }
@@ -962,10 +1812,10 @@ async function loadAdminKta() {
     (item) => item.status !== "approved"
   );
 
-  $("ktaCount").textContent = items.length;
-  $("ktaMenuCount").textContent = items.length;
+  if ($("ktaCount")) $("ktaCount").textContent = items.length;
+  if ($("ktaMenuCount")) $("ktaMenuCount").textContent = items.length;
 
-  $("adminKtaList").innerHTML = items.length
+  list.innerHTML = items.length
     ? items.map((item) => `
         <div class="data-item">
           <strong>${escapeHTML(item.full_name)}</strong>
@@ -998,28 +1848,38 @@ async function loadAdminKta() {
         </div>
       `).join("")
     : "Tidak ada pengajuan KTA yang menunggu proses.";
-
-  document.querySelectorAll(".kta-status").forEach((select) => {
-    select.addEventListener("change", async () => {
-      select.disabled = true;
-
-      const { error: updateError } = await db
-        .from("kta_requests")
-        .update({ status: select.value })
-        .eq("id", select.dataset.ktaId);
-
-      if (updateError) {
-        alert("Gagal mengubah status KTA: " + updateError.message);
-        select.disabled = false;
-      } else {
-        await loadAdminKta();
-      }
-    });
-  });
 }
 
-// DATA ANGGOTA ADMIN
+$("adminKtaList")?.addEventListener("change", async (event) => {
+  const select = event.target.closest(".kta-status");
+  if (!select) return;
+
+  select.disabled = true;
+
+  try {
+    const { error } = await db
+      .from("kta_requests")
+      .update({ status: select.value })
+      .eq("id", select.dataset.ktaId);
+
+    if (error) throw error;
+
+    await loadAdminKta();
+
+  } catch (error) {
+    alert("Gagal mengubah status KTA: " + error.message);
+    select.disabled = false;
+  }
+});
+
+// =====================================================
+// ADMIN - DATA ANGGOTA
+// =====================================================
+
 async function loadAdminMembers() {
+  const list = $("adminMemberList");
+  if (!list) return;
+
   const { data, error } = await db
     .from("member_profiles")
     .select("id, full_name, role, membership_id")
@@ -1027,17 +1887,16 @@ async function loadAdminMembers() {
     .order("full_name", { ascending: true });
 
   if (error) {
-    $("adminMemberList").textContent =
-      "Gagal memuat anggota: " + error.message;
+    list.textContent = "Gagal memuat anggota: " + error.message;
     return;
   }
 
   const members = data || [];
 
-  $("memberCount").textContent = members.length;
-  $("memberMenuCount").textContent = members.length;
+  if ($("memberCount")) $("memberCount").textContent = members.length;
+  if ($("memberMenuCount")) $("memberMenuCount").textContent = members.length;
 
-  $("adminMemberList").innerHTML = members.length
+  list.innerHTML = members.length
     ? members.map((member) => `
         <details class="compact-record member-compact-record">
           <summary class="compact-record-summary">
@@ -1080,50 +1939,55 @@ async function loadAdminMembers() {
         </details>
       `).join("")
     : "Belum ada data anggota.";
-
-  document.querySelectorAll(".save-member-button").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const card = button.closest(".member-edit-card");
-      const nameInput = card.querySelector(".edit-member-name");
-      const ktaInput = card.querySelector(".edit-member-kta");
-      const message = card.querySelector(".member-save-message");
-
-      const fullName = nameInput.value.trim();
-      const membershipId = ktaInput.value.trim();
-
-      if (!fullName || !membershipId) {
-        message.textContent = "Nama dan ID KTA wajib diisi.";
-        return;
-      }
-
-      button.disabled = true;
-      button.textContent = "MENYIMPAN...";
-      message.textContent = "";
-
-      try {
-        await callManageKta({
-          action: "edit-member",
-          memberId: button.dataset.memberId,
-          fullName,
-          membershipId
-        });
-
-        message.textContent = "Data anggota berhasil diperbarui.";
-        message.style.color = "#66d98a";
-
-        await loadAdminMembers();
-      } catch (error) {
-        message.textContent = "Gagal menyimpan: " + error.message;
-        message.style.color = "#f47721";
-
-        button.disabled = false;
-        button.textContent = "SIMPAN PERUBAHAN";
-      }
-    });
-  });
 }
 
-// AMBIL DATA PEMESAN DAN PROFIL ANGGOTA
+$("adminMemberList")?.addEventListener("click", async (event) => {
+  const button = event.target.closest(".save-member-button");
+  if (!button) return;
+
+  const card = button.closest(".member-edit-card");
+  const nameInput = card.querySelector(".edit-member-name");
+  const ktaInput = card.querySelector(".edit-member-kta");
+  const message = card.querySelector(".member-save-message");
+
+  const fullName = nameInput.value.trim();
+  const membershipId = ktaInput.value.trim();
+
+  if (!fullName || !membershipId) {
+    message.textContent = "Nama dan ID KTA wajib diisi.";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "MENYIMPAN...";
+  message.textContent = "";
+
+  try {
+    await callManageKta({
+      action: "edit-member",
+      memberId: button.dataset.memberId,
+      fullName,
+      membershipId
+    });
+
+    message.textContent = "Data anggota berhasil diperbarui.";
+    message.style.color = "#66d98a";
+
+    await loadAdminMembers();
+
+  } catch (error) {
+    message.textContent = "Gagal menyimpan: " + error.message;
+    message.style.color = "#f47721";
+
+    button.disabled = false;
+    button.textContent = "SIMPAN PERUBAHAN";
+  }
+});
+
+// =====================================================
+// ADMIN - PROFIL PEMESAN TIKET
+// =====================================================
+
 async function getTicketProfiles(tickets) {
   const userIds = [
     ...new Set(
@@ -1131,7 +1995,7 @@ async function getTicketProfiles(tickets) {
     )
   ];
 
-  if (userIds.length === 0) return new Map();
+  if (!userIds.length) return new Map();
 
   const { data, error } = await db
     .from("member_profiles")
@@ -1145,133 +2009,240 @@ async function getTicketProfiles(tickets) {
   );
 }
 
-// TAMPILKAN KARTU PESANAN ADMIN
-function renderAdminTicket(ticket, profile, showAction) {
-  return `
-    <div class="data-item">
-      <strong>${escapeHTML(ticket.match_name)}</strong>
-      <p>Nama Anggota: ${escapeHTML(profile?.full_name || "Nama tidak ditemukan")}</p>
-      <p>ID KTA: ${escapeHTML(profile?.membership_id || "Belum tersedia")}</p>
-      <p>Jumlah: ${escapeHTML(ticket.quantity)} tiket</p>
-      <p>Status: ${escapeHTML(statusLabel(ticket.status))}</p>
-      <p>Tanggal pesan: ${escapeHTML(formatDateTime(ticket.created_at))}</p>
+// =====================================================
+// ADMIN - DAFTAR BUKTI PEMBAYARAN
+// =====================================================
 
-      ${showAction && ticket.status === "pending"
-        ? `
-          <button
-            class="btn btn-orange approve-ticket"
-            data-ticket-id="${escapeHTML(ticket.id)}"
-            type="button">
-            SETUJUI TIKET
-          </button>
-        `
-        : ""}
-    </div>
-  `;
-}
-
-// PERMINTAAN TIKET ADMIN
-// Tampilan dan struktur panel tetap dipertahankan
 async function loadAdminTickets() {
   const container = $("adminTicketList");
+  if (!container) return;
 
-  if (!container) {
-    console.error("Elemen adminTicketList tidak ditemukan.");
-    return;
-  }
+  container.textContent = "Memuat bukti pembayaran...";
 
   const { data, error } = await db
     .from("ticket_requests")
-    .select("id, user_id, event_id, match_name, quantity, status, created_at")
-    .in("status", ["pending", "processing"])
-    .order("created_at", { ascending: false });
+    .select(`
+      id,
+      user_id,
+      event_id,
+      match_name,
+      quantity,
+      status,
+      created_at,
+      category_name_snapshot,
+      stand_snapshot,
+      unit_price_snapshot,
+      payment_status,
+      payment_proof_path,
+      payment_submitted_at,
+      payment_note
+    `)
+    .eq("payment_status", "under_review")
+    .order("payment_submitted_at", { ascending: true });
 
   if (error) {
     container.textContent =
-      "Gagal memuat tiket: " + error.message;
-    console.error("Gagal memuat tiket:", error);
+      "Gagal memuat bukti pembayaran: " + error.message;
     return;
   }
 
   const tickets = data || [];
-  const profiles = await getTicketProfiles(tickets);
 
-  $("orderCount").textContent = tickets.length;
-  $("orderMenuCount").textContent = tickets.length;
+  if ($("orderCount")) $("orderCount").textContent = tickets.length;
+  if ($("orderMenuCount")) $("orderMenuCount").textContent = tickets.length;
 
-  container.innerHTML = tickets.length
-    ? tickets.map((ticket) => {
+  if (!tickets.length) {
+    container.textContent =
+      "Belum ada bukti pembayaran yang menunggu verifikasi.";
+    return;
+  }
+
+  try {
+    const profiles = await getTicketProfiles(tickets);
+
+    const cards = await Promise.all(
+      tickets.map(async (ticket) => {
         const profile = profiles.get(ticket.user_id);
-        return renderAdminTicket(ticket, profile, true);
-      }).join("")
-    : "Tidak ada permintaan tiket yang perlu diproses.";
 
-  // PENANGANAN KLIK TOMBOL SETUJUI TIKET
-  container.onclick = async function (event) {
-    const button = event.target.closest(".approve-ticket");
+        let proofHTML = `
+          <p class="status-closed">
+            Bukti pembayaran tidak ditemukan.
+          </p>
+        `;
 
-    if (!button || !container.contains(button)) return;
-    if (button.disabled) return;
+        if (ticket.payment_proof_path) {
+          const { data: signedData, error: signedError } =
+            await db.storage
+              .from(PROOF_BUCKET)
+              .createSignedUrl(ticket.payment_proof_path, 300);
 
-    const ticketId = button.dataset.ticketId;
+          if (!signedError && signedData?.signedUrl) {
+            proofHTML = `
+              <p>
+                <a
+                  href="${escapeHTML(signedData.signedUrl)}"
+                  target="_blank"
+                  rel="noopener">
+                  LIHAT BUKTI PEMBAYARAN
+                </a>
+              </p>
+            `;
+          } else {
+            proofHTML = `
+              <p class="status-closed">
+                Gagal membuka bukti pembayaran.
+                ${escapeHTML(signedError?.message || "")}
+              </p>
+            `;
+          }
+        }
 
-    if (!ticketId) {
-      alert("ID tiket tidak ditemukan.");
-      return;
-    }
+        return `
+          <div class="data-item">
+            <strong>${escapeHTML(ticket.match_name)}</strong>
+            <p>Nama Anggota:
+              ${escapeHTML(profile?.full_name || "Nama tidak ditemukan")}
+            </p>
+            <p>ID KTA:
+              ${escapeHTML(profile?.membership_id || "Belum tersedia")}
+            </p>
+            <p>Kategori:
+              ${escapeHTML(ticket.category_name_snapshot || "-")}
+            </p>
+            <p>Tribun:
+              ${escapeHTML(ticket.stand_snapshot || "-")}
+            </p>
+            <p>Jumlah: 1 tiket</p>
+            <p>Harga:
+              <strong>${escapeHTML(formatRupiah(ticket.unit_price_snapshot))}</strong>
+            </p>
+            <p>Dikirim:
+              ${escapeHTML(formatDateTime(ticket.payment_submitted_at))}
+            </p>
 
+            ${proofHTML}
+
+            <div class="payment-review-actions">
+              <button
+                class="btn btn-orange review-payment-button"
+                data-ticket-id="${escapeHTML(ticket.id)}"
+                data-approved="true"
+                type="button">
+                VERIFIKASI & SETUJUI
+              </button>
+
+              <button
+                class="btn btn-danger review-payment-button"
+                data-ticket-id="${escapeHTML(ticket.id)}"
+                data-approved="false"
+                type="button">
+                TOLAK BUKTI
+              </button>
+            </div>
+          </div>
+        `;
+      })
+    );
+
+    container.innerHTML = cards.join("");
+
+  } catch (error) {
+    container.textContent =
+      "Gagal menampilkan data pemesan: " + error.message;
+  }
+}
+
+// =====================================================
+// ADMIN - VERIFIKASI ATAU TOLAK BUKTI PEMBAYARAN
+// =====================================================
+
+$("adminTicketList")?.addEventListener("click", async (event) => {
+  const button = event.target.closest(".review-payment-button");
+  if (!button) return;
+
+  const ticketId = button.dataset.ticketId;
+  const approved = button.dataset.approved === "true";
+
+  let note = null;
+
+  if (approved) {
     const confirmed = confirm(
-      "Pastikan pembayaran anggota sudah diterima. Setujui tiket ini?"
+      "Pastikan pembayaran sudah diterima dan nominalnya sesuai. Verifikasi dan setujui tiket ini?"
     );
 
     if (!confirmed) return;
 
-    button.disabled = true;
-    button.textContent = "MEMPROSES...";
+  } else {
+    note = prompt(
+      "Tuliskan alasan penolakan bukti pembayaran agar anggota dapat memperbaikinya:"
+    );
 
-    try {
-      const { error: updateError } = await db
-        .from("ticket_requests")
-        .update({ status: "approved" })
-        .eq("id", ticketId);
+    if (note === null) return;
 
-      if (updateError) {
-        console.error("Gagal menyetujui tiket:", updateError);
+    note = note.trim();
 
-        alert(
-          "Gagal menyetujui tiket: " + updateError.message
-        );
-
-        button.disabled = false;
-        button.textContent = "SETUJUI TIKET";
-        return;
-      }
-
-      alert("Tiket berhasil disetujui.");
-
-      await Promise.all([
-        loadAdminTickets(),
-        loadAdminTicketHistory()
-      ]);
-
-    } catch (error) {
-      console.error("Terjadi kesalahan:", error);
-
-      alert("Terjadi kesalahan: " + error.message);
-
-      button.disabled = false;
-      button.textContent = "SETUJUI TIKET";
+    if (!note) {
+      alert("Alasan penolakan wajib diisi.");
+      return;
     }
-  };
-}
+  }
 
-// RIWAYAT PEMBELI TIKET ADMIN
+  button.disabled = true;
+  button.textContent = "MEMPROSES...";
+
+  try {
+    const { error } = await db.rpc("admin_review_ticket_payment", {
+      p_ticket_id: Number(ticketId),
+      p_approved: approved,
+      p_note: note
+    });
+
+    if (error) throw error;
+
+    alert(
+      approved
+        ? "Pembayaran berhasil diverifikasi dan tiket disetujui."
+        : "Bukti pembayaran ditolak. Anggota dapat mengunggah ulang bukti."
+    );
+
+    await Promise.all([
+      loadAdminTickets(),
+      loadAdminTicketHistory()
+    ]);
+
+  } catch (error) {
+    alert("Gagal memproses pembayaran: " + error.message);
+
+    button.disabled = false;
+    button.textContent = approved
+      ? "VERIFIKASI & SETUJUI"
+      : "TOLAK BUKTI";
+  }
+});
+
+// =====================================================
+// ADMIN - RIWAYAT PEMBELI TIKET
+// =====================================================
+
 async function loadAdminTicketHistory() {
   const list = $("adminTicketHistoryList");
+  if (!list) return;
 
   const { data: tickets, error: ticketError } = await db
     .from("ticket_requests")
-    .select("id, user_id, event_id, match_name, quantity, status, created_at")
+    .select(`
+      id,
+      user_id,
+      event_id,
+      match_name,
+      quantity,
+      status,
+      created_at,
+      category_name_snapshot,
+      stand_snapshot,
+      unit_price_snapshot,
+      payment_status
+    `)
     .order("created_at", { ascending: false });
 
   if (ticketError) {
@@ -1291,16 +2262,15 @@ async function loadAdminTicketHistory() {
   }
 
   const eventMap = new Map(
-    (events || []).map((event) => [String(event.id), event])
+    (events || []).map((item) => [String(item.id), item])
   );
 
   const archivedEventIds = new Set(
     (events || [])
-      .filter((event) => event.is_archived)
-      .map((event) => String(event.id))
+      .filter((item) => item.is_archived)
+      .map((item) => String(item.id))
   );
 
-  // HANYA PESANAN DARI PERTANDINGAN YANG SUDAH DIARSIPKAN
   const history = (tickets || []).filter((ticket) => {
     return (
       archivedEventIds.has(String(ticket.event_id)) ||
@@ -1313,117 +2283,166 @@ async function loadAdminTicketHistory() {
     return;
   }
 
-  const profiles = await getTicketProfiles(history);
+  try {
+    const profiles = await getTicketProfiles(history);
+    const groups = new Map();
 
-  const groups = new Map();
+    history.forEach((ticket) => {
+      const key = ticket.event_id
+        ? "event-" + String(ticket.event_id)
+        : "match-" + String(ticket.match_name || "Pertandingan tidak diketahui");
 
-  history.forEach((ticket) => {
-    const key = ticket.event_id
-      ? "event-" + String(ticket.event_id)
-      : "match-" + String(ticket.match_name || "Pertandingan tidak diketahui");
+      if (!groups.has(key)) groups.set(key, []);
 
-    if (!groups.has(key)) {
-      groups.set(key, []);
-    }
+      groups.get(key).push(ticket);
+    });
 
-    groups.get(key).push(ticket);
-  });
+    const sortedGroups = [...groups.entries()].sort((a, b) => {
+      const newestA = Math.max(
+        ...a[1].map((ticket) =>
+          new Date(ticket.created_at || 0).getTime()
+        )
+      );
 
-  const sortedGroups = [...groups.entries()].sort((a, b) => {
-    const newestA = Math.max(
-      ...a[1].map((ticket) => new Date(ticket.created_at || 0).getTime())
-    );
+      const newestB = Math.max(
+        ...b[1].map((ticket) =>
+          new Date(ticket.created_at || 0).getTime()
+        )
+      );
 
-    const newestB = Math.max(
-      ...b[1].map((ticket) => new Date(ticket.created_at || 0).getTime())
-    );
+      return newestB - newestA;
+    });
 
-    return newestB - newestA;
-  });
+    list.innerHTML = sortedGroups.map(([key, groupTickets]) => {
+      const firstTicket = groupTickets[0];
 
-  list.innerHTML = sortedGroups.map(([key, groupTickets]) => {
-    const firstTicket = groupTickets[0];
+      const event = firstTicket.event_id
+        ? eventMap.get(String(firstTicket.event_id))
+        : null;
 
-    const event = firstTicket.event_id
-      ? eventMap.get(String(firstTicket.event_id))
-      : null;
+      const matchTitle = event
+        ? `${event.home_team} vs ${event.away_team}`
+        : firstTicket.match_name || "Pertandingan tidak diketahui";
 
-    const matchTitle = event
-      ? `${event.home_team} vs ${event.away_team}`
-      : firstTicket.match_name || "Pertandingan tidak diketahui";
+      const matchDate = event?.match_date
+        ? formatDate(event.match_date)
+        : "-";
 
-    const matchDate = event?.match_date
-      ? formatDate(event.match_date)
-      : "-";
+      const buyerRows = groupTickets.map((ticket) => {
+        const profile = profiles.get(ticket.user_id);
 
-    const buyerRows = groupTickets.map((ticket) => {
-      const profile = profiles.get(ticket.user_id);
+        return `
+          <div class="compact-buyer-row">
+            <div class="compact-buyer-heading">
+              <strong>
+                ${escapeHTML(profile?.full_name || "Nama tidak ditemukan")}
+              </strong>
+              <span class="compact-buyer-status">
+                ${escapeHTML(statusLabel(ticket.status))}
+              </span>
+            </div>
+
+            <p>ID KTA:
+              ${escapeHTML(profile?.membership_id || "Belum tersedia")}
+            </p>
+            <p>Kategori:
+              ${escapeHTML(ticket.category_name_snapshot || "-")}
+            </p>
+            <p>Tribun:
+              ${escapeHTML(ticket.stand_snapshot || "-")}
+            </p>
+            <p>Harga:
+              ${escapeHTML(formatRupiah(ticket.unit_price_snapshot))}
+            </p>
+            <p>Status pembayaran:
+              ${escapeHTML(paymentStatusLabel(ticket.payment_status))}
+            </p>
+            <p>Tanggal pesan:
+              ${escapeHTML(formatDateTime(ticket.created_at))}
+            </p>
+          </div>
+        `;
+      }).join("");
 
       return `
-        <div class="compact-buyer-row">
-          <div class="compact-buyer-heading">
-            <strong>${escapeHTML(profile?.full_name || "Nama tidak ditemukan")}</strong>
-            <span class="compact-buyer-status">
-              ${escapeHTML(statusLabel(ticket.status))}
-            </span>
-          </div>
+        <details class="compact-record ticket-history-group"
+          data-group="${escapeHTML(key)}">
 
-          <p>ID KTA: ${escapeHTML(profile?.membership_id || "Belum tersedia")}</p>
-          <p>Jumlah: ${escapeHTML(ticket.quantity)} tiket</p>
-          <p>Tanggal pesan: ${escapeHTML(formatDateTime(ticket.created_at))}</p>
-        </div>
+          <summary class="compact-record-summary">
+            <span class="compact-record-title">
+              ${escapeHTML(matchTitle)}
+            </span>
+            <span class="compact-record-meta">
+              ${groupTickets.length} pembeli
+            </span>
+          </summary>
+
+          <div class="compact-record-body">
+            <p class="ticket-group-date">
+              <strong>Tanggal pertandingan:</strong>
+              ${escapeHTML(matchDate)}
+            </p>
+
+            ${event?.stadium
+              ? `
+                <p class="ticket-group-stadium">
+                  <strong>Stadion:</strong>
+                  ${escapeHTML(event.stadium)}
+                </p>
+              `
+              : ""}
+
+            <div class="compact-buyer-list">
+              ${buyerRows}
+            </div>
+          </div>
+        </details>
       `;
     }).join("");
 
-    return `
-      <details class="compact-record ticket-history-group" data-group="${escapeHTML(key)}">
-        <summary class="compact-record-summary">
-          <span class="compact-record-title">
-            ${escapeHTML(matchTitle)}
-          </span>
-          <span class="compact-record-meta">
-            ${groupTickets.length} pembeli
-          </span>
-        </summary>
-
-        <div class="compact-record-body">
-          <p class="ticket-group-date">
-            <strong>Tanggal pertandingan:</strong> ${escapeHTML(matchDate)}
-          </p>
-
-          ${event?.stadium
-            ? `<p class="ticket-group-stadium"><strong>Stadion:</strong> ${escapeHTML(event.stadium)}</p>`
-            : ""}
-
-          <div class="compact-buyer-list">
-            ${buyerRows}
-          </div>
-        </div>
-      </details>
-    `;
-  }).join("");
+  } catch (error) {
+    list.textContent =
+      "Gagal menampilkan riwayat tiket: " + error.message;
+  }
 }
+
+// =====================================================
 // LOGOUT
+// =====================================================
+
 document.querySelectorAll(".logoutButton").forEach((button) => {
   button.addEventListener("click", async () => {
     await db.auth.signOut();
+
     showPublicPage();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   });
 });
 
+// =====================================================
 // PULIHKAN SESI LOGIN
-async function restoreSession() {
-  const { data } = await db.auth.getSession();
+// =====================================================
 
-  if (!data.session) return;
+async function restoreSession() {
+  const { data, error } = await db.auth.getSession();
+
+  if (error || !data.session) return;
 
   try {
     const profile = await getProfile(data.session.user.id);
     showDashboard(profile.role);
+
   } catch (error) {
     await db.auth.signOut();
-    console.error("Profil akun tidak ditemukan:", error.message);
+
+    console.error(
+      "Profil akun tidak ditemukan:",
+      error.message
+    );
   }
 }
 
