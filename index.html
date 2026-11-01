@@ -587,14 +587,82 @@
 
       <h3 class="subheading">DAFTAR PERTANDINGAN</h3>
 
-      <div id="adminEventList" class="data-list">
+           <div class="divider"></div>
 
-        Memuat pertandingan...
+      <h3 class="subheading">PENGATURAN PEMBAYARAN</h3>
 
-      </div>
+      <p class="section-text">
 
-    </div>
+        Atur informasi rekening yang ditampilkan kepada anggota
 
+        yang memiliki pesanan tiket aktif.
+
+      </p>
+
+      <form id="paymentSettingsForm" class="form-card">
+
+        <label for="paymentBankName">Nama bank</label>
+
+        <input
+
+          id="paymentBankName"
+
+          type="text"
+
+          required
+
+          placeholder="Contoh: BCA"
+
+        >
+
+        <label for="paymentAccountNumber">Nomor rekening</label>
+
+        <input
+
+          id="paymentAccountNumber"
+
+          type="text"
+
+          inputmode="numeric"
+
+          required
+
+          placeholder="Masukkan nomor rekening"
+
+        >
+
+        <label for="paymentAccountHolder">Atas nama</label>
+
+        <input
+
+          id="paymentAccountHolder"
+
+          type="text"
+
+          required
+
+          placeholder="Nama pemilik rekening"
+
+        >
+
+        <button
+
+          id="paymentSettingsSaveButton"
+
+          class="btn btn-orange full"
+
+          type="submit"
+
+        >
+
+          SIMPAN INFORMASI REKENING
+
+        </button>
+
+        <p id="paymentSettingsMessage" class="message"></p>
+
+      </form>
+    
     <!-- RIWAYAT PERTANDINGAN -->
 
     <div id="historyMatchPanel" class="panel admin-panel hidden">
