@@ -2870,7 +2870,37 @@ enableNotificationButton?.addEventListener("click", async () => {
     const registration = await navigator.serviceWorker.register("./sw.js");
 
     await navigator.serviceWorker.ready;
+// TEMPEL FUNGSI INI DI ATAS let subscription
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
 
+  const base64 = (base64String + padding)
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; i++) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+
+  if (outputArray.length !== 65 || outputArray[0] !== 4) {
+    throw new Error("Format VAPID Public Key tidak valid.");
+  }
+
+  return outputArray;
+}
+
+// KODE LAMA KAMU TETAP DI BAWAH INI
+let subscription = await registration.pushManager.getSubscription();
+
+if (!subscription) {
+  subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+  });
+}
     let subscription = await registration.pushManager.getSubscription();
 
     if (!subscription) {
