@@ -180,120 +180,97 @@
 
   </section>
 
-  <!-- DASHBOARD ANGGOTA -->
+ 
+<!-- DASHBOARD ANGGOTA -->
 
 <section id="memberPage" class="dashboard hidden">
 
   <div class="dashboard-heading">
-
     <div>
-
       <p class="eyebrow">AREA ANGGOTA</p>
-
       <h2>MENU ANGGOTA</h2>
-
     </div>
 
     <button class="btn btn-outline logoutButton">KELUAR</button>
+  </div>
 
+  <!-- IDENTITAS ANGGOTA -->
+  <div class="panel member-profile-panel">
+    <p class="eyebrow">KARTU IDENTITAS ANGGOTA</p>
+
+    <h3 id="memberName">Memuat nama anggota...</h3>
+
+    <div class="data-item">
+      <span>ID KTA</span>
+      <strong id="memberId">Memuat ID anggota...</strong>
+    </div>
   </div>
 
   <!-- PEMESANAN TIKET -->
+  <div class="panel">
+    <h3>PEMESANAN TIKET</h3>
 
-    <div class="panel">
+    <div id="activeMatchInfo" class="data-list">
+      Memuat informasi pertandingan...
+    </div>
 
-      <h3>PEMESANAN TIKET</h3>
+    <p id="ticketMessage" class="message"></p>
 
-      <div id="activeMatchInfo" class="data-list">
+    <form id="ticketForm">
+      <label for="ticketCategory">PILIH KATEGORI TIKET</label>
 
-        Memuat informasi pertandingan...
+      <select id="ticketCategory" required disabled>
+        <option value="">Memuat kategori tiket...</option>
+      </select>
 
+      <div id="ticketCategoryInfo" class="data-list">
+        Pilih kategori untuk melihat harga dan kuota.
       </div>
 
-      <p id="ticketMessage" class="message"></p>
+      <p>
+        Jumlah tiket:
+        <strong>1 tiket per KTA untuk setiap pertandingan</strong>
+      </p>
 
-      <form id="ticketForm">
-
-        <label for="ticketCategory">PILIH KATEGORI TIKET</label>
-
-        <select id="ticketCategory" required disabled>
-
-          <option value="">Memuat kategori tiket...</option>
-
-        </select>
-
-        <div id="ticketCategoryInfo" class="data-list">
-
-          Pilih kategori untuk melihat harga dan kuota.
-
-        </div>
-
-        <p>Jumlah tiket: <strong>1 tiket per KTA untuk setiap pertandingan</strong></p>
-
-        <button
-
-          id="ticketSubmitButton"
-
-          class="btn btn-orange full"
-
-          type="submit"
-
-          disabled
-
-        >
-
-          AJUKAN PEMESANAN
-
-        </button>
-
-      </form>
-
-    </div>
-
-    <!-- PESANAN AKTIF + PEMBAYARAN -->
-
-<div class="panel">
-
-  <h3>PESANAN TIKET AKTIF</h3>
-
-  <div id="memberOrders" class="data-list">
-
-    Memuat pesanan...
-
+      <button
+        id="ticketSubmitButton"
+        class="btn btn-orange full"
+        type="submit"
+        disabled
+      >
+        AJUKAN PEMESANAN
+      </button>
+    </form>
   </div>
 
-</div>
+  <!-- PESANAN AKTIF DAN PEMBAYARAN -->
+  <div class="panel">
+    <h3>PESANAN TIKET AKTIF</h3>
 
-<!-- RIWAYAT ANGGOTA: BISA DIBUKA DAN DITUTUP -->
-
-<details class="panel member-history-panel">
-
-  <summary class="member-history-heading">
-
-    <div>
-
-      <h3>RIWAYAT PESANAN TIKET</h3>
-
-      <span class="member-history-subtitle">
-
-        Klik untuk melihat riwayat pesanan
-
-      </span>
-
+    <div id="memberOrders" class="data-list">
+      Memuat pesanan...
     </div>
-
-    <span class="member-history-arrow">⌄</span>
-
-  </summary>
-
-  <div id="memberOrderHistory" class="data-list">
-
-    Memuat riwayat pesanan...
-
   </div>
 
-</details>
-  </section>
+  <!-- RIWAYAT PESANAN -->
+  <details class="panel member-history-panel">
+    <summary class="member-history-heading">
+      <div>
+        <h3>RIWAYAT PESANAN TIKET</h3>
+        <span class="member-history-subtitle">
+          Klik untuk melihat riwayat pesanan
+        </span>
+      </div>
+
+      <span class="member-history-arrow">⌄</span>
+    </summary>
+
+    <div id="memberOrderHistory" class="data-list">
+      Memuat riwayat pesanan...
+    </div>
+  </details>
+
+</section>
 
   <!-- DASHBOARD ADMIN -->
 
