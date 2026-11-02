@@ -2806,6 +2806,7 @@ db.auth.onAuthStateChange((event) => {
   }
 });
 
+
 // ==========================================
 // NOTIFIKASI PUSH ANGGOTA KAMOJANG ROAD
 // ==========================================
@@ -2836,26 +2837,21 @@ enableNotificationButton?.addEventListener("click", async () => {
 
   try {
     button.disabled = true;
-    notificationMessage.textContent = "Menyiapkan notifikasi...";
+
+    if (notificationMessage) {
+      notificationMessage.textContent = "Menyiapkan notifikasi...";
+    }
 
     if (!("serviceWorker" in navigator)) {
-  throw new Error("Service Worker tidak didukung browser.");
-}
+      throw new Error("Service Worker tidak didukung browser.");
+    }
 
-if (!("PushManager" in window)) {
-  throw new Error("PushManager tidak didukung browser.");
-}
-
-if (!("Notification" in window)) {
-  throw new Error("Notification API tidak didukung browser.");
-}
-      );
+    if (!("PushManager" in window)) {
+      throw new Error("PushManager tidak didukung browser.");
     }
 
     if (!("Notification" in window)) {
-      throw new Error(
-        "Fitur notifikasi tidak tersedia di perangkat ini."
-      );
+      throw new Error("Notification API tidak didukung browser.");
     }
 
     const { data: userData, error: userError } =
@@ -2868,14 +2864,10 @@ if (!("Notification" in window)) {
     const permission = await Notification.requestPermission();
 
     if (permission !== "granted") {
-      throw new Error(
-        "Izin notifikasi belum diberikan. Periksa pengaturan browser."
-      );
+      throw new Error("Izin notifikasi belum diberikan.");
     }
 
-    const registration = await navigator.serviceWorker.register(
-      "./sw.js"
-    );
+    const registration = await navigator.serviceWorker.register("./sw.js");
 
     await navigator.serviceWorker.ready;
 
@@ -2898,17 +2890,13 @@ if (!("Notification" in window)) {
       throw new Error("Data perangkat tidak lengkap.");
     }
 
-    // Hapus langganan lama milik akun ini pada endpoint yang sama.
     const { error: deleteError } = await db
       .from("push_subscriptions")
       .delete()
       .eq("endpoint", subscriptionData.endpoint);
 
-    if (deleteError) {
-      throw deleteError;
-    }
+    if (deleteError) throw deleteError;
 
-    // Simpan langganan perangkat ke Supabase.
     const { error: insertError } = await db
       .from("push_subscriptions")
       .insert({
@@ -2919,19 +2907,22 @@ if (!("Notification" in window)) {
         user_agent: navigator.userAgent
       });
 
-    if (insertError) {
-      throw insertError;
+    if (insertError) throw insertError;
+
+    if (notificationMessage) {
+      notificationMessage.textContent =
+        "Notifikasi berhasil diaktifkan pada perangkat ini.";
     }
 
-    notificationMessage.textContent =
-      "Notifikasi berhasil diaktifkan pada perangkat ini.";
-
     button.textContent = "NOTIFIKASI AKTIF";
+
   } catch (error) {
     console.error("Aktivasi notifikasi gagal:", error);
 
-    notificationMessage.textContent =
-      error.message || "Gagal mengaktifkan notifikasi.";
+    if (notificationMessage) {
+      notificationMessage.textContent =
+        error.message || "Gagal mengaktifkan notifikasi.";
+    }
 
     button.disabled = false;
   }
