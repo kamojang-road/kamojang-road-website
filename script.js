@@ -1989,9 +1989,12 @@ $("adminKtaList")?.addEventListener("change", async (event) => {
 // ADMIN - DATA ANGGOTA
 // =====================================================
 
+
 async function loadAdminMembers() {
   const list = $("adminMemberList");
   if (!list) return;
+
+  list.textContent = "Memuat data anggota...";
 
   const { data, error } = await db
     .from("member_profiles")
@@ -2045,6 +2048,14 @@ async function loadAdminMembers() {
               data-member-id="${escapeHTML(member.id)}"
               type="button">
               SIMPAN PERUBAHAN
+            </button>
+
+            <button
+              class="btn btn-danger delete-member-button"
+              data-member-id="${escapeHTML(member.id)}"
+              data-member-name="${escapeHTML(member.full_name || "Anggota")}"
+              type="button">
+              HAPUS ANGGOTA
             </button>
 
             <p class="member-save-message message" aria-live="polite"></p>
