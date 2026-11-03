@@ -88,129 +88,97 @@
 
   <!-- PENDAFTARAN KTA -->
 
-  <section id="kta" class="section section-dark">
+
+
+<section id="kta" class="section section-dark">
+
+  <div class="kta-heading">
 
     <img
 
-      src="assets/logo-kr.jpeg"
+      src="logo-kamojang.png"
 
-      alt="Logo KAMOJANG ROAD"
+      alt="Logo Kamojang Road"
 
-      style="width:110px;height:110px;object-fit:contain;margin-bottom:15px;"
+      class="kta-logo"
 
     >
 
-    <p class="eyebrow">PENDAFTARAN</p>
+    <p class="eyebrow">PENDAFTARAN ANGGOTA</p>
 
     <h2>DAFTAR KTA</h2>
 
     <p class="section-text">
 
-      Isi data berikut. Pengurus akan menghubungi melalui WhatsApp.
+      Isi data berikut untuk mengajukan pendaftaran Kartu Tanda Anggota.
+
+      Pengurus akan menghubungi melalui WhatsApp.
 
     </p>
 
-    <!-- CONTOH DESAIN KTA -->
+  </div>
 
-    <div style="max-width:650px;margin:25px auto;">
+  <div class="kta-card-preview">
 
-      <p class="eyebrow">CONTOH KARTU ANGGOTA</p>
+    <p class="kta-preview-title">CONTOH KARTU ANGGOTA</p>
 
-      <img
+    <img
 
-        src="assets/contoh-kta.jpeg"
+      src="contoh-kta.jpg"
 
-        alt="Contoh desain KTA The Jakmania bagian depan dan belakang"
+      alt="Contoh Kartu Tanda Anggota The Jakmania"
 
-        style="display:block;width:100%;height:auto;border-radius:12px;"
+      class="kta-card-image"
 
-      >
+    >
 
-      <p class="section-text" style="font-size:13px;">
+  </div>
 
-        Gambar merupakan referensi desain kartu anggota.
+  <form id="ktaForm" class="form-card">
 
-      </p>
+    <label>Nama lengkap</label>
 
-    </div>
+    <input id="ktaName" type="text" required placeholder="Nama lengkap">
 
-    <!-- FORMULIR ASLI TETAP DIPERTAHANKAN -->
+    <label>Email</label>
 
-    <form id="ktaForm" class="form-card">
+    <input id="ktaEmail" type="email" required placeholder="Alamat email">
 
-      <label>Nama lengkap</label>
+    <label>Nomor WhatsApp</label>
 
-      <input
+    <input id="ktaPhone" type="tel" required placeholder="08xxxxxxxxxx">
 
-        id="ktaName"
+    <label for="ktaPassword">Kata sandi</label>
 
-        type="text"
+    <input
 
-        required
+      id="ktaPassword"
 
-        placeholder="Nama lengkap"
+      type="password"
 
-      >
+      name="password"
 
-      <label>Email</label>
+      required
 
-      <input
+      minlength="6"
 
-        id="ktaEmail"
+      autocomplete="new-password"
 
-        type="email"
+      placeholder="Buat kata sandi minimal 6 karakter"
 
-        required
+    >
 
-        placeholder="Alamat email"
+    <button class="btn btn-orange full" type="submit">
 
-      >
+      KIRIM PENDAFTARAN
 
-      <label>Nomor WhatsApp</label>
+    </button>
 
-      <input
+    <p id="ktaMessage" class="message"></p>
 
-        id="ktaPhone"
+  </form>
 
-        type="tel"
-
-        required
-
-        placeholder="08xxxxxxxxxx"
-
-      >
-
-      <label for="ktaPassword">Kata sandi</label>
-
-      <input
-
-        id="ktaPassword"
-
-        type="password"
-
-        name="password"
-
-        required
-
-        minlength="6"
-
-        autocomplete="new-password"
-
-        placeholder="Buat kata sandi minimal 6 karakter"
-
-      >
-
-      <button class="btn btn-orange full" type="submit">
-
-        KIRIM PENDAFTARAN
-
-      </button>
-
-      <p id="ktaMessage" class="message"></p>
-
-    </form>
-
-  </section>
+</section>
  
 <!-- DASHBOARD ANGGOTA -->
 
