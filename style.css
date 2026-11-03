@@ -2046,3 +2046,39 @@ footer p {
     margin: 24px auto;
   }
 }
+/* LOGO DAN CONTOH KTA */
+.kta-heading {
+  text-align: center;
+}
+
+.kta-logo {
+  display: block;
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  margin: 0 auto 20px;
+}
+
+.kta-card-preview {
+  width: 100%;
+  max-width: 520px;
+  margin: 30px auto;
+  text-align: center;
+}
+
+.kta-preview-title {
+  margin-bottom: 12px;
+  color: #e87524;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.kta-card-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 5px 18px rgba(0,0,0,.08);
+}
