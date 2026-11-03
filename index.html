@@ -653,16 +653,27 @@
 
     </div>
 
-    <!-- DATA ANGGOTA -->
+ <!-- DATA ANGGOTA -->
 
-    <div id="memberPanel" class="panel admin-panel hidden">
+<div id="memberPanel" class="panel admin-panel hidden">
 
-      <h3>DATA ANGGOTA</h3>
+  <h3>DATA ANGGOTA</h3>
 
-      <div id="adminMemberList" class="data-list">Memuat data...</div>
+  <p class="section-text">
 
-    </div>
+    Kelola data anggota yang sudah terdaftar.
 
+    Penghapusan anggota tidak dapat dibatalkan.
+
+  </p>
+
+  <div id="adminMemberList" class="data-list">
+
+    Memuat data...
+
+  </div>
+
+</div>
     <!-- VERIFIKASI PEMBAYARAN -->
 
 <div id="ticketPanel" class="panel admin-panel hidden">
@@ -733,26 +744,57 @@
 
 </div>
 
-    <!-- RIWAYAT PEMBELI -->
+   <!-- RIWAYAT PEMBELI -->
 
-    <div id="ticketHistoryPanel" class="panel admin-panel hidden">
+<div id="ticketHistoryPanel" class="panel admin-panel hidden">
 
-      <h3>RIWAYAT PEMBELI TIKET</h3>
+  <h3>RIWAYAT PEMBELI TIKET</h3>
 
-      <p class="section-text">
+  <p class="section-text">
 
-        Riwayat pemesanan tiket dari pertandingan sebelumnya.
+    Riwayat pemesanan tiket dari pertandingan sebelumnya.
 
-      </p>
+  </p>
 
-      <div id="adminTicketHistoryList" class="data-list">
+  <div class="data-item">
 
-        Memuat riwayat pembeli tiket...
+    <strong>PEMBERSIHAN RIWAYAT ARSIP</strong>
 
-      </div>
+    <p>
 
-    </div>
+      Menghapus data pesanan tiket dari pertandingan yang
 
+      sudah diarsipkan dan tidak aktif, beserta file bukti
+
+      pembayaran yang tercatat.
+
+    </p>
+
+    <button
+
+      id="cleanArchivedHistoryButton"
+
+      class="btn btn-danger"
+
+      type="button">
+
+      BERSIHKAN RIWAYAT TIKET ARSIP
+
+    </button>
+
+    <p id="cleanArchivedHistoryMessage" class="message"
+
+       aria-live="polite"></p>
+
+  </div>
+
+  <div id="adminTicketHistoryList" class="data-list">
+
+    Memuat riwayat pembeli tiket...
+
+  </div>
+
+</div>
    
 
   </section>
