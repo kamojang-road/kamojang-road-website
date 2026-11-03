@@ -1984,3 +1984,65 @@ footer p {
     font-size: 25px;
   }
 }
+
+/* LOGO DAN CONTOH KTA - HALAMAN PENDAFTARAN */
+
+#kta {
+  text-align: center;
+}
+
+.kta-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kta-logo {
+  display: block;
+  width: 135px;
+  height: 135px;
+  object-fit: contain;
+  margin: 0 auto 20px;
+}
+
+.kta-card-preview {
+  width: 100%;
+  max-width: 650px;
+  margin: 30px auto;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(20,30,45,.05);
+}
+
+.kta-preview-title {
+  margin-bottom: 14px;
+  color: #e87524;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.kta-card-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 7px;
+}
+
+#kta .form-card {
+  text-align: left;
+}
+
+@media (max-width: 600px) {
+  .kta-logo {
+    width: 115px;
+    height: 115px;
+  }
+
+  .kta-card-preview {
+    padding: 10px;
+    margin: 24px auto;
+  }
+}
