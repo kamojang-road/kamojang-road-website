@@ -2726,17 +2726,22 @@ async function loadAdminTicketHistory() {
 // =====================================================
 
 $("cleanArchivedHistoryButton")?.addEventListener("click", async () => {
+  const button = $("cleanArchivedHistoryButton");
+  const message = $("cleanArchivedHistoryMessage");
+
   const confirmed = confirm(
     "Hapus riwayat pesanan dari pertandingan yang sudah diarsipkan dan tidak aktif? Data pertandingan tetap disimpan."
   );
 
   if (!confirmed) return;
 
-  const button = $("cleanArchivedHistoryButton");
-  const message = $("cleanArchivedHistoryMessage");
-
   button.disabled = true;
   button.textContent = "MEMBERSIHKAN...";
+
+  if (message) {
+    message.textContent = "Sedang membersihkan riwayat...";
+    message.style.color = "";
+  }
 
   try {
     await callManageKta({
@@ -2744,7 +2749,7 @@ $("cleanArchivedHistoryButton")?.addEventListener("click", async () => {
     });
 
     if (message) {
-      message.textContent = "Riwayat pesanan berhasil dibersihkan.";
+      message.textContent = "Permintaan pembersihan berhasil diproses.";
       message.style.color = "#66d98a";
     }
 
@@ -2760,7 +2765,7 @@ $("cleanArchivedHistoryButton")?.addEventListener("click", async () => {
     }
   } finally {
     button.disabled = false;
-    button.textContent = "BERSIHKAN RIWAYAT PESANAN";
+    button.textContent = "BERSIHKAN RIWAYAT TIKET ARSIP";
   }
 });
 
