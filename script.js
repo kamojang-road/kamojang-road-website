@@ -1721,62 +1721,81 @@ $("adminEventList")?.addEventListener("click", async (event) => {
 });
 
 
+
 // =====================================================
 // ADMIN - RIWAYAT PERTANDINGAN
 // =====================================================
 
 async function loadAdminMatchHistory() {
   const list = $("adminMatchHistoryList");
-  if (!list) return;
-
-  const { data, error } = await db
-    .from("match_events")
-    .select(`
-      id,
-      home_team,
-      away_team,
-      match_date,
-      stadium,
-      is_active,
-      is_archived,
-      created_at
-    `)
-    .eq("is_archived", true)
-    .order("match_date", { ascending: false });
-
-  if (error) {
-    list.textContent =
-      "Gagal memuat riwayat pertandingan: " + error.message;
+  if (!list) {
+    console.error("Elemen adminMatchHistoryList tidak ditemukan.");
     return;
   }
 
-  list.innerHTML = data.length
-    ? data.map((item) => `
-        <details class="compact-record">
-          <summary class="compact-record-summary">
-            <span class="compact-record-title">
-              ${escapeHTML(item.home_team)} vs ${escapeHTML(item.away_team)}
-            </span>
-            <span class="compact-record-meta">
-              ${escapeHTML(formatDate(item.match_date))}
-            </span>
-          </summary>
+  list.textContent = "Memuat riwayat pertandingan...";
 
-          <div class="compact-record-body">
-            <p><strong>Pertandingan:</strong>
-              ${escapeHTML(item.home_team)} vs ${escapeHTML(item.away_team)}
-            </p>
-            <p><strong>Tanggal:</strong>
-              ${escapeHTML(formatDate(item.match_date))}
-            </p>
-            <p><strong>Stadion:</strong>
-              ${escapeHTML(item.stadium)}
-            </p>
-            <p class="status-closed">PENJUALAN TIKET DITUTUP</p>
-          </div>
-        </details>
-      `).join("")
-    : "Belum ada riwayat pertandingan.";
+  try {
+    const { data, error } = await db
+      .from("match_events")
+      .select(`
+        id,
+        home_team,
+        away_team,
+        match_date,
+        stadium,
+        is_active,
+        is_archived,
+        created_at
+      `)
+      .eq("is_archived", true)
+      .order("match_date", { ascending: false });
+
+    if (error) throw error;
+
+    const matches = data || [];
+
+    if (matches.length === 0) {
+      list.textContent = "Belum ada riwayat pertandingan.";
+      return;
+    }
+
+    list.innerHTML = matches.map((item) => `
+      <details class="compact-record">
+        <summary class="compact-record-summary">
+          <span class="compact-record-title">
+            ${escapeHTML(item.home_team || "-")} vs
+            ${escapeHTML(item.away_team || "-")}
+          </span>
+          <span class="compact-record-meta">
+            ${escapeHTML(formatDate(item.match_date))}
+          </span>
+        </summary>
+
+        <div class="compact-record-body">
+          <p><strong>Pertandingan:</strong>
+            ${escapeHTML(item.home_team || "-")} vs
+            ${escapeHTML(item.away_team || "-")}
+          </p>
+          <p><strong>Tanggal:</strong>
+            ${escapeHTML(formatDate(item.match_date))}
+          </p>
+          <p><strong>Stadion:</strong>
+            ${escapeHTML(item.stadium || "-")}
+          </p>
+          <p class="status-closed">PENJUALAN TIKET DITUTUP</p>
+        </div>
+      </details>
+    `).join("");
+
+    console.log("Riwayat pertandingan berhasil dimuat:", matches.length);
+
+  } catch (error) {
+    console.error("Gagal memuat riwayat pertandingan:", error);
+    list.textContent =
+      "Gagal memuat riwayat pertandingan: " +
+      (error.message || "Kesalahan tidak diketahui.");
+  }
 }
 
 
