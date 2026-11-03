@@ -2601,9 +2601,134 @@ async function loadAdminTicketHistory() {
   const list = $("adminTicketHistoryList");
   if (!list) return;
 
-  $("cleanArchivedHistoryButton")?.addEventListener("click", async () => {
+  list.textContent = "Memuat riwayat pesanan...";
+
+  try {
+    const { data: events, error: eventError } = await db
+      .from("match_events")
+      .select("id, home_team, away_team, match_date, stadium")
+      .eq("is_archived", true)
+      .eq("is_active", false)
+      .order("match_date", { ascending: false });
+
+    if (eventError) throw eventError;
+
+    if (!events || !events.length) {
+      list.textContent = "Belum ada riwayat pertandingan.";
+      return;
+    }
+
+    const eventIds = events.map((event) => event.id);
+
+    const { data: tickets, error: ticketError } = await db
+      .from("ticket_requests")
+      .select(`
+        id,
+        user_id,
+        event_id,
+        match_name,
+        quantity,
+        status,
+        created_at,
+        category_name_snapshot,
+        stand_snapshot,
+        unit_price_snapshot,
+        payment_status
+      `)
+      .in("event_id", eventIds)
+      .order("created_at", { ascending: false });
+
+    if (ticketError) throw ticketError;
+
+    const profiles = await getTicketProfiles(tickets || []);
+
+    list.innerHTML = events.map((event) => {
+      const eventTickets = (tickets || []).filter(
+        (ticket) => String(ticket.event_id) === String(event.id)
+      );
+
+      const ticketHTML = eventTickets.length
+        ? eventTickets.map((ticket) => {
+            const profile = profiles.get(ticket.user_id);
+
+            return `
+              <div class="data-item">
+                <strong>${escapeHTML(profile?.full_name || "Nama tidak ditemukan")}</strong>
+
+                <p>ID KTA:
+                  ${escapeHTML(profile?.membership_id || "Belum tersedia")}
+                </p>
+
+                <p>Kategori:
+                  ${escapeHTML(ticket.category_name_snapshot || "-")}
+                </p>
+
+                <p>Tribun:
+                  ${escapeHTML(ticket.stand_snapshot || "-")}
+                </p>
+
+                <p>Jumlah:
+                  ${escapeHTML(ticket.quantity || 1)} tiket
+                </p>
+
+                <p>Harga:
+                  ${escapeHTML(formatRupiah(
+                    Number(ticket.unit_price_snapshot || 0) *
+                    Number(ticket.quantity || 1)
+                  ))}
+                </p>
+
+                <p>Status tiket:
+                  ${escapeHTML(statusLabel(ticket.status))}
+                </p>
+
+                <p>Status pembayaran:
+                  ${escapeHTML(paymentStatusLabel(ticket.payment_status))}
+                </p>
+
+                <p>Tanggal pesan:
+                  ${escapeHTML(formatDateTime(ticket.created_at))}
+                </p>
+              </div>
+            `;
+          }).join("")
+        : "<p>Belum ada pesanan pada pertandingan ini.</p>";
+
+      return `
+        <details class="compact-record">
+          <summary class="compact-record-summary">
+            <span class="compact-record-title">
+              ${escapeHTML(event.home_team)} vs ${escapeHTML(event.away_team)}
+            </span>
+
+            <span class="compact-record-meta">
+              ${escapeHTML(formatDate(event.match_date))}
+            </span>
+          </summary>
+
+          <div class="compact-record-body">
+            <p>Stadion: ${escapeHTML(event.stadium)}</p>
+            <p>Total pesanan: ${eventTickets.length}</p>
+            ${ticketHTML}
+          </div>
+        </details>
+      `;
+    }).join("");
+
+  } catch (error) {
+    console.error("Gagal memuat riwayat tiket:", error);
+    list.textContent = "Gagal memuat riwayat: " + error.message;
+  }
+}
+
+
+// =====================================================
+// ADMIN - BERSIHKAN RIWAYAT PESANAN
+// =====================================================
+
+$("cleanArchivedHistoryButton")?.addEventListener("click", async () => {
   const confirmed = confirm(
-    "Hapus seluruh riwayat pesanan dari pertandingan yang sudah diarsipkan dan tidak aktif? Data pertandingan tetap disimpan."
+    "Hapus riwayat pesanan dari pertandingan yang sudah diarsipkan dan tidak aktif? Data pertandingan tetap disimpan."
   );
 
   if (!confirmed) return;
