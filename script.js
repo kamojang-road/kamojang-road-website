@@ -2592,7 +2592,6 @@ document.addEventListener("click", async (event) => {
   }
 });
 
-
 // =====================================================
 // ADMIN - RIWAYAT PEMBELI TIKET
 // =====================================================
@@ -2721,6 +2720,49 @@ async function loadAdminTicketHistory() {
   }
 }
 
+
+// =====================================================
+// ADMIN - BERSIHKAN RIWAYAT PESANAN
+// =====================================================
+
+$("cleanArchivedHistoryButton")?.addEventListener("click", async () => {
+  const confirmed = confirm(
+    "Hapus riwayat pesanan dari pertandingan yang sudah diarsipkan dan tidak aktif? Data pertandingan tetap disimpan."
+  );
+
+  if (!confirmed) return;
+
+  const button = $("cleanArchivedHistoryButton");
+  const message = $("cleanArchivedHistoryMessage");
+
+  button.disabled = true;
+  button.textContent = "MEMBERSIHKAN...";
+
+  try {
+    await callManageKta({
+      action: "clean-archived-ticket-history"
+    });
+
+    if (message) {
+      message.textContent = "Riwayat pesanan berhasil dibersihkan.";
+      message.style.color = "#66d98a";
+    }
+
+    await Promise.all([
+      loadAdminTicketHistory(),
+      loadAdminTickets()
+    ]);
+
+  } catch (error) {
+    if (message) {
+      message.textContent = "Gagal membersihkan riwayat: " + error.message;
+      message.style.color = "#f47721";
+    }
+  } finally {
+    button.disabled = false;
+    button.textContent = "BERSIHKAN RIWAYAT PESANAN";
+  }
+});
 
 // =====================================================
 // ADMIN - BERSIHKAN RIWAYAT PESANAN
