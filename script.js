@@ -2036,48 +2036,87 @@ async function loadAdminMembers() {
 }
 
 $("adminMemberList")?.addEventListener("click", async (event) => {
-  const button = event.target.closest(".save-member-button");
-  if (!button) return;
+  const saveButton = event.target.closest(".save-member-button");
+  const deleteButton = event.target.closest(".delete-member-button");
 
-  const card = button.closest(".member-edit-card");
-  const nameInput = card.querySelector(".edit-member-name");
-  const ktaInput = card.querySelector(".edit-member-kta");
-  const message = card.querySelector(".member-save-message");
+  if (saveButton) {
+    const card = saveButton.closest(".member-edit-card");
+    const nameInput = card.querySelector(".edit-member-name");
+    const ktaInput = card.querySelector(".edit-member-kta");
+    const message = card.querySelector(".member-save-message");
 
-  const fullName = nameInput.value.trim();
-  const membershipId = ktaInput.value.trim();
+    const fullName = nameInput.value.trim();
+    const membershipId = ktaInput.value.trim();
 
-  if (!fullName || !membershipId) {
-    message.textContent = "Nama dan ID KTA wajib diisi.";
+    if (!fullName || !membershipId) {
+      message.textContent = "Nama dan ID KTA wajib diisi.";
+      return;
+    }
+
+    saveButton.disabled = true;
+    saveButton.textContent = "MENYIMPAN...";
+    message.textContent = "";
+
+    try {
+      await callManageKta({
+        action: "edit-member",
+        memberId: saveButton.dataset.memberId,
+        fullName,
+        membershipId
+      });
+
+      alert("Data anggota berhasil diperbarui.");
+      await loadAdminMembers();
+
+    } catch (error) {
+      message.textContent = "Gagal menyimpan: " + error.message;
+      message.style.color = "#f47721";
+      saveButton.disabled = false;
+      saveButton.textContent = "SIMPAN PERUBAHAN";
+    }
+
     return;
   }
 
-  button.disabled = true;
-  button.textContent = "MENYIMPAN...";
-  message.textContent = "";
+  if (deleteButton) {
+    const memberId = deleteButton.dataset.memberId;
+    const memberName = deleteButton.dataset.memberName;
 
-  try {
-    await callManageKta({
-      action: "edit-member",
-      memberId: button.dataset.memberId,
-      fullName,
-      membershipId
-    });
+    if (!memberId) {
+      alert("ID anggota tidak ditemukan.");
+      return;
+    }
 
-    message.textContent = "Data anggota berhasil diperbarui.";
-    message.style.color = "#66d98a";
+    const confirmed = confirm(
+      `Yakin ingin menghapus anggota ${memberName}? Data akun dan pesanan terkait juga dapat terhapus.`
+    );
 
-    await loadAdminMembers();
+    if (!confirmed) return;
 
-  } catch (error) {
-    message.textContent = "Gagal menyimpan: " + error.message;
-    message.style.color = "#f47721";
+    deleteButton.disabled = true;
+    deleteButton.textContent = "MENGHAPUS...";
 
-    button.disabled = false;
-    button.textContent = "SIMPAN PERUBAHAN";
+    try {
+      await callManageKta({
+        action: "delete-member",
+        memberId
+      });
+
+      alert("Anggota berhasil dihapus.");
+
+      await Promise.all([
+        loadAdminMembers(),
+        loadAdminTickets(),
+        loadAdminTicketHistory()
+      ]);
+
+    } catch (error) {
+      alert("Gagal menghapus anggota: " + error.message);
+      deleteButton.disabled = false;
+      deleteButton.textContent = "HAPUS ANGGOTA";
+    }
   }
 });
-
 
 // =====================================================
 // ADMIN - PROFIL PEMESAN TIKET
@@ -2562,184 +2601,44 @@ async function loadAdminTicketHistory() {
   const list = $("adminTicketHistoryList");
   if (!list) return;
 
-  const { data: tickets, error: ticketError } = await db
-    .from("ticket_requests")
-    .select(`
-      id,
-      user_id,
-      event_id,
-      match_name,
-      quantity,
-      status,
-      created_at,
-      category_name_snapshot,
-      stand_snapshot,
-      unit_price_snapshot,
-      payment_status
-    `)
-    .order("created_at", { ascending: false });
-
-  if (ticketError) {
-    list.textContent =
-      "Gagal memuat riwayat pembeli tiket: " + ticketError.message;
-    return;
-  }
-
-  const { data: events, error: eventError } = await db
-    .from("match_events")
-    .select("id, home_team, away_team, match_date, stadium, is_archived");
-
-  if (eventError) {
-    list.textContent =
-      "Gagal memuat data pertandingan: " + eventError.message;
-    return;
-  }
-
-  const eventMap = new Map(
-    (events || []).map((item) => [String(item.id), item])
+  $("cleanArchivedHistoryButton")?.addEventListener("click", async () => {
+  const confirmed = confirm(
+    "Hapus seluruh riwayat pesanan dari pertandingan yang sudah diarsipkan dan tidak aktif? Data pertandingan tetap disimpan."
   );
 
-  const archivedEventIds = new Set(
-    (events || [])
-      .filter((item) => item.is_archived)
-      .map((item) => String(item.id))
-  );
+  if (!confirmed) return;
 
-  const history = (tickets || []).filter((ticket) => {
-    return (
-      archivedEventIds.has(String(ticket.event_id)) ||
-      (!ticket.event_id && !isPendingTicket(ticket.status))
-    );
-  });
+  const button = $("cleanArchivedHistoryButton");
+  const message = $("cleanArchivedHistoryMessage");
 
-  if (!history.length) {
-    list.textContent = "Belum ada riwayat pembeli tiket.";
-    return;
-  }
+  button.disabled = true;
+  button.textContent = "MEMBERSIHKAN...";
 
   try {
-    const profiles = await getTicketProfiles(history);
-    const groups = new Map();
-
-    history.forEach((ticket) => {
-      const key = ticket.event_id
-        ? "event-" + String(ticket.event_id)
-        : "match-" + String(ticket.match_name || "Pertandingan tidak diketahui");
-
-      if (!groups.has(key)) groups.set(key, []);
-
-      groups.get(key).push(ticket);
+    await callManageKta({
+      action: "clean-archived-ticket-history"
     });
 
-    const sortedGroups = [...groups.entries()].sort((a, b) => {
-      const newestA = Math.max(
-        ...a[1].map((ticket) =>
-          new Date(ticket.created_at || 0).getTime()
-        )
-      );
+    if (message) {
+      message.textContent = "Riwayat pesanan berhasil dibersihkan.";
+      message.style.color = "#66d98a";
+    }
 
-      const newestB = Math.max(
-        ...b[1].map((ticket) =>
-          new Date(ticket.created_at || 0).getTime()
-        )
-      );
-
-      return newestB - newestA;
-    });
-
-    list.innerHTML = sortedGroups.map(([key, groupTickets]) => {
-      const firstTicket = groupTickets[0];
-
-      const event = firstTicket.event_id
-        ? eventMap.get(String(firstTicket.event_id))
-        : null;
-
-      const matchTitle = event
-        ? `${event.home_team} vs ${event.away_team}`
-        : firstTicket.match_name || "Pertandingan tidak diketahui";
-
-      const matchDate = event?.match_date
-        ? formatDate(event.match_date)
-        : "-";
-
-      const buyerRows = groupTickets.map((ticket) => {
-        const profile = profiles.get(ticket.user_id);
-
-        return `
-          <div class="compact-buyer-row">
-            <div class="compact-buyer-heading">
-              <strong>
-                ${escapeHTML(profile?.full_name || "Nama tidak ditemukan")}
-              </strong>
-              <span class="compact-buyer-status">
-                ${escapeHTML(statusLabel(ticket.status))}
-              </span>
-            </div>
-
-            <p>ID KTA:
-              ${escapeHTML(profile?.membership_id || "Belum tersedia")}
-            </p>
-            <p>Kategori:
-              ${escapeHTML(ticket.category_name_snapshot || "-")}
-            </p>
-            <p>Tribun:
-              ${escapeHTML(ticket.stand_snapshot || "-")}
-            </p>
-            <p>Harga:
-              ${escapeHTML(formatRupiah(ticket.unit_price_snapshot))}
-            </p>
-            <p>Status pembayaran:
-              ${escapeHTML(paymentStatusLabel(ticket.payment_status))}
-            </p>
-            <p>Tanggal pesan:
-              ${escapeHTML(formatDateTime(ticket.created_at))}
-            </p>
-          </div>
-        `;
-      }).join("");
-
-      return `
-        <details class="compact-record ticket-history-group"
-          data-group="${escapeHTML(key)}">
-
-          <summary class="compact-record-summary">
-            <span class="compact-record-title">
-              ${escapeHTML(matchTitle)}
-            </span>
-            <span class="compact-record-meta">
-              ${groupTickets.length} pembeli
-            </span>
-          </summary>
-
-          <div class="compact-record-body">
-            <p class="ticket-group-date">
-              <strong>Tanggal pertandingan:</strong>
-              ${escapeHTML(matchDate)}
-            </p>
-
-            ${event?.stadium
-              ? `
-                <p class="ticket-group-stadium">
-                  <strong>Stadion:</strong>
-                  ${escapeHTML(event.stadium)}
-                </p>
-              `
-              : ""}
-
-            <div class="compact-buyer-list">
-              ${buyerRows}
-            </div>
-          </div>
-        </details>
-      `;
-    }).join("");
+    await Promise.all([
+      loadAdminTicketHistory(),
+      loadAdminTickets()
+    ]);
 
   } catch (error) {
-    list.textContent =
-      "Gagal menampilkan riwayat tiket: " + error.message;
+    if (message) {
+      message.textContent = "Gagal membersihkan riwayat: " + error.message;
+      message.style.color = "#f47721";
+    }
+  } finally {
+    button.disabled = false;
+    button.textContent = "BERSIHKAN RIWAYAT PESANAN";
   }
-}
-
+});
 
 
 // =====================================================
