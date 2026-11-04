@@ -2934,6 +2934,33 @@ function showDashboard(role) {
   });
 }
 
+ // =====================================================
+ // TAMPILKAN DASHBOARD SESUAI ROLE
+ // =====================================================
+
+function showDashboard(role) {
+  // Sembunyikan semua halaman
+  document.querySelectorAll("main > section").forEach((section) => {
+    section.classList.add("hidden");
+  });
+
+  // Tentukan dashboard berdasarkan role
+  if (role === "admin") {
+    $("adminPage")?.classList.remove("hidden");
+  } else if (role === "member") {
+    $("memberPage")?.classList.remove("hidden");
+  } else {
+    showPublicPage();
+    return;
+  }
+
+  // Kembali ke bagian atas halaman
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
 // =====================================================
 // PULIHKAN SESI LOGIN
 // =====================================================
