@@ -290,77 +290,42 @@ function getUniqueFileName(file) {
 // TAMPILAN HALAMAN
 // =====================================================
 
+
 function showPublicPage() {
+  document.querySelectorAll(
+    "main > section"
+  ).forEach((section) => {
+    section.classList.add("hidden");
+  });
+
+  $("beranda")?.classList.remove("hidden");
+  $("tentang")?.classList.remove("hidden");
+
+  $("login")?.classList.add("hidden");
+  $("kta")?.classList.add("hidden");
   $("memberPage")?.classList.add("hidden");
   $("adminPage")?.classList.add("hidden");
 
-  document.querySelectorAll(".hero, .section").forEach((el) => {
-    el.classList.remove("hidden");
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
   });
-
-  // Form Login dan Pendaftaran KTA tidak tampil
-  // sebelum dipilih oleh pengunjung.
-  $("login")?.classList.add("hidden");
-  $("kta")?.classList.add("hidden");
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function showFormPage(pageId) {
-  $("memberPage")?.classList.add("hidden");
-  $("adminPage")?.classList.add("hidden");
-
-  document.querySelectorAll(".hero, .section").forEach((el) => {
-    el.classList.add("hidden");
+  document.querySelectorAll(
+    "main > section"
+  ).forEach((section) => {
+    section.classList.add("hidden");
   });
 
-  const page = $(pageId);
+  $(pageId)?.classList.remove("hidden");
 
-  if (!page) {
-    console.error("Halaman tidak ditemukan:", pageId);
-    showPublicPage();
-    return;
-  }
-
-  page.classList.remove("hidden");
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
-
-function showDashboard(role) {
-  document.querySelectorAll(".hero, .section").forEach((el) => {
-    el.classList.add("hidden");
-  });
-
-  $("memberPage")?.classList.add("hidden");
-  $("adminPage")?.classList.add("hidden");
-
-  if (role === "admin") {
-    $("adminPage")?.classList.remove("hidden");
-    loadAdminDashboard();
-  } else if (role === "member") {
-    $("memberPage")?.classList.remove("hidden");
-    loadMemberDashboard();
-  } else {
-    alert("Jenis akun tidak dikenali. Hubungi pengurus.");
-    showPublicPage();
-    return;
-  }
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-// Tombol/menu Login dan Pendaftaran KTA
-document.querySelectorAll('a[href="#login"], a[href="#kta"]').forEach((link) => {
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-
-    const pageId = link.getAttribute("href").slice(1);
-    showFormPage(pageId);
-
-    $("nav")?.classList.remove("open");
-  });
-});
 
 // Tombol kembali ke beranda
 document.querySelectorAll(".backToHomeButton").forEach((button) => {
