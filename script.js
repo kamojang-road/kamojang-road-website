@@ -301,7 +301,7 @@ function showPublicPage() {
   // Form Login dan Pendaftaran KTA tidak tampil
   // sebelum dipilih oleh pengunjung.
   $("login")?.classList.add("hidden");
-  $("kta")?.classList.add("hidden());
+  $("kta")?.classList.add("hidden");
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1179,47 +1179,6 @@ $("memberOrders")?.addEventListener("click", async (event) => {
   }
 });
 
-
-<!-- HALAMAN LOGIN -->
-<section id="login" class="section hidden">
-  <div class="container">
-    <h2>LOGIN ANGGOTA</h2>
-    <p>Masuk menggunakan email dan password akun KAMOJANG ROAD.</p>
-
-    <form id="loginForm">
-      <label for="loginEmail">Email</label>
-      <input
-        type="email"
-        id="loginEmail"
-        placeholder="Masukkan email"
-        required
-      >
-
-      <label for="loginPassword">Password</label>
-      <input
-        type="password"
-        id="loginPassword"
-        placeholder="Masukkan password"
-        required
-      >
-
-      <button type="submit" class="btn btn-orange">MASUK</button>
-
-      <button
-        type="button"
-        id="resetPasswordButton"
-        class="btn">
-        LUPA PASSWORD?
-      </button>
-
-      <p id="loginMessage" class="message" aria-live="polite"></p>
-    </form>
-
-    <button type="button" class="btn backToHomeButton">
-      KEMBALI KE BERANDA
-    </button>
-  </div>
-</section>
 
 // =====================================================
 // DASHBOARD ANGGOTA
