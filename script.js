@@ -1290,15 +1290,26 @@ async function loadMemberDashboard() {
       );
     });
 
-   $("memberOrderHistory").innerHTML = historyOrders.length
+    // PESANAN PERTANDINGAN AKTIF
+    $("memberOrders").innerHTML = activeOrders.length
       ? activeOrders.map((order) => `
           <div class="data-item">
             <strong>${escapeHTML(order.match_name)}</strong>
-            <p>Kategori: ${escapeHTML(order.category_name_snapshot || "-")}</p>
-            <p>Tribun: ${escapeHTML(order.stand_snapshot || "-")}</p>
-            <p>Jumlah: 1 tiket</p>
-            <p>Harga: ${escapeHTML(formatRupiah(order.unit_price_snapshot))}</p>
-            <p>Status tiket: ${escapeHTML(statusLabel(order.status))}</p>
+            <p>Kategori:
+              ${escapeHTML(order.category_name_snapshot || "-")}
+            </p>
+            <p>Tribun:
+              ${escapeHTML(order.stand_snapshot || "-")}
+            </p>
+            <p>Jumlah:
+              ${escapeHTML(order.quantity || 1)} tiket
+            </p>
+            <p>Harga:
+              ${escapeHTML(formatRupiah(order.unit_price_snapshot))}
+            </p>
+            <p>Status tiket:
+              ${escapeHTML(statusLabel(order.status))}
+            </p>
             <p>Status pembayaran:
               ${escapeHTML(paymentStatusLabel(order.payment_status))}
             </p>
@@ -1309,47 +1320,42 @@ async function loadMemberDashboard() {
         `).join("")
       : "Belum ada pesanan untuk pertandingan yang sedang dibuka.";
 
-$("memberOrderHistory").innerHTML = historyOrders.length
-  ? historyOrders.map((order) => `
-      <details class="compact-record">
+    // RIWAYAT PESANAN PERTANDINGAN SEBELUMNYA
+    $("memberOrderHistory").innerHTML = historyOrders.length
+      ? historyOrders.map((order) => `
+          <details class="compact-record">
+            <summary class="compact-record-summary">
+              <span class="compact-record-title">
+                ${escapeHTML(order.match_name)}
+              </span>
 
-        <summary class="compact-record-summary">
+              <span class="compact-record-meta">
+                ${escapeHTML(formatDateTime(order.created_at))}
+              </span>
+            </summary>
 
-          <span class="compact-record-title">
-            ${escapeHTML(order.match_name)}
-          </span>
+            <div class="compact-record-body">
+              <p>Jumlah:
+                ${escapeHTML(order.quantity || 1)} tiket
+              </p>
 
-          <span class="compact-record-meta">
-            ${escapeHTML(formatDateTime(order.created_at))}
-          </span>
+              <p>Harga:
+                <strong>
+                  ${escapeHTML(formatRupiah(order.unit_price_snapshot))}
+                </strong>
+              </p>
 
-        </summary>
+              <p>Status tiket:
+                ${escapeHTML(statusLabel(order.status))}
+              </p>
 
-        <div class="compact-record-body">
-
-          <p>Jumlah:
-            ${escapeHTML(order.quantity || 1)} tiket
-          </p>
-
-          <p>Harga:
-            <strong>
-              ${escapeHTML(formatRupiah(order.unit_price_snapshot))}
-            </strong>
-          </p>
-
-          <p>Status tiket:
-            ${escapeHTML(statusLabel(order.status))}
-          </p>
-
-          <p>Status pembayaran:
-            ${escapeHTML(paymentStatusLabel(order.payment_status))}
-          </p>
-
-        </div>
-
-      </details>
-    `).join("")
-  : "Belum ada riwayat pesanan tiket.";
+              <p>Status pembayaran:
+                ${escapeHTML(paymentStatusLabel(order.payment_status))}
+              </p>
+            </div>
+          </details>
+        `).join("")
+      : "Belum ada riwayat pesanan tiket.";
 
     await loadMemberPaymentInfo(profile, activeOrders);
 
