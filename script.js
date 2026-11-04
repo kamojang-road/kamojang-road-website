@@ -286,25 +286,18 @@ function getUniqueFileName(file) {
 
 
 
+
 // =====================================================
 // TAMPILAN HALAMAN
 // =====================================================
 
-
 function showPublicPage() {
-  document.querySelectorAll(
-    "main > section"
-  ).forEach((section) => {
+  document.querySelectorAll("main > section").forEach((section) => {
     section.classList.add("hidden");
   });
 
   $("beranda")?.classList.remove("hidden");
   $("tentang")?.classList.remove("hidden");
-
-  $("login")?.classList.add("hidden");
-  $("kta")?.classList.add("hidden");
-  $("memberPage")?.classList.add("hidden");
-  $("adminPage")?.classList.add("hidden");
 
   window.scrollTo({
     top: 0,
@@ -313,13 +306,18 @@ function showPublicPage() {
 }
 
 function showFormPage(pageId) {
-  document.querySelectorAll(
-    "main > section"
-  ).forEach((section) => {
+  const targetPage = $(pageId);
+
+  if (!targetPage) {
+    console.error("Halaman tidak ditemukan:", pageId);
+    return;
+  }
+
+  document.querySelectorAll("main > section").forEach((section) => {
     section.classList.add("hidden");
   });
 
-  $(pageId)?.classList.remove("hidden");
+  targetPage.classList.remove("hidden");
 
   window.scrollTo({
     top: 0,
@@ -327,11 +325,32 @@ function showFormPage(pageId) {
   });
 }
 
-// Tombol kembali ke beranda
-document.querySelectorAll(".backToHomeButton").forEach((button) => {
-  button.addEventListener("click", showPublicPage);
+// =====================================================
+// NAVIGASI LOGIN DAN PENDAFTARAN KTA
+// =====================================================
+
+document.querySelectorAll('a[href="#login"], a[href="#kta"]').forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    const pageId = link.getAttribute("href").replace("#", "");
+
+    showFormPage(pageId);
+
+    $("nav")?.classList.remove("open");
+  });
 });
 
+// =====================================================
+// TOMBOL KEMBALI KE BERANDA
+// =====================================================
+
+document.querySelectorAll(".backToHomeButton").forEach((button) => {
+  button.addEventListener("click", () => {
+    showPublicPage();
+    $("nav")?.classList.remove("open");
+  });
+});
 
 
 // =====================================================
